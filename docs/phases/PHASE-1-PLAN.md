@@ -1,6 +1,6 @@
 # Phase 1 Plan — Foundation & CRM Core
 
-Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (production deploy)
+Status: complete (see handoff report) · Branch: `claude/great-curie-5qbeoz` → PR → `main` (production deploy)
 
 ## Environment findings (session start)
 
@@ -73,3 +73,9 @@ Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (pr
 ## Out of scope (by design)
 
 Any outbound messaging, scraping, paid services, secrets in Vercel, service-role usage.
+
+## Outcome notes
+
+- All tasks A–F done; G (ship) tracked in the handoff report.
+- Bugs caught by the smoke/e2e passes and fixed: Zod 4 optional-key semantics (missing keys were "required"), header-alias normalization in CSV auto-mapping, pre-hydration native form submits, dnd-kit SSR id mismatch.
+- Added beyond the brief: Companies/Tasks nav items, duplicate warning on manual contact create, import history with downloadable error report, branding editor with live WCAG check, pipeline creation.

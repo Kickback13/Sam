@@ -52,6 +52,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chrome-launcher": "1.2.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "lighthouse": "^13.5.0",

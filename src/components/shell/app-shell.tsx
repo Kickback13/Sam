@@ -91,7 +91,7 @@ export function AppShell(props: AppShellProps) {
               type="button"
               onClick={() => setSearchOpen(true)}
               className="ml-auto flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground hover:bg-accent sm:w-72 lg:ml-0 lg:w-96"
-              aria-label="Search (Command K)"
+              aria-label="Search… (Command K)"
               data-testid="open-search"
             >
               <Search className="size-4" aria-hidden />
