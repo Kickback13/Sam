@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow, Big_Shoulders, Plus_Jakarta_Sans, Source_Sans_3 } from "next/font/google";
 
+import { HydrationMarker } from "@/components/hydration-marker";
 import { Toaster } from "@/components/ui/sonner";
 import { APP_NAME } from "@/lib/constants";
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh">
         {children}
         <Toaster />
+        <HydrationMarker />
       </body>
     </html>
   );

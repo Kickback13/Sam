@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
+import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 import { CALL_OUTCOMES, type SubjectType } from "@/lib/validation/activity";
 import { logActivity } from "@/server/actions/activities";
@@ -18,6 +19,7 @@ type Kind = "note" | "call" | "meeting";
 
 export function LogActivity({ subjectType, subjectId }: { subjectType: SubjectType; subjectId: string }) {
   const ws = useWorkspace();
+  const hydrated = useHydrated();
   const [kind, setKind] = useState<Kind>("note");
   const [body, setBody] = useState("");
   const [outcome, setOutcome] = useState("connected");
@@ -103,7 +105,7 @@ export function LogActivity({ subjectType, subjectId }: { subjectType: SubjectTy
         </div>
       )}
       <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={pending || (kind === "note" && !body.trim())}>
+        <Button type="submit" size="sm" disabled={!hydrated || pending || (kind === "note" && !body.trim())}>
           {pending && <Loader2 className="animate-spin" aria-hidden />}
           {kind === "note" ? "Save note" : kind === "call" ? "Log call" : "Log meeting"}
         </Button>

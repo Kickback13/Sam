@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { optionalDateTime, optionalNumber, optionalText } from "./common";
+import { optionalDateTime, optionalEnum, optionalNumber, optionalText } from "./common";
 
 export const SUBJECT_TYPES = ["contact", "company", "property", "deal"] as const;
 export type SubjectType = (typeof SUBJECT_TYPES)[number];
@@ -23,10 +23,7 @@ export const activityInputSchema = z
     subject_id: z.uuid(),
     body: optionalText(20000),
     occurred_at: optionalDateTime,
-    outcome: z.preprocess(
-      (v) => (v === "" ? null : v),
-      z.enum(["connected", "left_voicemail", "no_answer", "wrong_number"]).nullable().default(null),
-    ),
+    outcome: optionalEnum(["connected", "left_voicemail", "no_answer", "wrong_number"] as const),
     duration_minutes: optionalNumber({ min: 0, max: 600, int: true }),
   })
   .superRefine((a, ctx) => {

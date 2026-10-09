@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   cacheComponents: false,
   partialPrefetching: false,
   poweredByHeader: false,
+  // Dev only: allow the loopback IP (tests and local tools use 127.0.0.1).
+  allowedDevOrigins: ["127.0.0.1"],
   experimental: {
     serverActions: {
       // CSV imports are sent to server actions in chunks; keep headroom per chunk.

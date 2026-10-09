@@ -162,8 +162,8 @@ export function transformRow(row: RawRow, mapping: ColumnMapping, defaults: { so
     }
   }
 
-  // Bad secondary values are reported but don't block the row if it is otherwise valid.
-  if (!parsed.success) return { ok: false, errors: [...new Set(errors)] };
+  // Any unparseable email/phone fails the row (reported in the error file) rather than being silently dropped.
+  if (!parsed.success || errors.length > 0) return { ok: false, errors: [...new Set(errors)] };
   if (emails.length === 0 && phones.length === 0 && !first && !last) {
     return { ok: false, errors: ["Row has no name, email or phone"] };
   }

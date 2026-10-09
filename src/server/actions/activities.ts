@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 
-import type { Json } from "@/lib/db/types";
+import { toJson } from "@/lib/db/json";
 import { activityInputSchema } from "@/lib/validation/activity";
 import { zodFieldErrors, type ActionResult } from "@/lib/validation/common";
 import { actionContext, NOT_SIGNED_IN, revalidateWorkspace } from "@/server/action-context";
@@ -29,7 +29,7 @@ export async function logActivity(input: unknown): Promise<ActionResult<{ id: st
       subject_id: a.subject_id,
       body: a.body,
       occurred_at: a.occurred_at ?? new Date().toISOString(),
-      metadata: metadata as NonNullable<Json>,
+      metadata: toJson(metadata),
       created_by: ctx.user.id,
     })
     .select("id")

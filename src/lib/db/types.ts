@@ -1203,6 +1203,16 @@ export type Database = {
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string };
       accept_pending_invites: { Args: Record<PropertyKey, never>; Returns: number };
+      contact_facets: { Args: { p_workspace_id: string }; Returns: Json };
+      contacts_bulk_tag: {
+        Args: {
+          p_add: string[];
+          p_contact_ids: string[];
+          p_remove: string[];
+          p_workspace_id: string;
+        };
+        Returns: number;
+      };
       find_contact_duplicates: {
         Args: { p_email_keys: string[]; p_phone_keys: string[]; p_workspace_id: string };
         Returns: {

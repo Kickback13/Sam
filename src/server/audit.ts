@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Json } from "@/lib/db/types";
+import { toJson } from "@/lib/db/json";
 import type { ServerSupabase } from "@/lib/supabase/server";
 
 type AuditEntry = {
@@ -20,7 +20,7 @@ export async function writeAudit(supabase: ServerSupabase, entry: AuditEntry) {
     action: entry.action,
     entity_type: entry.entityType,
     entity_id: entry.entityId ?? null,
-    diff: (entry.diff ?? {}) as NonNullable<Json>,
+    diff: toJson(entry.diff ?? {}),
   });
   if (error) console.error("audit_log insert failed", { action: entry.action, code: error.code, message: error.message });
 }

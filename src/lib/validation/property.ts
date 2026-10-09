@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { PROPERTY_TYPE_VALUES } from "@/lib/constants";
 
-import { optionalDate, optionalNumber, optionalText, optionalUuid, requiredText, tagsSchema } from "./common";
+import { optionalDate, optionalEnum, optionalNumber, optionalText, optionalUuid, requiredText, tagsSchema } from "./common";
 
 export const propertyInputSchema = z.object({
   name: optionalText(200),
@@ -14,7 +14,7 @@ export const propertyInputSchema = z.object({
   apn: optionalText(40),
   lat: optionalNumber({ min: -90, max: 90 }),
   lng: optionalNumber({ min: -180, max: 180 }),
-  property_type: z.preprocess((v) => (v === "" ? null : v), z.enum(PROPERTY_TYPE_VALUES).nullable().default(null)),
+  property_type: optionalEnum(PROPERTY_TYPE_VALUES),
   units: optionalNumber({ min: 0, max: 100000, int: true }),
   buildings: optionalNumber({ min: 0, max: 10000, int: true }),
   building_sqft: optionalNumber({ min: 0, int: true }),

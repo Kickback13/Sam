@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { brandSchema } from "@/lib/brand";
 
-import { optionalText, requiredText } from "./common";
+import { optionalEmail, optionalText, requiredText } from "./common";
 
 export const MEMBER_ROLES = ["owner", "admin", "agent", "viewer"] as const;
 export type MemberRole = (typeof MEMBER_ROLES)[number];
@@ -14,10 +14,7 @@ export const workspaceProfileSchema = z.object({
   license: optionalText(60),
   phone: optionalText(40),
   address: optionalText(300),
-  owner_email: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
-    z.email("Enter a valid email").nullable(),
-  ),
+  owner_email: optionalEmail,
 });
 
 export const workspaceBrandSchema = z.object({
@@ -27,10 +24,7 @@ export const workspaceBrandSchema = z.object({
 
 export const inviteInputSchema = z.object({
   workspaceId: z.uuid(),
-  email: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
-    z.email("Enter a valid email").nullable(),
-  ),
+  email: optionalEmail,
   role: z.enum(MEMBER_ROLES),
 });
 

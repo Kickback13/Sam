@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { SUBJECT_TYPES } from "./activity";
-import { optionalDateTime, optionalText, optionalUuid, requiredText } from "./common";
+import { optionalDateTime, optionalEnum, optionalText, optionalUuid, requiredText } from "./common";
 
 export const taskInputSchema = z
   .object({
@@ -10,7 +10,7 @@ export const taskInputSchema = z
     notes: optionalText(5000),
     due_at: optionalDateTime,
     assigned_to: optionalUuid,
-    related_type: z.preprocess((v) => (v === "" ? null : v), z.enum(SUBJECT_TYPES).nullable().default(null)),
+    related_type: optionalEnum(SUBJECT_TYPES),
     related_id: optionalUuid,
   })
   .refine((t) => (t.related_type === null) === (t.related_id === null), {
