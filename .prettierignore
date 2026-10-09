@@ -1,0 +1,11 @@
+.next
+node_modules
+pnpm-lock.yaml
+supabase/.temp
+supabase/migrations
+supabase/tests
+coverage
+playwright-report
+test-results
+lighthouse-reports
+AGENTS.md
