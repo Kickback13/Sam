@@ -1,6 +1,13 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Loader2, Upload } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Download,
+  FileSpreadsheet,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
 import { useMemo, useRef, useState } from "react";
@@ -12,14 +19,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toCsv } from "@/lib/csv/dedupe";
-import { autoMap, IMPORT_FIELDS, mappingProblems, normalizeHeader, type ColumnMapping, type ImportField } from "@/lib/csv/mapping";
+import {
+  autoMap,
+  IMPORT_FIELDS,
+  mappingProblems,
+  normalizeHeader,
+  type ColumnMapping,
+  type ImportField,
+} from "@/lib/csv/mapping";
 import { transformRow, type RawRow, type TransformResult } from "@/lib/csv/transform";
 import { formatNumber } from "@/lib/format";
 import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
-import { checkImportDuplicates, finishImport, importChunk, startImport, type DuplicateCheck } from "@/server/actions/imports";
+import {
+  checkImportDuplicates,
+  finishImport,
+  importChunk,
+  startImport,
+  type DuplicateCheck,
+} from "@/server/actions/imports";
 
 const MAX_ROWS = 20_000;
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -50,12 +77,19 @@ export function ImportWizard() {
   const [importId, setImportId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isGhl = useMemo(() => file?.headers.some((h) => normalizeHeader(h) === "contact id") ?? false, [file]);
+  const isGhl = useMemo(
+    () => file?.headers.some((h) => normalizeHeader(h) === "contact id") ?? false,
+    [file],
+  );
 
   // Row numbers match the spreadsheet: header is row 1, first data row is row 2.
   const transformed = useMemo<{ row: number; result: TransformResult; raw: RawRow }[]>(() => {
     if (!file || step === "upload" || step === "map") return [];
-    return file.rows.map((raw, i) => ({ row: i + 2, raw, result: transformRow(raw, mapping, { source: isGhl ? "GHL import" : "CSV import" }) }));
+    return file.rows.map((raw, i) => ({
+      row: i + 2,
+      raw,
+      result: transformRow(raw, mapping, { source: isGhl ? "GHL import" : "CSV import" }),
+    }));
   }, [file, mapping, step, isGhl]);
 
   const summary = useMemo(() => {
@@ -91,7 +125,9 @@ export function ImportWizard() {
           return;
         }
         if (res.data.length > MAX_ROWS) {
-          setParseError(`That file has ${formatNumber(res.data.length)} rows. The limit is ${formatNumber(MAX_ROWS)} per import.`);
+          setParseError(
+            `That file has ${formatNumber(res.data.length)} rows. The limit is ${formatNumber(MAX_ROWS)} per import.`,
+          );
           return;
         }
         setFile({ filename: f.name, headers, rows: res.data });
@@ -112,7 +148,12 @@ export function ImportWizard() {
       .filter((t) => t.result.ok)
       .map((t) => {
         const v = (t.result as Extract<TransformResult, { ok: true }>).value;
-        return { row: t.row, emailKeys: v.emailKeys, phoneKeys: v.phoneKeys, ghlContactId: v.ghlContactId };
+        return {
+          row: t.row,
+          emailKeys: v.emailKeys,
+          phoneKeys: v.phoneKeys,
+          ghlContactId: v.ghlContactId,
+        };
       });
     const result = await checkImportDuplicates({ workspaceId: ws.id, rows });
     setChecking(false);
@@ -158,7 +199,11 @@ export function ImportWizard() {
         row: r.row,
         raw: Object.fromEntries(Object.entries(r.raw).filter(([k]) => mapping[k])),
       }));
-      const res = await importChunk({ workspaceId: ws.id, importId: start.data.importId, rows: slice });
+      const res = await importChunk({
+        workspaceId: ws.id,
+        importId: start.data.importId,
+        rows: slice,
+      });
       if (!res.ok) {
         setFatal(`Import stopped at row ${slice[0].row}: ${res.error}`);
         await finishImport({ workspaceId: ws.id, importId: start.data.importId, failed: true });
@@ -173,7 +218,11 @@ export function ImportWizard() {
     }
     // Server-side validation errors supersede the client's for the same row.
     const serverRows = new Set(chunkErrors.map((e) => e.row));
-    setErrors([...invalidErrors.filter((e) => !serverRows.has(e.row)), ...chunkErrors].sort((a, b) => a.row - b.row));
+    setErrors(
+      [...invalidErrors.filter((e) => !serverRows.has(e.row)), ...chunkErrors].sort(
+        (a, b) => a.row - b.row,
+      ),
+    );
     await finishImport({ workspaceId: ws.id, importId: start.data.importId });
     setStep("done");
   }
@@ -181,7 +230,11 @@ export function ImportWizard() {
   function downloadErrors() {
     if (!file) return;
     const headers = ["row", "error", ...file.headers];
-    const rows = errors.map((e) => [e.row, e.message, ...file.headers.map((h) => file.rows[e.row - 2]?.[h] ?? "")]);
+    const rows = errors.map((e) => [
+      e.row,
+      e.message,
+      ...file.headers.map((h) => file.rows[e.row - 2]?.[h] ?? ""),
+    ]);
     const blob = new Blob([toCsv(headers, rows)], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -209,7 +262,11 @@ export function ImportWizard() {
             aria-current={i === stepIndex ? "step" : undefined}
             className={cn(
               "rounded-full border px-3 py-1 font-semibold",
-              i === stepIndex ? "border-brand-ink bg-brand-ink text-white" : i < stepIndex ? "bg-muted" : "text-muted-foreground",
+              i === stepIndex
+                ? "border-brand-ink bg-brand-ink text-white"
+                : i < stepIndex
+                  ? "bg-muted"
+                  : "text-muted-foreground",
             )}
           >
             {i + 1}. {s.label}
@@ -218,7 +275,10 @@ export function ImportWizard() {
       </ol>
 
       {fatal && (
-        <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
+        >
           {fatal}
         </p>
       )}
@@ -237,8 +297,8 @@ export function ImportWizard() {
               <FileSpreadsheet className="size-10 text-muted-foreground" aria-hidden />
               <p className="font-semibold">Drop a CSV file here, or choose one</p>
               <p className="max-w-md text-sm text-muted-foreground">
-                GoHighLevel contact exports map automatically. Up to {formatNumber(MAX_ROWS)} rows. Nothing is saved until you
-                confirm the import.
+                GoHighLevel contact exports map automatically. Up to {formatNumber(MAX_ROWS)} rows.
+                Nothing is saved until you confirm the import.
               </p>
               <input
                 ref={inputRef}
@@ -290,13 +350,19 @@ export function ImportWizard() {
                   <TableRow key={h}>
                     <TableCell className="font-medium">{h}</TableCell>
                     <TableCell className="max-w-56 truncate text-xs text-muted-foreground">
-                      {file.rows.slice(0, 3).map((r) => r[h]).filter(Boolean).join(" · ") || "—"}
+                      {file.rows
+                        .slice(0, 3)
+                        .map((r) => r[h])
+                        .filter(Boolean)
+                        .join(" · ") || "—"}
                     </TableCell>
                     <TableCell className="w-64">
                       <NativeSelect
                         aria-label={`Map ${h}`}
                         value={mapping[h] ?? ""}
-                        onChange={(e) => setMapping({ ...mapping, [h]: e.target.value as ImportField | "" })}
+                        onChange={(e) =>
+                          setMapping({ ...mapping, [h]: e.target.value as ImportField | "" })
+                        }
                       >
                         <option value="">Don&apos;t import</option>
                         {IMPORT_FIELDS.map((f) => (
@@ -337,7 +403,8 @@ export function ImportWizard() {
           <CardContent className="space-y-4">
             {checking ? (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" aria-hidden /> Checking {formatNumber(summary.total)} rows for duplicates…
+                <Loader2 className="size-4 animate-spin" aria-hidden /> Checking{" "}
+                {formatNumber(summary.total)} rows for duplicates…
               </p>
             ) : (
               <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4" data-testid="import-summary">
@@ -355,7 +422,12 @@ export function ImportWizard() {
                 </div>
                 <div className="rounded-lg border p-3">
                   <dt className="text-xs text-muted-foreground">Invalid rows</dt>
-                  <dd className={cn("text-xl font-bold tabular", summary.invalid > 0 && "text-brand-danger")}>
+                  <dd
+                    className={cn(
+                      "text-xl font-bold tabular",
+                      summary.invalid > 0 && "text-brand-danger",
+                    )}
+                  >
                     {formatNumber(summary.invalid)}
                   </dd>
                 </div>
@@ -364,10 +436,19 @@ export function ImportWizard() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <fieldset className="space-y-2">
-                <legend className="text-sm font-semibold">When a row matches an existing contact</legend>
+                <legend className="text-sm font-semibold">
+                  When a row matches an existing contact
+                </legend>
                 {(["skip", "update"] as const).map((s) => (
                   <label key={s} className="flex items-start gap-2 text-sm">
-                    <input type="radio" name="strategy" value={s} checked={strategy === s} onChange={() => setStrategy(s)} className="mt-1 size-4 accent-black" />
+                    <input
+                      type="radio"
+                      name="strategy"
+                      value={s}
+                      checked={strategy === s}
+                      onChange={() => setStrategy(s)}
+                      className="mt-1 size-4 accent-black"
+                    />
                     <span>
                       <strong>{s === "skip" ? "Skip it" : "Update it"}</strong>
                       <span className="block text-xs text-muted-foreground">
@@ -382,7 +463,9 @@ export function ImportWizard() {
               <div className="space-y-1.5">
                 <Label htmlFor="import-tag">Tag imported contacts</Label>
                 <Input id="import-tag" value={tag} onChange={(e) => setTag(e.target.value)} />
-                <p className="text-xs text-muted-foreground">Makes this batch easy to filter later. Leave blank for none.</p>
+                <p className="text-xs text-muted-foreground">
+                  Makes this batch easy to filter later. Leave blank for none.
+                </p>
               </div>
             </div>
 
@@ -404,8 +487,16 @@ export function ImportWizard() {
                     return (
                       <TableRow key={t.row}>
                         <TableCell className="tabular">{t.row}</TableCell>
-                        <TableCell>{v ? [v.contact.first_name, v.contact.last_name].filter(Boolean).join(" ") || "—" : "—"}</TableCell>
-                        <TableCell className="max-w-48 truncate">{v?.contact.emails[0]?.value ?? "—"}</TableCell>
+                        <TableCell>
+                          {v
+                            ? [v.contact.first_name, v.contact.last_name]
+                                .filter(Boolean)
+                                .join(" ") || "—"
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="max-w-48 truncate">
+                          {v?.contact.emails[0]?.value ?? "—"}
+                        </TableCell>
                         <TableCell>{v?.contact.phones[0]?.value ?? "—"}</TableCell>
                         <TableCell>
                           {!t.result.ok ? (
@@ -413,7 +504,9 @@ export function ImportWizard() {
                               {t.result.errors[0]}
                             </Badge>
                           ) : check?.action === "match" ? (
-                            <Badge variant="warning">Matches {check.existingName ?? "existing"} ({check.via})</Badge>
+                            <Badge variant="warning">
+                              Matches {check.existingName ?? "existing"} ({check.via})
+                            </Badge>
                           ) : check?.action === "duplicate_in_file" ? (
                             <Badge variant="warning">Duplicate of row {check.firstRow}</Badge>
                           ) : (
@@ -427,14 +520,20 @@ export function ImportWizard() {
               </Table>
             </div>
             {transformed.length > 10 && (
-              <p className="text-xs text-muted-foreground">Showing the first 10 of {formatNumber(transformed.length)} rows.</p>
+              <p className="text-xs text-muted-foreground">
+                Showing the first 10 of {formatNumber(transformed.length)} rows.
+              </p>
             )}
 
             <div className="flex justify-between gap-2">
               <Button variant="outline" onClick={() => setStep("map")}>
                 Back
               </Button>
-              <Button disabled={checking || summary.total === summary.invalid} onClick={runImport} data-testid="run-import">
+              <Button
+                disabled={checking || summary.total === summary.invalid}
+                onClick={runImport}
+                data-testid="run-import"
+              >
                 Import {formatNumber(summary.total - summary.invalid)} rows
               </Button>
             </div>
@@ -446,11 +545,20 @@ export function ImportWizard() {
         <Card>
           <CardContent className="space-y-3 py-8" aria-live="polite">
             <p className="flex items-center gap-2 font-semibold">
-              <Loader2 className="size-4 animate-spin" aria-hidden /> Importing {formatNumber(progress.done)} of{" "}
-              {formatNumber(file.rows.length)} rows…
+              <Loader2 className="size-4 animate-spin" aria-hidden /> Importing{" "}
+              {formatNumber(progress.done)} of {formatNumber(file.rows.length)} rows…
             </p>
-            <div className="h-2 rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={file.rows.length} aria-valuenow={progress.done}>
-              <div className="h-full rounded-full bg-brand-primary transition-all" style={{ width: `${(progress.done / file.rows.length) * 100}%` }} />
+            <div
+              className="h-2 rounded-full bg-muted"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={file.rows.length}
+              aria-valuenow={progress.done}
+            >
+              <div
+                className="h-full rounded-full bg-brand-primary transition-all"
+                style={{ width: `${(progress.done / file.rows.length) * 100}%` }}
+              />
             </div>
             <p className="text-sm text-muted-foreground">Keep this page open until it finishes.</p>
           </CardContent>
@@ -461,13 +569,19 @@ export function ImportWizard() {
         <Card>
           <CardContent className="space-y-4 py-6" data-testid="import-result">
             <p className="flex items-center gap-2 text-lg font-bold">
-              {fatal ? <AlertTriangle className="text-brand-danger" aria-hidden /> : <CheckCircle2 className="text-emerald-700" aria-hidden />}
+              {fatal ? (
+                <AlertTriangle className="text-brand-danger" aria-hidden />
+              ) : (
+                <CheckCircle2 className="text-emerald-700" aria-hidden />
+              )}
               {fatal ? "Import stopped" : "Import complete"}
             </p>
             <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div className="rounded-lg border p-3">
                 <dt className="text-xs text-muted-foreground">Created</dt>
-                <dd className="text-xl font-bold tabular" data-testid="created-count">{formatNumber(progress.created)}</dd>
+                <dd className="text-xl font-bold tabular" data-testid="created-count">
+                  {formatNumber(progress.created)}
+                </dd>
               </div>
               <div className="rounded-lg border p-3">
                 <dt className="text-xs text-muted-foreground">Updated</dt>
@@ -479,7 +593,9 @@ export function ImportWizard() {
               </div>
               <div className="rounded-lg border p-3">
                 <dt className="text-xs text-muted-foreground">Rows with issues</dt>
-                <dd className="text-xl font-bold tabular" data-testid="error-count">{formatNumber(errors.length)}</dd>
+                <dd className="text-xl font-bold tabular" data-testid="error-count">
+                  {formatNumber(errors.length)}
+                </dd>
               </div>
             </dl>
             <div className="flex flex-wrap gap-2">
@@ -489,7 +605,13 @@ export function ImportWizard() {
                 </Button>
               )}
               <Button asChild>
-                <Link href={tag.trim() ? `/w/${ws.slug}/people?tag=${encodeURIComponent(tag.trim())}` : `/w/${ws.slug}/people`}>
+                <Link
+                  href={
+                    tag.trim()
+                      ? `/w/${ws.slug}/people?tag=${encodeURIComponent(tag.trim())}`
+                      : `/w/${ws.slug}/people`
+                  }
+                >
                   View imported contacts
                 </Link>
               </Button>

@@ -34,14 +34,30 @@ export default async function ImportPage({ params }: PageProps<"/w/[slug]/people
           <CardContent className="pt-1">
             <ul className="divide-y">
               {recent.map((i) => (
-                <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm">
-                  <Link href={`/w/${slug}/people/import/${i.id}`} className="font-semibold hover:underline">
+                <li
+                  key={i.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
+                >
+                  <Link
+                    href={`/w/${slug}/people/import/${i.id}`}
+                    className="font-semibold hover:underline"
+                  >
                     {i.filename ?? "Import"}
                   </Link>
                   <span className="flex items-center gap-2 text-muted-foreground">
-                    <Badge variant={i.status === "completed" ? "success" : i.status === "failed" ? "danger" : "secondary"}>{i.status}</Badge>
-                    {formatNumber(i.created_count)} created · {formatNumber(i.updated_count)} updated · {formatNumber(i.error_count)} errors ·{" "}
-                    {formatRelative(i.created_at)}
+                    <Badge
+                      variant={
+                        i.status === "completed"
+                          ? "success"
+                          : i.status === "failed"
+                            ? "danger"
+                            : "secondary"
+                      }
+                    >
+                      {i.status}
+                    </Badge>
+                    {formatNumber(i.created_count)} created · {formatNumber(i.updated_count)}{" "}
+                    updated · {formatNumber(i.error_count)} errors · {formatRelative(i.created_at)}
                   </span>
                 </li>
               ))}

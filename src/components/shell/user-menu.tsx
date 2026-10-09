@@ -15,10 +15,22 @@ import { ROLE_LABELS } from "@/lib/constants";
 import type { MemberRole } from "@/lib/validation/settings";
 import { signOut } from "@/server/actions/auth";
 
-export function UserMenu({ name, email, role }: { name: string; email: string | null; role: MemberRole }) {
+export function UserMenu({
+  name,
+  email,
+  role,
+}: {
+  name: string;
+  email: string | null;
+  role: MemberRole;
+}) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full" aria-label={`Account menu for ${name}`} data-testid="user-menu">
+      <DropdownMenuTrigger
+        className="rounded-full"
+        aria-label={`Account menu for ${name}`}
+        data-testid="user-menu"
+      >
         <Avatar name={name} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">

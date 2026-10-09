@@ -90,18 +90,24 @@ function pick(row: RawRow, mapping: ColumnMapping, field: ImportField): string |
   return null;
 }
 
-export function transformRow(row: RawRow, mapping: ColumnMapping, defaults: { source?: string } = {}): TransformResult {
+export function transformRow(
+  row: RawRow,
+  mapping: ColumnMapping,
+  defaults: { source?: string } = {},
+): TransformResult {
   let first = pick(row, mapping, "first_name");
   let last = pick(row, mapping, "last_name");
   const full = pick(row, mapping, "full_name");
   if (!first && !last && full) ({ first, last } = splitFullName(full));
 
-  const emailValues = [pick(row, mapping, "email"), ...splitMulti(pick(row, mapping, "email_2"))].filter(
-    (v): v is string => Boolean(v),
-  );
-  const phoneValues = [pick(row, mapping, "phone"), ...splitMulti(pick(row, mapping, "phone_2"))].filter(
-    (v): v is string => Boolean(v),
-  );
+  const emailValues = [
+    pick(row, mapping, "email"),
+    ...splitMulti(pick(row, mapping, "email_2")),
+  ].filter((v): v is string => Boolean(v));
+  const phoneValues = [
+    pick(row, mapping, "phone"),
+    ...splitMulti(pick(row, mapping, "phone_2")),
+  ].filter((v): v is string => Boolean(v));
 
   const errors: string[] = [];
   const emails: { value: string; label: string; is_primary: boolean }[] = [];
@@ -114,10 +120,19 @@ export function transformRow(row: RawRow, mapping: ColumnMapping, defaults: { so
     }
     if (seenEmail.has(key)) continue;
     seenEmail.add(key);
-    emails.push({ value: key, label: emails.length === 0 ? "work" : "other", is_primary: emails.length === 0 });
+    emails.push({
+      value: key,
+      label: emails.length === 0 ? "work" : "other",
+      is_primary: emails.length === 0,
+    });
   }
 
-  const phones: { value: string; label: string; type: "mobile" | "landline" | "unknown"; is_primary: boolean }[] = [];
+  const phones: {
+    value: string;
+    label: string;
+    type: "mobile" | "landline" | "unknown";
+    is_primary: boolean;
+  }[] = [];
   const seenPhone = new Set<string>();
   for (const [i, v] of phoneValues.entries()) {
     const key = normalizePhone(v);

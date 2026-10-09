@@ -29,7 +29,9 @@ export function SidebarNav({
     <nav aria-label="Workspace" className="flex flex-col gap-5">
       {groups.map(({ group, items }) => (
         <div key={group}>
-          <p className="px-3 pb-1.5 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">{group}</p>
+          <p className="px-3 pb-1.5 text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
+            {group}
+          </p>
           <ul className="space-y-0.5">
             {items.map((item) => {
               const href = `/w/${slug}/${item.path}`;
@@ -48,7 +50,10 @@ export function SidebarNav({
                     )}
                   >
                     {active && (
-                      <span aria-hidden className="absolute top-1.5 bottom-1.5 left-0 w-1 rounded-r bg-brand-accent" />
+                      <span
+                        aria-hidden
+                        className="absolute top-1.5 bottom-1.5 left-0 w-1 rounded-r bg-brand-accent"
+                      />
                     )}
                     <Icon className="size-4 shrink-0" aria-hidden />
                     <span className="flex-1 truncate">{item.label}</span>
@@ -60,7 +65,9 @@ export function SidebarNav({
                       <span
                         className={cn(
                           "min-w-6 rounded-full px-1.5 py-0.5 text-center text-[11px] font-bold tabular",
-                          active ? "bg-brand-accent text-black" : "bg-white/10 text-sidebar-foreground",
+                          active
+                            ? "bg-brand-accent text-black"
+                            : "bg-white/10 text-sidebar-foreground",
                         )}
                       >
                         {formatNumber(count)}

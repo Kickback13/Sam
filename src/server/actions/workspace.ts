@@ -21,12 +21,19 @@ export async function rememberWorkspace(workspaceId: string): Promise<void> {
   await supabase.from("profiles").update({ last_workspace_id: workspaceId }).eq("id", user.id);
 }
 
-export async function searchWorkspace(workspaceId: string, query: string): Promise<ActionResult<SearchHit[]>> {
+export async function searchWorkspace(
+  workspaceId: string,
+  query: string,
+): Promise<ActionResult<SearchHit[]>> {
   if (!z.uuid().safeParse(workspaceId).success) return { ok: false, error: "Invalid workspace" };
   const q = query.trim().slice(0, 100);
   if (q.length < 2) return { ok: true, data: [] };
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("global_search", { p_workspace_id: workspaceId, p_query: q, p_limit: 6 });
+  const { data, error } = await supabase.rpc("global_search", {
+    p_workspace_id: workspaceId,
+    p_query: q,
+    p_limit: 6,
+  });
   if (error) return { ok: false, error: "Search failed" };
   return {
     ok: true,

@@ -14,13 +14,21 @@ export type Stage = {
   probability: number;
 };
 
-export type Pipeline = { id: string; name: string; kind: string; isDefault: boolean; stages: Stage[] };
+export type Pipeline = {
+  id: string;
+  name: string;
+  kind: string;
+  isDefault: boolean;
+  stages: Stage[];
+};
 
 export const getPipelines = cache(async (workspaceId: string): Promise<Pipeline[]> => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("pipelines")
-    .select("id, name, kind, is_default, position, pipeline_stages(id, name, position, color, is_won, is_lost, probability)")
+    .select(
+      "id, name, kind, is_default, position, pipeline_stages(id, name, position, color, is_won, is_lost, probability)",
+    )
     .eq("workspace_id", workspaceId)
     .order("is_default", { ascending: false })
     .order("position");
@@ -48,7 +56,9 @@ export type StageTotal = Stage & { dealCount: number; totalValue: number };
 
 export async function getStageTotals(pipeline: Pipeline): Promise<StageTotal[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("pipeline_stage_totals", { p_pipeline_id: pipeline.id });
+  const { data, error } = await supabase.rpc("pipeline_stage_totals", {
+    p_pipeline_id: pipeline.id,
+  });
   if (error) throw error;
   const byId = new Map((data ?? []).map((r) => [r.stage_id, r]));
   return pipeline.stages.map((s) => ({

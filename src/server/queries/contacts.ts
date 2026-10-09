@@ -81,7 +81,10 @@ export async function listContacts(
   const asc = (f.dir ?? (f.sort === "name" || !f.sort ? "asc" : "desc")) === "asc";
   if (f.sort === "created") q = q.order("created_at", { ascending: asc });
   else if (f.sort === "updated") q = q.order("updated_at", { ascending: asc });
-  else q = q.order("last_name", { ascending: asc, nullsFirst: false }).order("first_name", { ascending: asc, nullsFirst: false });
+  else
+    q = q
+      .order("last_name", { ascending: asc, nullsFirst: false })
+      .order("first_name", { ascending: asc, nullsFirst: false });
   q = q.order("id");
 
   const page = Math.max(1, f.page ?? 1);
@@ -113,7 +116,9 @@ export async function listContacts(
 
 export type Facet = { value: string; count: number };
 
-export async function getContactFacets(workspaceId: string): Promise<{ tags: Facet[]; sources: Facet[] }> {
+export async function getContactFacets(
+  workspaceId: string,
+): Promise<{ tags: Facet[]; sources: Facet[] }> {
   const supabase = await createClient();
   const { data } = await supabase.rpc("contact_facets", { p_workspace_id: workspaceId });
   const facets = (data ?? {}) as { tags?: Facet[]; sources?: Facet[] };
@@ -141,13 +146,17 @@ export async function getContactLinks(workspaceId: string, contactId: string) {
   const [primaryDeals, roleDeals, properties] = await Promise.all([
     supabase
       .from("deals")
-      .select("id, title, value, status, stage:pipeline_stages!deals_pipeline_id_stage_id_fkey(name, color)")
+      .select(
+        "id, title, value, status, stage:pipeline_stages!deals_pipeline_id_stage_id_fkey(name, color)",
+      )
       .eq("workspace_id", workspaceId)
       .eq("primary_contact_id", contactId)
       .is("deleted_at", null),
     supabase
       .from("deal_contacts")
-      .select("role, deal:deals!deal_contacts_workspace_id_deal_id_fkey(id, title, value, status, deleted_at, stage:pipeline_stages!deals_pipeline_id_stage_id_fkey(name, color))")
+      .select(
+        "role, deal:deals!deal_contacts_workspace_id_deal_id_fkey(id, title, value, status, deleted_at, stage:pipeline_stages!deals_pipeline_id_stage_id_fkey(name, color))",
+      )
       .eq("workspace_id", workspaceId)
       .eq("contact_id", contactId),
     supabase
@@ -158,13 +167,28 @@ export async function getContactLinks(workspaceId: string, contactId: string) {
       .is("deleted_at", null),
   ]);
 
-  type DealLink = { id: string; title: string; value: number | null; status: string; stage: { name: string; color: string } | null; role: string | null };
+  type DealLink = {
+    id: string;
+    title: string;
+    value: number | null;
+    status: string;
+    stage: { name: string; color: string } | null;
+    role: string | null;
+  };
   const deals = new Map<string, DealLink>();
-  for (const d of primaryDeals.data ?? []) deals.set(d.id, { ...d, stage: d.stage, role: "Primary contact" });
+  for (const d of primaryDeals.data ?? [])
+    deals.set(d.id, { ...d, stage: d.stage, role: "Primary contact" });
   for (const dc of roleDeals.data ?? []) {
     const d = dc.deal;
     if (!d || d.deleted_at || deals.has(d.id)) continue;
-    deals.set(d.id, { id: d.id, title: d.title, value: d.value, status: d.status, stage: d.stage, role: dc.role });
+    deals.set(d.id, {
+      id: d.id,
+      title: d.title,
+      value: d.value,
+      status: d.status,
+      stage: d.stage,
+      role: dc.role,
+    });
   }
   return { deals: [...deals.values()], properties: properties.data ?? [] };
 }

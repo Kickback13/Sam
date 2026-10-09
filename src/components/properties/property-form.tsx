@@ -18,19 +18,46 @@ import type { FieldErrors } from "@/lib/validation/common";
 import { saveProperty } from "@/server/actions/properties";
 
 type Str = string;
-export type PropertyFormInitial = Partial<Record<
-  | "name" | "address" | "city" | "state" | "zip" | "county" | "apn" | "lat" | "lng" | "property_type" | "units" | "buildings"
-  | "building_sqft" | "lot_sqft" | "year_built" | "zoning" | "submarket" | "last_sale_date" | "last_sale_price" | "assessed_value" | "notes",
-  Str
->> & { id?: string; tags?: string[]; owner?: PickedEntity | null; ownerCompany?: PickedEntity | null };
+export type PropertyFormInitial = Partial<
+  Record<
+    | "name"
+    | "address"
+    | "city"
+    | "state"
+    | "zip"
+    | "county"
+    | "apn"
+    | "lat"
+    | "lng"
+    | "property_type"
+    | "units"
+    | "buildings"
+    | "building_sqft"
+    | "lot_sqft"
+    | "year_built"
+    | "zoning"
+    | "submarket"
+    | "last_sale_date"
+    | "last_sale_price"
+    | "assessed_value"
+    | "notes",
+    Str
+  >
+> & {
+  id?: string;
+  tags?: string[];
+  owner?: PickedEntity | null;
+  ownerCompany?: PickedEntity | null;
+};
 
-const NUMERIC: { key: keyof PropertyFormInitial; label: string; help?: string; money?: boolean }[] = [
-  { key: "units", label: "Units" },
-  { key: "buildings", label: "Buildings" },
-  { key: "building_sqft", label: "Building sq ft" },
-  { key: "lot_sqft", label: "Lot sq ft" },
-  { key: "year_built", label: "Year built" },
-];
+const NUMERIC: { key: keyof PropertyFormInitial; label: string; help?: string; money?: boolean }[] =
+  [
+    { key: "units", label: "Units" },
+    { key: "buildings", label: "Buildings" },
+    { key: "building_sqft", label: "Building sq ft" },
+    { key: "lot_sqft", label: "Lot sq ft" },
+    { key: "year_built", label: "Year built" },
+  ];
 
 export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
   const ws = useWorkspace();
@@ -64,12 +91,25 @@ export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
     tags: (initial?.tags ?? []).join(", "),
   });
   const [owner, setOwner] = useState<PickedEntity | null>(initial?.owner ?? null);
-  const [ownerCompany, setOwnerCompany] = useState<PickedEntity | null>(initial?.ownerCompany ?? null);
+  const [ownerCompany, setOwnerCompany] = useState<PickedEntity | null>(
+    initial?.ownerCompany ?? null,
+  );
   const set = (k: string, value: string) => setV((s) => ({ ...s, [k]: value }));
   const err = (k: string) => errors[k]?.[0];
-  const text = (k: string, label: string, props: React.ComponentProps<typeof Input> = {}, className?: string) => (
-    <Field id={k} label={label} error={err(k)} className={className}>
-      <Input id={k} value={v[k]} onChange={(e) => set(k, e.target.value)} aria-invalid={Boolean(err(k))} {...props} />
+  const text = (
+    k: string,
+    label: string,
+    props: React.ComponentProps<typeof Input> = {},
+    className?: string,
+  ) => (
+    <Field key={k} id={k} label={label} error={err(k)} className={className}>
+      <Input
+        id={k}
+        value={v[k]}
+        onChange={(e) => set(k, e.target.value)}
+        aria-invalid={Boolean(err(k))}
+        {...props}
+      />
     </Field>
   );
 
@@ -85,7 +125,12 @@ export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
           const result = await saveProperty({
             workspaceId: ws.id,
             propertyId: initial?.id,
-            property: { ...v, tags: v.tags.split(/[,;]/), owner_contact_id: owner?.id ?? null, owner_company_id: ownerCompany?.id ?? null },
+            property: {
+              ...v,
+              tags: v.tags.split(/[,;]/),
+              owner_contact_id: owner?.id ?? null,
+              owner_company_id: ownerCompany?.id ?? null,
+            },
           });
           if (!result.ok) {
             setFormError(result.error);
@@ -98,13 +143,26 @@ export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
       }}
     >
       {formError && (
-        <p role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p
+          role="alert"
+          className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
+        >
           {formError}
         </p>
       )}
       <FormSection title="Location">
-        {text("address", "Street address", { required: true, autoComplete: "off" }, "sm:col-span-2")}
-        {text("name", "Property name", { placeholder: "Optional, e.g. Sunset Apartments" }, "sm:col-span-2")}
+        {text(
+          "address",
+          "Street address",
+          { required: true, autoComplete: "off" },
+          "sm:col-span-2",
+        )}
+        {text(
+          "name",
+          "Property name",
+          { placeholder: "Optional, e.g. Sunset Apartments" },
+          "sm:col-span-2",
+        )}
         {text("city", "City")}
         <div className="grid grid-cols-2 gap-3">
           {text("state", "State")}
@@ -115,9 +173,16 @@ export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
         {text("submarket", "Submarket", { placeholder: "e.g. North Park" })}
         {text("zoning", "Zoning")}
       </FormSection>
-      <FormSection title="Building" description="Values you enter are stamped “Entered by you” with today's date.">
+      <FormSection
+        title="Building"
+        description="Values you enter are stamped “Entered by you” with today's date."
+      >
         <Field id="property_type" label="Type">
-          <NativeSelect id="property_type" value={v.property_type} onChange={(e) => set("property_type", e.target.value)}>
+          <NativeSelect
+            id="property_type"
+            value={v.property_type}
+            onChange={(e) => set("property_type", e.target.value)}
+          >
             <option value="">—</option>
             {PROPERTY_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -130,10 +195,22 @@ export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
       </FormSection>
       <FormSection title="Ownership & value">
         <Field id="owner" label="Owner (person)">
-          <EntityPicker id="owner" entityType="contact" value={owner} onChange={setOwner} placeholder="Search people…" />
+          <EntityPicker
+            id="owner"
+            entityType="contact"
+            value={owner}
+            onChange={setOwner}
+            placeholder="Search people…"
+          />
         </Field>
         <Field id="owner_company" label="Owner (entity)">
-          <EntityPicker id="owner_company" entityType="company" value={ownerCompany} onChange={setOwnerCompany} placeholder="Search companies…" />
+          <EntityPicker
+            id="owner_company"
+            entityType="company"
+            value={ownerCompany}
+            onChange={setOwnerCompany}
+            placeholder="Search companies…"
+          />
         </Field>
         {text("last_sale_date", "Last sale date", { type: "date" })}
         {text("last_sale_price", "Last sale price ($)", { inputMode: "decimal" })}
@@ -146,7 +223,12 @@ export function PropertyForm({ initial }: { initial?: PropertyFormInitial }) {
       <FormSection title="Notes">
         {text("tags", "Tags", { placeholder: "Comma-separated" })}
         <Field id="notes" label="Notes" className="sm:col-span-2">
-          <Textarea id="notes" rows={3} value={v.notes} onChange={(e) => set("notes", e.target.value)} />
+          <Textarea
+            id="notes"
+            rows={3}
+            value={v.notes}
+            onChange={(e) => set("notes", e.target.value)}
+          />
         </Field>
       </FormSection>
       <div className="sticky bottom-16 flex justify-end gap-2 border-t bg-card py-3 lg:bottom-0">

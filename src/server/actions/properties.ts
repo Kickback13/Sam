@@ -3,20 +3,35 @@
 import { z } from "zod";
 
 import { toJson } from "@/lib/db/json";
-import { parseFieldSources, SOURCED_PROPERTY_FIELDS, stampManualSources } from "@/lib/field-sources";
+import {
+  parseFieldSources,
+  SOURCED_PROPERTY_FIELDS,
+  stampManualSources,
+} from "@/lib/field-sources";
 import { zodFieldErrors, type ActionResult } from "@/lib/validation/common";
 import { propertyInputSchema } from "@/lib/validation/property";
 import { actionContext, NOT_SIGNED_IN, revalidateWorkspace } from "@/server/action-context";
 import { diffFields, writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
 
-const saveSchema = z.object({ workspaceId: z.uuid(), propertyId: z.uuid().optional(), property: z.unknown() });
+const saveSchema = z.object({
+  workspaceId: z.uuid(),
+  propertyId: z.uuid().optional(),
+  property: z.unknown(),
+});
 
-export async function saveProperty(input: z.input<typeof saveSchema>): Promise<ActionResult<{ id: string }>> {
+export async function saveProperty(
+  input: z.input<typeof saveSchema>,
+): Promise<ActionResult<{ id: string }>> {
   const envelope = saveSchema.safeParse(input);
   if (!envelope.success) return { ok: false, error: "Invalid request" };
   const parsed = propertyInputSchema.safeParse(envelope.data.property);
-  if (!parsed.success) return { ok: false, error: "Check the highlighted fields", fieldErrors: zodFieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Check the highlighted fields",
+      fieldErrors: zodFieldErrors(parsed.error),
+    };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { workspaceId, propertyId } = envelope.data;
@@ -24,7 +39,12 @@ export async function saveProperty(input: z.input<typeof saveSchema>): Promise<A
   const user = { id: ctx.user.id, name: ctx.user.name };
 
   if (propertyId) {
-    const { data: before } = await ctx.supabase.from("properties").select("*").eq("workspace_id", workspaceId).eq("id", propertyId).maybeSingle();
+    const { data: before } = await ctx.supabase
+      .from("properties")
+      .select("*")
+      .eq("workspace_id", workspaceId)
+      .eq("id", propertyId)
+      .maybeSingle();
     if (!before) return { ok: false, error: "Property not found." };
     // Trust layer: every changed value is stamped "Entered by {user}" with a timestamp.
     const field_sources = stampManualSources(
@@ -48,16 +68,31 @@ export async function saveProperty(input: z.input<typeof saveSchema>): Promise<A
       action: "property.update",
       entityType: "property",
       entityId: propertyId,
-      diff: diffFields(before as Record<string, unknown>, row as Record<string, unknown>, Object.keys(row)),
+      diff: diffFields(
+        before as Record<string, unknown>,
+        row as Record<string, unknown>,
+        Object.keys(row),
+      ),
     });
     revalidateWorkspace();
     return { ok: true, data: { id: propertyId } };
   }
 
-  const field_sources = stampManualSources({}, {}, row as Record<string, unknown>, SOURCED_PROPERTY_FIELDS, user);
+  const field_sources = stampManualSources(
+    {},
+    {},
+    row as Record<string, unknown>,
+    SOURCED_PROPERTY_FIELDS,
+    user,
+  );
   const { data, error } = await ctx.supabase
     .from("properties")
-    .insert({ ...row, workspace_id: workspaceId, created_by: ctx.user.id, field_sources: toJson(field_sources) })
+    .insert({
+      ...row,
+      workspace_id: workspaceId,
+      created_by: ctx.user.id,
+      field_sources: toJson(field_sources),
+    })
     .select("id")
     .single();
   if (error) return { ok: false, error: friendlyDbError(error) };
@@ -73,7 +108,10 @@ export async function saveProperty(input: z.input<typeof saveSchema>): Promise<A
   return { ok: true, data: { id: data.id } };
 }
 
-export async function deleteProperty(input: { workspaceId: string; propertyId: string }): Promise<ActionResult> {
+export async function deleteProperty(input: {
+  workspaceId: string;
+  propertyId: string;
+}): Promise<ActionResult> {
   const parsed = z.object({ workspaceId: z.uuid(), propertyId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();

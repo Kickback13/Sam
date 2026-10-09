@@ -16,5 +16,7 @@ export function supabasePublishableKey(): string {
 
 /** Email+password sign-in exists only for automated tests and never on Vercel production. */
 export function isTestPasswordLoginEnabled(): boolean {
-  return process.env.ENABLE_TEST_PASSWORD_LOGIN === "true" && process.env.VERCEL_ENV !== "production";
+  return (
+    process.env.ENABLE_TEST_PASSWORD_LOGIN === "true" && process.env.VERCEL_ENV !== "production"
+  );
 }

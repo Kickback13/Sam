@@ -23,7 +23,15 @@ export type SwitcherWorkspace = {
   logoText: string;
 };
 
-export function WorkspaceLogo({ accent, text, className }: { accent: string; text: string; className?: string }) {
+export function WorkspaceLogo({
+  accent,
+  text,
+  className,
+}: {
+  accent: string;
+  text: string;
+  className?: string;
+}) {
   return (
     <span
       aria-hidden
@@ -55,12 +63,19 @@ export function WorkspaceSwitcher({
       >
         <WorkspaceLogo accent={current.accent} text={current.logoText} />
         <span className="min-w-0 flex-1">
-          <span className={`block truncate text-sm font-bold ${dark ? "text-white" : ""}`}>{current.name}</span>
-          <span className={`block truncate text-xs ${dark ? "text-sidebar-muted" : "text-muted-foreground"}`}>
+          <span className={`block truncate text-sm font-bold ${dark ? "text-white" : ""}`}>
+            {current.name}
+          </span>
+          <span
+            className={`block truncate text-xs ${dark ? "text-sidebar-muted" : "text-muted-foreground"}`}
+          >
             {current.businessLabel}
           </span>
         </span>
-        <ChevronsUpDown className={`size-4 shrink-0 ${dark ? "text-sidebar-muted" : "text-muted-foreground"}`} aria-hidden />
+        <ChevronsUpDown
+          className={`size-4 shrink-0 ${dark ? "text-sidebar-muted" : "text-muted-foreground"}`}
+          aria-hidden
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72">
         <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
@@ -81,11 +96,15 @@ export function WorkspaceSwitcher({
                 {w.isDemo ? "Demo · fictional data" : w.businessLabel}
               </span>
             </span>
-            {w.id === current.id && <Check className="text-brand-accent-text" aria-label="Current" />}
+            {w.id === current.id && (
+              <Check className="text-brand-accent-text" aria-label="Current" />
+            )}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <p className="px-2 py-1.5 text-xs text-muted-foreground">Each workspace&apos;s data is fully separate.</p>
+        <p className="px-2 py-1.5 text-xs text-muted-foreground">
+          Each workspace&apos;s data is fully separate.
+        </p>
       </DropdownMenuContent>
     </DropdownMenu>
   );

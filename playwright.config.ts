@@ -7,7 +7,8 @@ import { defineConfig, devices } from "@playwright/test";
  */
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const LOCAL_SUPABASE_URL = process.env.E2E_SUPABASE_URL ?? "http://127.0.0.1:54321";
-const LOCAL_PUBLISHABLE_KEY = process.env.E2E_SUPABASE_PUBLISHABLE_KEY ?? "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
+const LOCAL_PUBLISHABLE_KEY =
+  process.env.E2E_SUPABASE_PUBLISHABLE_KEY ?? "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -21,13 +22,22 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
     // Use a preinstalled Chromium when the bundled build isn't downloaded (e.g. sandboxed CI/dev boxes).
-    launchOptions: process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {},
+    launchOptions: process.env.PW_CHROMIUM_PATH
+      ? { executablePath: process.env.PW_CHROMIUM_PATH }
+      : {},
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1360, height: 900 } } },
-    { name: "mobile", use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } }, testMatch: /mobile\.spec\.ts/ },
+    {
+      name: "desktop",
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1360, height: 900 } },
+    },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } },
+      testMatch: /mobile\.spec\.ts/,
+    },
   ],
   webServer: {
     command: `pnpm exec next build && pnpm exec next start -p ${PORT}`,

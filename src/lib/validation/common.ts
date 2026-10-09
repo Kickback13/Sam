@@ -20,7 +20,8 @@ export function requiredText(max: number, message = "Required") {
   return z.string().trim().min(1, message).max(max, `Must be ${max} characters or fewer`);
 }
 
-const blankToNull = (v: unknown) => (v === "" || (typeof v === "string" && v.trim() === "") ? null : v);
+const blankToNull = (v: unknown) =>
+  v === "" || (typeof v === "string" && v.trim() === "") ? null : v;
 
 /** Number input that may arrive as a string from a form ("$1,200" ok); missing/"" → null. */
 export function optionalNumber(opts: { min?: number; max?: number; int?: boolean } = {}) {
@@ -47,7 +48,13 @@ export const optionalUuid = z
   .transform((v) => v ?? null);
 
 export const optionalDate = z
-  .preprocess(blankToNull, z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD").nullable())
+  .preprocess(
+    blankToNull,
+    z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
+      .nullable(),
+  )
   .optional()
   .transform((v) => v ?? null);
 
@@ -84,8 +91,7 @@ export const tagsSchema = z
 export type FieldErrors = Record<string, string[] | undefined>;
 
 export type ActionResult<T = undefined> =
-  | { ok: true; data: T }
-  | { ok: false; error: string; fieldErrors?: FieldErrors };
+  { ok: true; data: T } | { ok: false; error: string; fieldErrors?: FieldErrors };
 
 export function zodFieldErrors(error: z.ZodError): FieldErrors {
   const out: FieldErrors = {};

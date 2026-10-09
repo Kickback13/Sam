@@ -23,7 +23,11 @@ export function Field({
     <div className={cn("space-y-1.5", className)}>
       <Label htmlFor={id}>
         {label}
-        {required && <span className="text-brand-danger" aria-hidden>*</span>}
+        {required && (
+          <span className="text-brand-danger" aria-hidden>
+            *
+          </span>
+        )}
       </Label>
       {children}
       {error ? (
@@ -37,7 +41,15 @@ export function Field({
   );
 }
 
-export function FormSection({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+export function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="grid gap-4 border-b py-5 last:border-b-0 md:grid-cols-[220px_1fr]">
       <div>

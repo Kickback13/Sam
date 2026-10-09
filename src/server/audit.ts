@@ -22,7 +22,12 @@ export async function writeAudit(supabase: ServerSupabase, entry: AuditEntry) {
     entity_id: entry.entityId ?? null,
     diff: toJson(entry.diff ?? {}),
   });
-  if (error) console.error("audit_log insert failed", { action: entry.action, code: error.code, message: error.message });
+  if (error)
+    console.error("audit_log insert failed", {
+      action: entry.action,
+      code: error.code,
+      message: error.message,
+    });
 }
 
 /** { field: { from, to } } for fields whose value changed. */
@@ -34,7 +39,7 @@ export function diffFields(
   const keys = fields ?? Object.keys(after);
   const out: Record<string, { from: unknown; to: unknown }> = {};
   for (const key of keys) {
-    const from = before ? before[key] ?? null : null;
+    const from = before ? (before[key] ?? null) : null;
     const to = after[key] ?? null;
     if (JSON.stringify(from) !== JSON.stringify(to)) out[key] = { from, to };
   }

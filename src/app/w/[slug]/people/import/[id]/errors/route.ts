@@ -4,10 +4,17 @@ import { toCsv } from "@/lib/csv/dedupe";
 import { createClient } from "@/lib/supabase/server";
 
 /** Downloadable error report for a past import (RLS limits it to workspace members). */
-export async function GET(_request: NextRequest, ctx: RouteContext<"/w/[slug]/people/import/[id]/errors">) {
+export async function GET(
+  _request: NextRequest,
+  ctx: RouteContext<"/w/[slug]/people/import/[id]/errors">,
+) {
   const { slug, id } = await ctx.params;
   const supabase = await createClient();
-  const { data: ws } = await supabase.from("workspaces").select("id").eq("slug", slug).maybeSingle();
+  const { data: ws } = await supabase
+    .from("workspaces")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
   if (!ws) return new NextResponse("Not found", { status: 404 });
   const { data: job } = await supabase
     .from("imports")
@@ -17,7 +24,11 @@ export async function GET(_request: NextRequest, ctx: RouteContext<"/w/[slug]/pe
     .maybeSingle();
   if (!job) return new NextResponse("Not found", { status: 404 });
 
-  const errors = (Array.isArray(job.errors) ? job.errors : []) as { row: number; message: string; data?: Record<string, string> }[];
+  const errors = (Array.isArray(job.errors) ? job.errors : []) as {
+    row: number;
+    message: string;
+    data?: Record<string, string>;
+  }[];
   const columns = [...new Set(errors.flatMap((e) => Object.keys(e.data ?? {})))];
   const csv = toCsv(
     ["row", "error", ...columns],

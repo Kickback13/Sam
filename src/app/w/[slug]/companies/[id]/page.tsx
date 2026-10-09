@@ -70,7 +70,12 @@ export default async function CompanyPage({ params }: PageProps<"/w/[slug]/compa
               {c.website && (
                 <p className="flex items-center gap-2">
                   <Globe className="size-4 text-muted-foreground" aria-hidden />
-                  <a href={c.website} target="_blank" rel="noreferrer" className="truncate text-brand-accent-text hover:underline">
+                  <a
+                    href={c.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="truncate text-brand-accent-text hover:underline"
+                  >
                     {c.website}
                   </a>
                 </p>
@@ -87,32 +92,54 @@ export default async function CompanyPage({ params }: PageProps<"/w/[slug]/compa
                   {c.email}
                 </p>
               )}
-              {(c.address || c.city) && <p className="text-muted-foreground">{[c.address, c.city, c.state, c.zip].filter(Boolean).join(", ")}</p>}
-              {c.tags.length > 0 && <p className="text-xs text-muted-foreground">Tags: {c.tags.join(", ")}</p>}
-              {c.notes && <p className="rounded-md bg-muted px-3 py-2 whitespace-pre-wrap">{c.notes}</p>}
-              {!c.website && !c.phone && !c.email && !c.address && !c.notes && <p className="text-muted-foreground">No details yet.</p>}
+              {(c.address || c.city) && (
+                <p className="text-muted-foreground">
+                  {[c.address, c.city, c.state, c.zip].filter(Boolean).join(", ")}
+                </p>
+              )}
+              {c.tags.length > 0 && (
+                <p className="text-xs text-muted-foreground">Tags: {c.tags.join(", ")}</p>
+              )}
+              {c.notes && (
+                <p className="rounded-md bg-muted px-3 py-2 whitespace-pre-wrap">{c.notes}</p>
+              )}
+              {!c.website && !c.phone && !c.email && !c.address && !c.notes && (
+                <p className="text-muted-foreground">No details yet.</p>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="size-4" aria-hidden /> People ({formatNumber(links.contacts.length)})
+                <Users className="size-4" aria-hidden /> People (
+                {formatNumber(links.contacts.length)})
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
               {links.contacts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No one linked yet. Set the company on a contact to link them.</p>
+                <p className="text-sm text-muted-foreground">
+                  No one linked yet. Set the company on a contact to link them.
+                </p>
               ) : (
                 <ul className="divide-y">
                   {links.contacts.map((p) => (
                     <li key={p.id} className="flex items-center justify-between gap-2 py-2">
                       <span className="min-w-0">
-                        <Link href={`/w/${slug}/people/${p.id}`} className="block truncate font-semibold hover:underline">
+                        <Link
+                          href={`/w/${slug}/people/${p.id}`}
+                          className="block truncate font-semibold hover:underline"
+                        >
                           {contactDisplayName(p)}
                         </Link>
-                        {p.title && <span className="block truncate text-xs text-muted-foreground">{p.title}</span>}
+                        {p.title && (
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {p.title}
+                          </span>
+                        )}
                       </span>
-                      {p.roles[0] && <Badge variant="secondary">{labelFor(CONTACT_ROLES, p.roles[0])}</Badge>}
+                      {p.roles[0] && (
+                        <Badge variant="secondary">{labelFor(CONTACT_ROLES, p.roles[0])}</Badge>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -132,10 +159,17 @@ export default async function CompanyPage({ params }: PageProps<"/w/[slug]/compa
                 <ul className="divide-y">
                   {links.properties.map((p) => (
                     <li key={p.id} className="py-2">
-                      <Link href={`/w/${slug}/properties/${p.id}`} className="font-semibold hover:underline">
+                      <Link
+                        href={`/w/${slug}/properties/${p.id}`}
+                        className="font-semibold hover:underline"
+                      >
                         {p.name ?? p.address}
                       </Link>
-                      <p className="text-xs text-muted-foreground">{[p.city, p.units !== null ? `${p.units} units` : null].filter(Boolean).join(" · ")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {[p.city, p.units !== null ? `${p.units} units` : null]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
                     </li>
                   ))}
                 </ul>

@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     console.error("exchangeCodeForSession failed", error.message);
   }
 
-  const reason = searchParams.get("error_description") ?? "That sign-in link is invalid or has expired.";
+  const reason =
+    searchParams.get("error_description") ?? "That sign-in link is invalid or has expired.";
   const url = new URL("/login", origin);
   url.searchParams.set("error", reason);
   if (next !== "/") url.searchParams.set("next", next);

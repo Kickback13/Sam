@@ -11,22 +11,43 @@ import type { ActivityItem } from "@/server/queries/activity";
 import { getSubjectActivity } from "@/server/queries/activity";
 import { getTasks, type TaskItem } from "@/server/queries/tasks";
 
-const saveSchema = z.object({ workspaceId: z.uuid(), dealId: z.uuid().optional(), deal: z.unknown() });
+const saveSchema = z.object({
+  workspaceId: z.uuid(),
+  dealId: z.uuid().optional(),
+  deal: z.unknown(),
+});
 
-export async function saveDeal(input: z.input<typeof saveSchema>): Promise<ActionResult<{ id: string }>> {
+export async function saveDeal(
+  input: z.input<typeof saveSchema>,
+): Promise<ActionResult<{ id: string }>> {
   const envelope = saveSchema.safeParse(input);
   if (!envelope.success) return { ok: false, error: "Invalid request" };
   const parsed = dealInputSchema.safeParse(envelope.data.deal);
-  if (!parsed.success) return { ok: false, error: "Check the highlighted fields", fieldErrors: zodFieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Check the highlighted fields",
+      fieldErrors: zodFieldErrors(parsed.error),
+    };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { workspaceId, dealId } = envelope.data;
   const d = parsed.data;
 
   if (dealId) {
-    const { data: before } = await ctx.supabase.from("deals").select("*").eq("workspace_id", workspaceId).eq("id", dealId).maybeSingle();
+    const { data: before } = await ctx.supabase
+      .from("deals")
+      .select("*")
+      .eq("workspace_id", workspaceId)
+      .eq("id", dealId)
+      .maybeSingle();
     if (!before) return { ok: false, error: "Deal not found." };
-    const { data, error } = await ctx.supabase.from("deals").update(d).eq("workspace_id", workspaceId).eq("id", dealId).select("id");
+    const { data, error } = await ctx.supabase
+      .from("deals")
+      .update(d)
+      .eq("workspace_id", workspaceId)
+      .eq("id", dealId)
+      .select("id");
     if (error) return { ok: false, error: friendlyDbError(error) };
     if (!data?.length) return { ok: false, error: "You can't edit deals in this workspace." };
     await writeAudit(ctx.supabase, {
@@ -35,7 +56,11 @@ export async function saveDeal(input: z.input<typeof saveSchema>): Promise<Actio
       action: "deal.update",
       entityType: "deal",
       entityId: dealId,
-      diff: diffFields(before as Record<string, unknown>, d as Record<string, unknown>, Object.keys(d)),
+      diff: diffFields(
+        before as Record<string, unknown>,
+        d as Record<string, unknown>,
+        Object.keys(d),
+      ),
     });
     revalidateWorkspace();
     return { ok: true, data: { id: dealId } };
@@ -54,7 +79,13 @@ export async function saveDeal(input: z.input<typeof saveSchema>): Promise<Actio
 
   const { data, error } = await ctx.supabase
     .from("deals")
-    .insert({ ...d, workspace_id: workspaceId, position, created_by: ctx.user.id, assigned_to: d.assigned_to ?? ctx.user.id })
+    .insert({
+      ...d,
+      workspace_id: workspaceId,
+      position,
+      created_by: ctx.user.id,
+      assigned_to: d.assigned_to ?? ctx.user.id,
+    })
     .select("id")
     .single();
   if (error) return { ok: false, error: friendlyDbError(error) };
@@ -71,23 +102,44 @@ export async function saveDeal(input: z.input<typeof saveSchema>): Promise<Actio
 }
 
 /** Move within/between stages. Stage history + activity are written by the database trigger. */
-export async function moveDeal(input: z.input<typeof moveDealSchema> & { workspaceId: string }): Promise<ActionResult> {
+export async function moveDeal(
+  input: z.input<typeof moveDealSchema> & { workspaceId: string },
+): Promise<ActionResult> {
   const parsed = moveDealSchema.extend({ workspaceId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid move" };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { workspaceId, dealId, stageId, position, lostReason } = parsed.data;
 
-  const { data: stage } = await ctx.supabase.from("pipeline_stages").select("id, name, is_lost").eq("workspace_id", workspaceId).eq("id", stageId).maybeSingle();
+  const { data: stage } = await ctx.supabase
+    .from("pipeline_stages")
+    .select("id, name, is_lost")
+    .eq("workspace_id", workspaceId)
+    .eq("id", stageId)
+    .maybeSingle();
   if (!stage) return { ok: false, error: "That stage doesn't exist." };
-  if (stage.is_lost && !lostReason) return { ok: false, error: "Add a reason when marking a deal lost." };
+  if (stage.is_lost && !lostReason)
+    return { ok: false, error: "Add a reason when marking a deal lost." };
 
-  const { data: before } = await ctx.supabase.from("deals").select("stage_id, position").eq("workspace_id", workspaceId).eq("id", dealId).maybeSingle();
+  const { data: before } = await ctx.supabase
+    .from("deals")
+    .select("stage_id, position")
+    .eq("workspace_id", workspaceId)
+    .eq("id", dealId)
+    .maybeSingle();
   if (!before) return { ok: false, error: "Deal not found." };
 
-  const patch: { stage_id: string; position: number; lost_reason?: string | null } = { stage_id: stageId, position };
+  const patch: { stage_id: string; position: number; lost_reason?: string | null } = {
+    stage_id: stageId,
+    position,
+  };
   if (stage.is_lost) patch.lost_reason = lostReason;
-  const { data, error } = await ctx.supabase.from("deals").update(patch).eq("workspace_id", workspaceId).eq("id", dealId).select("id");
+  const { data, error } = await ctx.supabase
+    .from("deals")
+    .update(patch)
+    .eq("workspace_id", workspaceId)
+    .eq("id", dealId)
+    .select("id");
   if (error) return { ok: false, error: friendlyDbError(error) };
   if (!data?.length) return { ok: false, error: "You can't move deals in this workspace." };
 
@@ -105,7 +157,10 @@ export async function moveDeal(input: z.input<typeof moveDealSchema> & { workspa
   return { ok: true, data: undefined };
 }
 
-export async function deleteDeal(input: { workspaceId: string; dealId: string }): Promise<ActionResult> {
+export async function deleteDeal(input: {
+  workspaceId: string;
+  dealId: string;
+}): Promise<ActionResult> {
   const parsed = z.object({ workspaceId: z.uuid(), dealId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();
@@ -130,7 +185,9 @@ export async function deleteDeal(input: { workspaceId: string; dealId: string })
   return { ok: true, data: undefined };
 }
 
-export async function addDealContact(input: z.input<typeof dealContactSchema> & { workspaceId: string }): Promise<ActionResult> {
+export async function addDealContact(
+  input: z.input<typeof dealContactSchema> & { workspaceId: string },
+): Promise<ActionResult> {
   const parsed = dealContactSchema.extend({ workspaceId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();
@@ -138,22 +195,50 @@ export async function addDealContact(input: z.input<typeof dealContactSchema> & 
   const { workspaceId, dealId, contactId, role } = parsed.data;
   const { error } = await ctx.supabase
     .from("deal_contacts")
-    .upsert({ workspace_id: workspaceId, deal_id: dealId, contact_id: contactId, role }, { onConflict: "deal_id,contact_id" });
+    .upsert(
+      { workspace_id: workspaceId, deal_id: dealId, contact_id: contactId, role },
+      { onConflict: "deal_id,contact_id" },
+    );
   if (error) return { ok: false, error: friendlyDbError(error) };
-  await writeAudit(ctx.supabase, { workspaceId, actorId: ctx.user.id, action: "deal.contact_add", entityType: "deal", entityId: dealId, diff: { contact_id: contactId, role } });
+  await writeAudit(ctx.supabase, {
+    workspaceId,
+    actorId: ctx.user.id,
+    action: "deal.contact_add",
+    entityType: "deal",
+    entityId: dealId,
+    diff: { contact_id: contactId, role },
+  });
   revalidateWorkspace();
   return { ok: true, data: undefined };
 }
 
-export async function removeDealContact(input: { workspaceId: string; dealId: string; contactId: string }): Promise<ActionResult> {
-  const parsed = z.object({ workspaceId: z.uuid(), dealId: z.uuid(), contactId: z.uuid() }).safeParse(input);
+export async function removeDealContact(input: {
+  workspaceId: string;
+  dealId: string;
+  contactId: string;
+}): Promise<ActionResult> {
+  const parsed = z
+    .object({ workspaceId: z.uuid(), dealId: z.uuid(), contactId: z.uuid() })
+    .safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { workspaceId, dealId, contactId } = parsed.data;
-  const { error } = await ctx.supabase.from("deal_contacts").delete().eq("workspace_id", workspaceId).eq("deal_id", dealId).eq("contact_id", contactId);
+  const { error } = await ctx.supabase
+    .from("deal_contacts")
+    .delete()
+    .eq("workspace_id", workspaceId)
+    .eq("deal_id", dealId)
+    .eq("contact_id", contactId);
   if (error) return { ok: false, error: friendlyDbError(error) };
-  await writeAudit(ctx.supabase, { workspaceId, actorId: ctx.user.id, action: "deal.contact_remove", entityType: "deal", entityId: dealId, diff: { contact_id: contactId } });
+  await writeAudit(ctx.supabase, {
+    workspaceId,
+    actorId: ctx.user.id,
+    action: "deal.contact_remove",
+    entityType: "deal",
+    entityId: dealId,
+    diff: { contact_id: contactId },
+  });
   revalidateWorkspace();
   return { ok: true, data: undefined };
 }
@@ -185,7 +270,10 @@ export type DealDetail = {
 };
 
 /** Everything the deal drawer shows, loaded on demand. */
-export async function loadDeal(input: { workspaceId: string; dealId: string }): Promise<ActionResult<DealDetail>> {
+export async function loadDeal(input: {
+  workspaceId: string;
+  dealId: string;
+}): Promise<ActionResult<DealDetail>> {
   const parsed = z.object({ workspaceId: z.uuid(), dealId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();
@@ -205,12 +293,16 @@ export async function loadDeal(input: { workspaceId: string; dealId: string }): 
   const [contacts, history, activity, tasks] = await Promise.all([
     ctx.supabase
       .from("deal_contacts")
-      .select("role, contact:contacts!deal_contacts_workspace_id_contact_id_fkey(id, full_name, emails)")
+      .select(
+        "role, contact:contacts!deal_contacts_workspace_id_contact_id_fkey(id, full_name, emails)",
+      )
       .eq("workspace_id", workspaceId)
       .eq("deal_id", dealId),
     ctx.supabase
       .from("deal_stage_history")
-      .select("id, from_stage_name, to_stage_name, changed_at, changer:profiles!deal_stage_history_changed_by_fkey(full_name, email)")
+      .select(
+        "id, from_stage_name, to_stage_name, changed_at, changer:profiles!deal_stage_history_changed_by_fkey(full_name, email)",
+      )
       .eq("workspace_id", workspaceId)
       .eq("deal_id", dealId)
       .order("changed_at", { ascending: false })
@@ -219,7 +311,8 @@ export async function loadDeal(input: { workspaceId: string; dealId: string }): 
     getTasks(workspaceId, { related: [{ type: "deal", id: dealId }] }),
   ]);
 
-  const emailOf = (emails: unknown) => (Array.isArray(emails) ? ((emails[0] as { value?: string })?.value ?? null) : null);
+  const emailOf = (emails: unknown) =>
+    Array.isArray(emails) ? ((emails[0] as { value?: string })?.value ?? null) : null;
   return {
     ok: true,
     data: {
@@ -239,12 +332,23 @@ export async function loadDeal(input: { workspaceId: string; dealId: string }): 
         assignedTo: d.assigned_to,
         closedAt: d.closed_at,
         createdAt: d.created_at,
-        property: d.property ? { id: d.property.id, label: d.property.name ?? d.property.address } : null,
-        primaryContact: d.contact ? { id: d.contact.id, label: d.contact.full_name ?? emailOf(d.contact.emails) ?? "Contact" } : null,
+        property: d.property
+          ? { id: d.property.id, label: d.property.name ?? d.property.address }
+          : null,
+        primaryContact: d.contact
+          ? {
+              id: d.contact.id,
+              label: d.contact.full_name ?? emailOf(d.contact.emails) ?? "Contact",
+            }
+          : null,
       },
       contacts: (contacts.data ?? [])
         .filter((c) => c.contact)
-        .map((c) => ({ id: c.contact!.id, name: c.contact!.full_name ?? emailOf(c.contact!.emails) ?? "Contact", role: c.role })),
+        .map((c) => ({
+          id: c.contact!.id,
+          name: c.contact!.full_name ?? emailOf(c.contact!.emails) ?? "Contact",
+          role: c.role,
+        })),
       history: (history.data ?? []).map((h) => ({
         id: h.id,
         from: h.from_stage_name,

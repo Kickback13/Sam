@@ -39,7 +39,11 @@ export default async function PropertyPage({ params }: PageProps<"/w/[slug]/prop
   const pricePerUnit = p.last_sale_price && p.units ? p.last_sale_price / p.units : null;
 
   const facts: { key: string; label: string; value: string }[] = [
-    { key: "property_type", label: "Type", value: labelFor(PROPERTY_TYPES, p.property_type) || "—" },
+    {
+      key: "property_type",
+      label: "Type",
+      value: labelFor(PROPERTY_TYPES, p.property_type) || "—",
+    },
     { key: "units", label: "Units", value: formatNumber(p.units) },
     { key: "buildings", label: "Buildings", value: formatNumber(p.buildings) },
     { key: "building_sqft", label: "Building sq ft", value: formatNumber(p.building_sqft) },
@@ -57,7 +61,15 @@ export default async function PropertyPage({ params }: PageProps<"/w/[slug]/prop
       <PageHeader
         back={{ href: `/w/${slug}/properties`, label: "Properties" }}
         title={title}
-        description={[p.name ? p.address : null, p.city, p.state, p.zip, p.county ? `${p.county} County` : null].filter(Boolean).join(", ")}
+        description={[
+          p.name ? p.address : null,
+          p.city,
+          p.state,
+          p.zip,
+          p.county ? `${p.county} County` : null,
+        ]
+          .filter(Boolean)
+          .join(", ")}
         actions={
           canWrite && (
             <>
@@ -82,13 +94,17 @@ export default async function PropertyPage({ params }: PageProps<"/w/[slug]/prop
           <Card>
             <CardHeader>
               <CardTitle>Key facts</CardTitle>
-              <p className="text-xs text-muted-foreground">Every value shows where it came from and when.</p>
+              <p className="text-xs text-muted-foreground">
+                Every value shows where it came from and when.
+              </p>
             </CardHeader>
             <CardContent className="pt-2">
               <dl className="grid gap-x-6 sm:grid-cols-2" data-testid="property-facts">
                 {facts.map((f) => (
                   <div key={f.key} className="flex flex-col gap-1 border-b py-2.5">
-                    <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{f.label}</dt>
+                    <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      {f.label}
+                    </dt>
                     <dd className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-semibold tabular">{f.value}</span>
                       {f.value !== "—" && <SourceChip source={sources[f.key]} />}
@@ -97,10 +113,14 @@ export default async function PropertyPage({ params }: PageProps<"/w/[slug]/prop
                 ))}
                 {pricePerUnit !== null && (
                   <div className="flex flex-col gap-1 border-b py-2.5">
-                    <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Last sale / unit</dt>
+                    <dt className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Last sale / unit
+                    </dt>
                     <dd className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-semibold tabular">{formatCurrency(pricePerUnit)}</span>
-                      <span className="text-[11px] text-muted-foreground">Calculated from sale price ÷ units</span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Calculated from sale price ÷ units
+                      </span>
                     </dd>
                   </div>
                 )}
@@ -124,36 +144,58 @@ export default async function PropertyPage({ params }: PageProps<"/w/[slug]/prop
             </CardHeader>
             <CardContent className="space-y-1 pt-2 text-sm">
               {p.owner ? (
-                <Link href={`/w/${slug}/people/${p.owner.id}`} className="block font-semibold hover:underline">
+                <Link
+                  href={`/w/${slug}/people/${p.owner.id}`}
+                  className="block font-semibold hover:underline"
+                >
                   {p.owner.full_name ?? "Owner"}
                 </Link>
               ) : null}
               {p.owner_company ? (
-                <Link href={`/w/${slug}/companies/${p.owner_company.id}`} className="block font-semibold hover:underline">
+                <Link
+                  href={`/w/${slug}/companies/${p.owner_company.id}`}
+                  className="block font-semibold hover:underline"
+                >
                   {p.owner_company.name}
                 </Link>
               ) : null}
-              {!p.owner && !p.owner_company && <p className="text-muted-foreground">No owner linked. County ownership verification arrives in Phase 2.</p>}
+              {!p.owner && !p.owner_company && (
+                <p className="text-muted-foreground">
+                  No owner linked. County ownership verification arrives in Phase 2.
+                </p>
+              )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CircleDot className="size-4" aria-hidden /> {dealNoun(workspace.businessType, true).replace(/^./, (x) => x.toUpperCase())}
+                <CircleDot className="size-4" aria-hidden />{" "}
+                {dealNoun(workspace.businessType, true).replace(/^./, (x) => x.toUpperCase())}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-2">
               {deals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No {dealNoun(workspace.businessType, true)} on this property.</p>
+                <p className="text-sm text-muted-foreground">
+                  No {dealNoun(workspace.businessType, true)} on this property.
+                </p>
               ) : (
                 <ul className="divide-y">
                   {deals.map((d) => (
                     <li key={d.id} className="py-2">
-                      <Link href={`/w/${slug}/pipeline?deal=${d.id}`} className="font-semibold hover:underline">
+                      <Link
+                        href={`/w/${slug}/pipeline?deal=${d.id}`}
+                        className="font-semibold hover:underline"
+                      >
                         {d.title}
                       </Link>
                       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        {d.stage && <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: d.stage.color }} />}
+                        {d.stage && (
+                          <span
+                            aria-hidden
+                            className="size-2 rounded-full"
+                            style={{ backgroundColor: d.stage.color }}
+                          />
+                        )}
                         {d.stage?.name} · {formatCurrency(d.value)}
                       </p>
                     </li>

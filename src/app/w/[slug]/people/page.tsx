@@ -9,7 +9,12 @@ import { ContactsFilters } from "@/components/people/contacts-filters";
 import { ContactsTable } from "@/components/people/contacts-table";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/format";
-import { CONTACTS_PAGE_SIZE, getContactFacets, listContacts, type ContactFilters } from "@/server/queries/contacts";
+import {
+  CONTACTS_PAGE_SIZE,
+  getContactFacets,
+  listContacts,
+  type ContactFilters,
+} from "@/server/queries/contacts";
 import { getWorkspaceContext } from "@/server/workspace";
 
 export const metadata: Metadata = { title: "People" };
@@ -34,12 +39,18 @@ export default async function PeoplePage({ params, searchParams }: PageProps<"/w
     page: Number(str(sp.page) ?? 1) || 1,
   };
 
-  const [{ rows, total }, facets] = await Promise.all([listContacts(workspace.id, filters), getContactFacets(workspace.id)]);
-  const filtered = Boolean(filters.q || filters.role || filters.tag || filters.source || filters.assigned);
+  const [{ rows, total }, facets] = await Promise.all([
+    listContacts(workspace.id, filters),
+    getContactFacets(workspace.id),
+  ]);
+  const filtered = Boolean(
+    filters.q || filters.role || filters.tag || filters.source || filters.assigned,
+  );
 
   const hrefFor = (page: number) => {
     const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ ...filters, page })) if (v !== undefined && v !== "" && !(k === "page" && v === 1)) p.set(k, String(v));
+    for (const [k, v] of Object.entries({ ...filters, page }))
+      if (v !== undefined && v !== "" && !(k === "page" && v === 1)) p.set(k, String(v));
     return `/w/${slug}/people${p.size ? `?${p}` : ""}`;
   };
 
@@ -68,7 +79,11 @@ export default async function PeoplePage({ params, searchParams }: PageProps<"/w
       <ContactsFilters filters={filters} tags={facets.tags} sources={facets.sources} />
       {rows.length === 0 ? (
         filtered ? (
-          <EmptyState icon={Users} title="No contacts match" description="Try a different search or clear the filters." />
+          <EmptyState
+            icon={Users}
+            title="No contacts match"
+            description="Try a different search or clear the filters."
+          />
         ) : (
           <EmptyState
             icon={Users}
@@ -95,7 +110,12 @@ export default async function PeoplePage({ params, searchParams }: PageProps<"/w
       ) : (
         <>
           <ContactsTable rows={rows} />
-          <Pagination page={filters.page ?? 1} pageSize={CONTACTS_PAGE_SIZE} total={total} hrefFor={hrefFor} />
+          <Pagination
+            page={filters.page ?? 1}
+            pageSize={CONTACTS_PAGE_SIZE}
+            total={total}
+            hrefFor={hrefFor}
+          />
         </>
       )}
     </>

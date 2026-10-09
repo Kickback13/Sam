@@ -16,10 +16,18 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between", className)}>
+    <div
+      className={cn(
+        "mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between",
+        className,
+      )}
+    >
       <div className="min-w-0">
         {back && (
-          <Link href={back.href} className="mb-1 inline-block text-sm font-semibold text-brand-accent-text hover:underline">
+          <Link
+            href={back.href}
+            className="mb-1 inline-block text-sm font-semibold text-brand-accent-text hover:underline"
+          >
             ← {back.label}
           </Link>
         )}

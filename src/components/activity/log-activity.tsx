@@ -17,7 +17,13 @@ import { logActivity } from "@/server/actions/activities";
 
 type Kind = "note" | "call" | "meeting";
 
-export function LogActivity({ subjectType, subjectId }: { subjectType: SubjectType; subjectId: string }) {
+export function LogActivity({
+  subjectType,
+  subjectId,
+}: {
+  subjectType: SubjectType;
+  subjectId: string;
+}) {
   const ws = useWorkspace();
   const hydrated = useHydrated();
   const [kind, setKind] = useState<Kind>("note");
@@ -44,14 +50,20 @@ export function LogActivity({ subjectType, subjectId }: { subjectType: SubjectTy
         toast.error(result.fieldErrors?.body?.[0] ?? result.error);
         return;
       }
-      toast.success(kind === "note" ? "Note added" : kind === "call" ? "Call logged" : "Meeting logged");
+      toast.success(
+        kind === "note" ? "Note added" : kind === "call" ? "Call logged" : "Meeting logged",
+      );
       setBody("");
       setDuration("");
     });
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg border bg-background p-3" data-testid="log-activity">
+    <form
+      onSubmit={submit}
+      className="space-y-3 rounded-lg border bg-background p-3"
+      data-testid="log-activity"
+    >
       <div role="tablist" aria-label="Activity type" className="flex gap-1">
         {(["note", "call", "meeting"] as Kind[]).map((k) => (
           <button
@@ -77,14 +89,24 @@ export function LogActivity({ subjectType, subjectId }: { subjectType: SubjectTy
         rows={2}
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder={kind === "note" ? "Write a note…" : kind === "call" ? "What was discussed?" : "Meeting notes…"}
+        placeholder={
+          kind === "note"
+            ? "Write a note…"
+            : kind === "call"
+              ? "What was discussed?"
+              : "Meeting notes…"
+        }
       />
       {kind !== "note" && (
         <div className="grid grid-cols-2 gap-3">
           {kind === "call" && (
             <div className="space-y-1.5">
               <Label htmlFor={`call-outcome-${subjectId}`}>Outcome</Label>
-              <NativeSelect id={`call-outcome-${subjectId}`} value={outcome} onChange={(e) => setOutcome(e.target.value)}>
+              <NativeSelect
+                id={`call-outcome-${subjectId}`}
+                value={outcome}
+                onChange={(e) => setOutcome(e.target.value)}
+              >
                 {CALL_OUTCOMES.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
@@ -105,7 +127,11 @@ export function LogActivity({ subjectType, subjectId }: { subjectType: SubjectTy
         </div>
       )}
       <div className="flex justify-end">
-        <Button type="submit" size="sm" disabled={!hydrated || pending || (kind === "note" && !body.trim())}>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={!hydrated || pending || (kind === "note" && !body.trim())}
+        >
           {pending && <Loader2 className="animate-spin" aria-hidden />}
           {kind === "note" ? "Save note" : kind === "call" ? "Log call" : "Log meeting"}
         </Button>

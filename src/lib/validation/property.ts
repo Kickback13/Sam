@@ -2,7 +2,15 @@ import { z } from "zod";
 
 import { PROPERTY_TYPE_VALUES } from "@/lib/constants";
 
-import { optionalDate, optionalEnum, optionalNumber, optionalText, optionalUuid, requiredText, tagsSchema } from "./common";
+import {
+  optionalDate,
+  optionalEnum,
+  optionalNumber,
+  optionalText,
+  optionalUuid,
+  requiredText,
+  tagsSchema,
+} from "./common";
 
 export const propertyInputSchema = z.object({
   name: optionalText(200),

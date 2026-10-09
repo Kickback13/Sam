@@ -63,7 +63,11 @@ export function planRows(
     } else {
       const fileKey = keys.find((k) => seenInFile.has(k));
       if (fileKey) {
-        plans.set(row.row, { action: "duplicate_in_file", firstRow: seenInFile.get(fileKey)!, via: describe(fileKey) });
+        plans.set(row.row, {
+          action: "duplicate_in_file",
+          firstRow: seenInFile.get(fileKey)!,
+          via: describe(fileKey),
+        });
       } else {
         plans.set(row.row, { action: "create" });
       }
@@ -74,7 +78,10 @@ export function planRows(
 }
 
 /** Merge an incoming contact into an existing one ("update" strategy): non-empty incoming values win, lists union. */
-export function mergeContact<T extends Record<string, unknown>>(existing: T, incoming: Partial<T>): Partial<T> {
+export function mergeContact<T extends Record<string, unknown>>(
+  existing: T,
+  incoming: Partial<T>,
+): Partial<T> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(incoming)) {
     if (value === null || value === undefined || value === "") continue;
@@ -95,7 +102,12 @@ export function mergeContact<T extends Record<string, unknown>>(existing: T, inc
         }
         out[key] = merged;
       } else {
-        out[key] = [...new Set([...(Array.isArray(prev) ? (prev as unknown[]) : []), ...(value as unknown[])])];
+        out[key] = [
+          ...new Set([
+            ...(Array.isArray(prev) ? (prev as unknown[]) : []),
+            ...(value as unknown[]),
+          ]),
+        ];
       }
     } else if (typeof value === "boolean") {
       // Compliance flags only ever tighten on import (never clear an existing DNC/opt-out).
@@ -116,5 +128,7 @@ export function csvCell(value: unknown): string {
 }
 
 export function toCsv(headers: string[], rows: unknown[][]): string {
-  return [headers.map(csvCell).join(","), ...rows.map((r) => r.map(csvCell).join(","))].join("\r\n");
+  return [headers.map(csvCell).join(","), ...rows.map((r) => r.map(csvCell).join(","))].join(
+    "\r\n",
+  );
 }

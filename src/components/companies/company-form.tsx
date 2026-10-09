@@ -63,7 +63,11 @@ export function CompanyForm({ initial }: { initial?: CompanyFormInitial }) {
         setErrors({});
         setFormError(null);
         start(async () => {
-          const result = await saveCompany({ workspaceId: ws.id, companyId: initial?.id, company: { ...v, tags: v.tags.split(/[,;]/) } });
+          const result = await saveCompany({
+            workspaceId: ws.id,
+            companyId: initial?.id,
+            company: { ...v, tags: v.tags.split(/[,;]/) },
+          });
           if (!result.ok) {
             setFormError(result.error);
             setErrors(result.fieldErrors ?? {});
@@ -75,13 +79,21 @@ export function CompanyForm({ initial }: { initial?: CompanyFormInitial }) {
       }}
     >
       {formError && (
-        <p role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p
+          role="alert"
+          className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
+        >
           {formError}
         </p>
       )}
       <FormSection title="Company">
         <Field id="name" label="Name" error={err("name")} required className="sm:col-span-2">
-          <Input id="name" value={v.name} onChange={(e) => set("name", e.target.value)} aria-invalid={Boolean(err("name"))} />
+          <Input
+            id="name"
+            value={v.name}
+            onChange={(e) => set("name", e.target.value)}
+            aria-invalid={Boolean(err("name"))}
+          />
         </Field>
         <Field id="type" label="Type">
           <NativeSelect id="type" value={v.type} onChange={(e) => set("type", e.target.value)}>
@@ -94,13 +106,31 @@ export function CompanyForm({ initial }: { initial?: CompanyFormInitial }) {
           </NativeSelect>
         </Field>
         <Field id="website" label="Website" error={err("website")}>
-          <Input id="website" type="url" inputMode="url" value={v.website} onChange={(e) => set("website", e.target.value)} placeholder="https://" />
+          <Input
+            id="website"
+            type="url"
+            inputMode="url"
+            value={v.website}
+            onChange={(e) => set("website", e.target.value)}
+            placeholder="https://"
+          />
         </Field>
         <Field id="phone" label="Phone">
-          <Input id="phone" type="tel" value={v.phone} onChange={(e) => set("phone", e.target.value)} />
+          <Input
+            id="phone"
+            type="tel"
+            value={v.phone}
+            onChange={(e) => set("phone", e.target.value)}
+          />
         </Field>
         <Field id="email" label="Email" error={err("email")}>
-          <Input id="email" type="email" value={v.email} onChange={(e) => set("email", e.target.value)} aria-invalid={Boolean(err("email"))} />
+          <Input
+            id="email"
+            type="email"
+            value={v.email}
+            onChange={(e) => set("email", e.target.value)}
+            aria-invalid={Boolean(err("email"))}
+          />
         </Field>
       </FormSection>
       <FormSection title="Address">
@@ -124,7 +154,12 @@ export function CompanyForm({ initial }: { initial?: CompanyFormInitial }) {
           <Input id="tags" value={v.tags} onChange={(e) => set("tags", e.target.value)} />
         </Field>
         <Field id="notes" label="Notes" className="sm:col-span-2">
-          <Textarea id="notes" rows={3} value={v.notes} onChange={(e) => set("notes", e.target.value)} />
+          <Textarea
+            id="notes"
+            rows={3}
+            value={v.notes}
+            onChange={(e) => set("notes", e.target.value)}
+          />
         </Field>
       </FormSection>
       <div className="sticky bottom-16 flex justify-end gap-2 border-t bg-card py-3 lg:bottom-0">

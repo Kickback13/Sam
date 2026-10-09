@@ -9,13 +9,19 @@ import { cn } from "@/lib/utils";
 function Command({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
-      className={cn("flex h-full w-full flex-col overflow-hidden rounded-xl bg-popover text-popover-foreground", className)}
+      className={cn(
+        "flex h-full w-full flex-col overflow-hidden rounded-xl bg-popover text-popover-foreground",
+        className,
+      )}
       {...props}
     />
   );
 }
 
-function CommandInput({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Input>) {
+function CommandInput({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div className="flex items-center gap-2 border-b px-3">
       <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -33,17 +39,22 @@ function CommandInput({ className, ...props }: React.ComponentProps<typeof Comma
 function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
-      className={cn("max-h-[min(60dvh,420px)] overflow-y-auto overflow-x-hidden p-1", className)}
+      className={cn("max-h-[min(60dvh,420px)] overflow-x-hidden overflow-y-auto p-1", className)}
       {...props}
     />
   );
 }
 
 function CommandEmpty(props: React.ComponentProps<typeof CommandPrimitive.Empty>) {
-  return <CommandPrimitive.Empty className="py-8 text-center text-sm text-muted-foreground" {...props} />;
+  return (
+    <CommandPrimitive.Empty className="py-8 text-center text-sm text-muted-foreground" {...props} />
+  );
 }
 
-function CommandGroup({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Group>) {
+function CommandGroup({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Group>) {
   return (
     <CommandPrimitive.Group
       className={cn(

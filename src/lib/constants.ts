@@ -19,7 +19,10 @@ export const CONTACT_ROLES = [
   { value: "other", label: "Other" },
 ] as const;
 export type ContactRole = (typeof CONTACT_ROLES)[number]["value"];
-export const CONTACT_ROLE_VALUES = CONTACT_ROLES.map((r) => r.value) as [ContactRole, ...ContactRole[]];
+export const CONTACT_ROLE_VALUES = CONTACT_ROLES.map((r) => r.value) as [
+  ContactRole,
+  ...ContactRole[],
+];
 
 export const COMPANY_TYPES = [
   { value: "brokerage", label: "Brokerage" },
@@ -35,7 +38,10 @@ export const COMPANY_TYPES = [
   { value: "other", label: "Other" },
 ] as const;
 export type CompanyType = (typeof COMPANY_TYPES)[number]["value"];
-export const COMPANY_TYPE_VALUES = COMPANY_TYPES.map((r) => r.value) as [CompanyType, ...CompanyType[]];
+export const COMPANY_TYPE_VALUES = COMPANY_TYPES.map((r) => r.value) as [
+  CompanyType,
+  ...CompanyType[],
+];
 
 export const PROPERTY_TYPES = [
   { value: "multifamily", label: "Multifamily" },
@@ -48,7 +54,10 @@ export const PROPERTY_TYPES = [
   { value: "other", label: "Other" },
 ] as const;
 export type PropertyType = (typeof PROPERTY_TYPES)[number]["value"];
-export const PROPERTY_TYPE_VALUES = PROPERTY_TYPES.map((r) => r.value) as [PropertyType, ...PropertyType[]];
+export const PROPERTY_TYPE_VALUES = PROPERTY_TYPES.map((r) => r.value) as [
+  PropertyType,
+  ...PropertyType[],
+];
 
 export const SMS_CONSENT_LABELS = {
   none: "No SMS consent",

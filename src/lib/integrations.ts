@@ -1,13 +1,7 @@
 import type { BusinessType } from "@/lib/nav";
 
 export type IntegrationProvider =
-  | "gohighlevel"
-  | "google"
-  | "twilio"
-  | "elevenlabs"
-  | "resend"
-  | "data_api"
-  | "mapbox";
+  "gohighlevel" | "google" | "twilio" | "elevenlabs" | "resend" | "data_api" | "mapbox";
 
 export type IntegrationInfo = {
   provider: IntegrationProvider;
@@ -21,7 +15,8 @@ export const INTEGRATIONS: IntegrationInfo[] = [
   {
     provider: "gohighlevel",
     name: "GoHighLevel",
-    purpose: "Two-way sync of contacts, opportunities and conversations, plus the LC Phone texting number.",
+    purpose:
+      "Two-way sync of contacts, opportunities and conversations, plus the LC Phone texting number.",
     phase: 5,
   },
   {
@@ -39,7 +34,8 @@ export const INTEGRATIONS: IntegrationInfo[] = [
   {
     provider: "data_api",
     name: "Property data API",
-    purpose: "Licensed ownership, mortgage, foreclosure and tax data (ATTOM, RentCast or PropertyRadar — decided in Phase 3).",
+    purpose:
+      "Licensed ownership, mortgage, foreclosure and tax data (ATTOM, RentCast or PropertyRadar — decided in Phase 3).",
     phase: 3,
   },
   {
@@ -64,5 +60,7 @@ export const INTEGRATIONS: IntegrationInfo[] = [
 
 export function plannedOwner(businessType: BusinessType, isDemo: boolean): string {
   if (isDemo) return "Not connected in the Demo workspace";
-  return businessType === "construction" ? "Sam's AZH Builders account" : "Sam's Housing4All account";
+  return businessType === "construction"
+    ? "Sam's AZH Builders account"
+    : "Sam's Housing4All account";
 }

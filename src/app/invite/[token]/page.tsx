@@ -31,7 +31,9 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
     const status = invite?.status ?? "not_found";
     return (
       <AuthFrame title="Invitation" subtitle={invite?.workspace_name ?? undefined}>
-        <p className="text-sm text-muted-foreground">{STATUS_COPY[status] ?? STATUS_COPY.not_found}</p>
+        <p className="text-sm text-muted-foreground">
+          {STATUS_COPY[status] ?? STATUS_COPY.not_found}
+        </p>
         {status === "accepted" && user && invite?.workspace_slug && (
           <Button asChild className="mt-4 w-full">
             <Link href={`/w/${invite.workspace_slug}/today`}>Open {invite.workspace_name}</Link>

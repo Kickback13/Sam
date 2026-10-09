@@ -21,7 +21,12 @@ import type { FieldErrors } from "@/lib/validation/common";
 import { createContact, updateContact, type DuplicateMatch } from "@/server/actions/contacts";
 
 type EmailRow = { value: string; label: string; is_primary: boolean };
-type PhoneRow = { value: string; label: string; type: "mobile" | "landline" | "unknown"; is_primary: boolean };
+type PhoneRow = {
+  value: string;
+  label: string;
+  type: "mobile" | "landline" | "unknown";
+  is_primary: boolean;
+};
 
 export type ContactFormInitial = {
   id?: string;
@@ -47,7 +52,16 @@ export type ContactFormInitial = {
   notes?: string | null;
 };
 
-const SOURCES = ["Referral", "GHL import", "Website", "Broker call", "Direct mail", "Cold call", "Event", "Sign call"];
+const SOURCES = [
+  "Referral",
+  "GHL import",
+  "Website",
+  "Broker call",
+  "Direct mail",
+  "Cold call",
+  "Event",
+  "Sign call",
+];
 
 export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
   const ws = useWorkspace();
@@ -79,12 +93,17 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
     notes: initial?.notes ?? "",
   });
   const [company, setCompany] = useState<PickedEntity | null>(initial?.company ?? null);
-  const [emails, setEmails] = useState<EmailRow[]>(initial?.emails?.length ? initial.emails : [{ value: "", label: "work", is_primary: true }]);
+  const [emails, setEmails] = useState<EmailRow[]>(
+    initial?.emails?.length ? initial.emails : [{ value: "", label: "work", is_primary: true }],
+  );
   const [phones, setPhones] = useState<PhoneRow[]>(
-    initial?.phones?.length ? initial.phones : [{ value: "", label: "mobile", type: "mobile", is_primary: true }],
+    initial?.phones?.length
+      ? initial.phones
+      : [{ value: "", label: "mobile", type: "mobile", is_primary: true }],
   );
 
-  const set = <K extends keyof typeof v>(key: K, value: (typeof v)[K]) => setV((s) => ({ ...s, [key]: value }));
+  const set = <K extends keyof typeof v>(key: K, value: (typeof v)[K]) =>
+    setV((s) => ({ ...s, [key]: value }));
   const err = (key: string) => errors[key]?.[0];
 
   function submit(allowDuplicate = false) {
@@ -126,13 +145,21 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
       noValidate
     >
       {formError && (
-        <p role="alert" className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+        <p
+          role="alert"
+          className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
+        >
           {formError}
         </p>
       )}
       {duplicates.length > 0 && (
-        <div role="alert" className="mt-4 space-y-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950">
-          <p className="font-semibold">Possible duplicate — a contact with this email or phone already exists:</p>
+        <div
+          role="alert"
+          className="mt-4 space-y-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950"
+        >
+          <p className="font-semibold">
+            Possible duplicate — a contact with this email or phone already exists:
+          </p>
           <ul className="list-inside list-disc">
             {duplicates.map((d) => (
               <li key={d.id}>
@@ -142,7 +169,13 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
               </li>
             ))}
           </ul>
-          <Button type="button" size="sm" variant="outline" onClick={() => submit(true)} disabled={pending}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => submit(true)}
+            disabled={pending}
+          >
             Create anyway
           </Button>
         </div>
@@ -150,16 +183,38 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
 
       <FormSection title="Person" description="Name, company and what they are to you.">
         <Field id="first_name" label="First name" error={err("first_name")}>
-          <Input id="first_name" value={v.first_name} onChange={(e) => set("first_name", e.target.value)} autoComplete="off" aria-invalid={Boolean(err("first_name"))} />
+          <Input
+            id="first_name"
+            value={v.first_name}
+            onChange={(e) => set("first_name", e.target.value)}
+            autoComplete="off"
+            aria-invalid={Boolean(err("first_name"))}
+          />
         </Field>
         <Field id="last_name" label="Last name" error={err("last_name")}>
-          <Input id="last_name" value={v.last_name} onChange={(e) => set("last_name", e.target.value)} autoComplete="off" />
+          <Input
+            id="last_name"
+            value={v.last_name}
+            onChange={(e) => set("last_name", e.target.value)}
+            autoComplete="off"
+          />
         </Field>
         <Field id="title" label="Title" error={err("title")}>
-          <Input id="title" value={v.title} onChange={(e) => set("title", e.target.value)} placeholder="Owner, Broker, Property manager…" />
+          <Input
+            id="title"
+            value={v.title}
+            onChange={(e) => set("title", e.target.value)}
+            placeholder="Owner, Broker, Property manager…"
+          />
         </Field>
         <Field id="company" label="Company">
-          <EntityPicker id="company" entityType="company" value={company} onChange={setCompany} placeholder="Search companies…" />
+          <EntityPicker
+            id="company"
+            entityType="company"
+            value={company}
+            onChange={setCompany}
+            placeholder="Search companies…"
+          />
         </Field>
         <div className="sm:col-span-2">
           <p className="mb-1.5 text-sm font-semibold" id="roles-label">
@@ -173,10 +228,14 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
                   key={r.value}
                   type="button"
                   aria-pressed={on}
-                  onClick={() => set("roles", on ? v.roles.filter((x) => x !== r.value) : [...v.roles, r.value])}
+                  onClick={() =>
+                    set("roles", on ? v.roles.filter((x) => x !== r.value) : [...v.roles, r.value])
+                  }
                   className={cn(
                     "rounded-full border px-3 py-1 text-sm font-medium",
-                    on ? "border-brand-ink bg-brand-ink text-white" : "border-input hover:bg-accent",
+                    on
+                      ? "border-brand-ink bg-brand-ink text-white"
+                      : "border-input hover:bg-accent",
                   )}
                 >
                   {r.label}
@@ -187,7 +246,10 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
         </div>
       </FormSection>
 
-      <FormSection title="Email & phone" description="Used to find duplicates. Mark one of each as primary.">
+      <FormSection
+        title="Email & phone"
+        description="Used to find duplicates. Mark one of each as primary."
+      >
         <div className="space-y-2 sm:col-span-2">
           {emails.map((e, i) => (
             <div key={i} className="flex gap-2">
@@ -196,22 +258,48 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
                 type="email"
                 inputMode="email"
                 value={e.value}
-                onChange={(ev) => setEmails(emails.map((x, j) => (j === i ? { ...x, value: ev.target.value } : x)))}
+                onChange={(ev) =>
+                  setEmails(emails.map((x, j) => (j === i ? { ...x, value: ev.target.value } : x)))
+                }
                 placeholder="name@company.com"
                 aria-invalid={Boolean(err(`emails.${i}.value`))}
               />
-              <Button type="button" variant={e.is_primary ? "secondary" : "ghost"} size="icon" aria-label={e.is_primary ? "Primary email" : "Make primary"} aria-pressed={e.is_primary} onClick={() => setEmails(emails.map((x, j) => ({ ...x, is_primary: j === i })))}>
+              <Button
+                type="button"
+                variant={e.is_primary ? "secondary" : "ghost"}
+                size="icon"
+                aria-label={e.is_primary ? "Primary email" : "Make primary"}
+                aria-pressed={e.is_primary}
+                onClick={() => setEmails(emails.map((x, j) => ({ ...x, is_primary: j === i })))}
+              >
                 <Star className={cn(e.is_primary && "fill-current")} aria-hidden />
               </Button>
-              <Button type="button" variant="ghost" size="icon" aria-label={`Remove email ${i + 1}`} onClick={() => setEmails(emails.filter((_, j) => j !== i))}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Remove email ${i + 1}`}
+                onClick={() => setEmails(emails.filter((_, j) => j !== i))}
+              >
                 <Trash2 aria-hidden />
               </Button>
             </div>
           ))}
-          {Object.entries(errors).filter(([k]) => k.startsWith("emails.")).map(([k, m]) => (
-            <p key={k} role="alert" className="text-xs font-medium text-brand-danger">{m?.[0]}</p>
-          ))}
-          <Button type="button" variant="ghost" size="sm" onClick={() => setEmails([...emails, { value: "", label: "other", is_primary: emails.length === 0 }])}>
+          {Object.entries(errors)
+            .filter(([k]) => k.startsWith("emails."))
+            .map(([k, m]) => (
+              <p key={k} role="alert" className="text-xs font-medium text-brand-danger">
+                {m?.[0]}
+              </p>
+            ))}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              setEmails([...emails, { value: "", label: "other", is_primary: emails.length === 0 }])
+            }
+          >
             <Plus aria-hidden /> Add email
           </Button>
         </div>
@@ -223,7 +311,9 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
                 type="tel"
                 inputMode="tel"
                 value={p.value}
-                onChange={(ev) => setPhones(phones.map((x, j) => (j === i ? { ...x, value: ev.target.value } : x)))}
+                onChange={(ev) =>
+                  setPhones(phones.map((x, j) => (j === i ? { ...x, value: ev.target.value } : x)))
+                }
                 placeholder="(619) 555-0100"
                 aria-invalid={Boolean(err(`phones.${i}.value`))}
               />
@@ -231,24 +321,57 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
                 aria-label={`Phone ${i + 1} type`}
                 className="w-32"
                 value={p.type}
-                onChange={(ev) => setPhones(phones.map((x, j) => (j === i ? { ...x, type: ev.target.value as PhoneRow["type"] } : x)))}
+                onChange={(ev) =>
+                  setPhones(
+                    phones.map((x, j) =>
+                      j === i ? { ...x, type: ev.target.value as PhoneRow["type"] } : x,
+                    ),
+                  )
+                }
               >
                 <option value="mobile">Mobile</option>
                 <option value="landline">Landline</option>
                 <option value="unknown">Unknown</option>
               </NativeSelect>
-              <Button type="button" variant={p.is_primary ? "secondary" : "ghost"} size="icon" aria-label={p.is_primary ? "Primary phone" : "Make primary"} aria-pressed={p.is_primary} onClick={() => setPhones(phones.map((x, j) => ({ ...x, is_primary: j === i })))}>
+              <Button
+                type="button"
+                variant={p.is_primary ? "secondary" : "ghost"}
+                size="icon"
+                aria-label={p.is_primary ? "Primary phone" : "Make primary"}
+                aria-pressed={p.is_primary}
+                onClick={() => setPhones(phones.map((x, j) => ({ ...x, is_primary: j === i })))}
+              >
                 <Star className={cn(p.is_primary && "fill-current")} aria-hidden />
               </Button>
-              <Button type="button" variant="ghost" size="icon" aria-label={`Remove phone ${i + 1}`} onClick={() => setPhones(phones.filter((_, j) => j !== i))}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={`Remove phone ${i + 1}`}
+                onClick={() => setPhones(phones.filter((_, j) => j !== i))}
+              >
                 <Trash2 aria-hidden />
               </Button>
             </div>
           ))}
-          {Object.entries(errors).filter(([k]) => k.startsWith("phones.")).map(([k, m]) => (
-            <p key={k} role="alert" className="text-xs font-medium text-brand-danger">{m?.[0]}</p>
-          ))}
-          <Button type="button" variant="ghost" size="sm" onClick={() => setPhones([...phones, { value: "", label: "other", type: "unknown", is_primary: phones.length === 0 }])}>
+          {Object.entries(errors)
+            .filter(([k]) => k.startsWith("phones."))
+            .map(([k, m]) => (
+              <p key={k} role="alert" className="text-xs font-medium text-brand-danger">
+                {m?.[0]}
+              </p>
+            ))}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              setPhones([
+                ...phones,
+                { value: "", label: "other", type: "unknown", is_primary: phones.length === 0 },
+              ])
+            }
+          >
             <Plus aria-hidden /> Add phone
           </Button>
         </div>
@@ -256,7 +379,12 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
 
       <FormSection title="Address">
         <Field id="address" label="Street" className="sm:col-span-2">
-          <Input id="address" value={v.address} onChange={(e) => set("address", e.target.value)} autoComplete="off" />
+          <Input
+            id="address"
+            value={v.address}
+            onChange={(e) => set("address", e.target.value)}
+            autoComplete="off"
+          />
         </Field>
         <Field id="city" label="City">
           <Input id="city" value={v.city} onChange={(e) => set("city", e.target.value)} />
@@ -266,14 +394,24 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
             <Input id="state" value={v.state} onChange={(e) => set("state", e.target.value)} />
           </Field>
           <Field id="zip" label="ZIP">
-            <Input id="zip" inputMode="numeric" value={v.zip} onChange={(e) => set("zip", e.target.value)} />
+            <Input
+              id="zip"
+              inputMode="numeric"
+              value={v.zip}
+              onChange={(e) => set("zip", e.target.value)}
+            />
           </Field>
         </div>
       </FormSection>
 
       <FormSection title="Organize">
         <Field id="source" label="Source" help="Where this contact came from.">
-          <Input id="source" list="source-options" value={v.source} onChange={(e) => set("source", e.target.value)} />
+          <Input
+            id="source"
+            list="source-options"
+            value={v.source}
+            onChange={(e) => set("source", e.target.value)}
+          />
           <datalist id="source-options">
             {SOURCES.map((s) => (
               <option key={s} value={s} />
@@ -284,7 +422,11 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
           <Input id="tags" value={v.tags} onChange={(e) => set("tags", e.target.value)} />
         </Field>
         <Field id="assigned_to" label="Assigned to">
-          <NativeSelect id="assigned_to" value={v.assigned_to} onChange={(e) => set("assigned_to", e.target.value)}>
+          <NativeSelect
+            id="assigned_to"
+            value={v.assigned_to}
+            onChange={(e) => set("assigned_to", e.target.value)}
+          >
             <option value="">Unassigned</option>
             {ws.members.map((m) => (
               <option key={m.id} value={m.id}>
@@ -294,29 +436,51 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
           </NativeSelect>
         </Field>
         <Field id="language" label="Preferred language">
-          <NativeSelect id="language" value={v.language} onChange={(e) => set("language", e.target.value as "en" | "es")}>
+          <NativeSelect
+            id="language"
+            value={v.language}
+            onChange={(e) => set("language", e.target.value as "en" | "es")}
+          >
             <option value="en">English</option>
             <option value="es">Spanish</option>
           </NativeSelect>
         </Field>
       </FormSection>
 
-      <FormSection title="Compliance" description="Outreach (Phase 4) is blocked unless these allow it. Record consent evidence for TCPA.">
+      <FormSection
+        title="Compliance"
+        description="Outreach (Phase 4) is blocked unless these allow it. Record consent evidence for TCPA."
+      >
         <label className="flex items-start gap-3 sm:col-span-2">
-          <Checkbox checked={v.dnc} onCheckedChange={(c) => set("dnc", c === true)} aria-describedby="dnc-help" />
+          <Checkbox
+            checked={v.dnc}
+            onCheckedChange={(c) => set("dnc", c === true)}
+            aria-describedby="dnc-help"
+          />
           <span>
             <span className="text-sm font-semibold">Do not contact (DNC)</span>
-            <span id="dnc-help" className="block text-xs text-muted-foreground">Blocks all calls, texts and emails.</span>
+            <span id="dnc-help" className="block text-xs text-muted-foreground">
+              Blocks all calls, texts and emails.
+            </span>
           </span>
         </label>
         <Field id="sms_consent" label="SMS consent (TCPA)">
-          <NativeSelect id="sms_consent" value={v.sms_consent} onChange={(e) => set("sms_consent", e.target.value as typeof v.sms_consent)}>
+          <NativeSelect
+            id="sms_consent"
+            value={v.sms_consent}
+            onChange={(e) => set("sms_consent", e.target.value as typeof v.sms_consent)}
+          >
             <option value="none">None — texting blocked</option>
             <option value="express">Express consent</option>
             <option value="written">Written consent</option>
           </NativeSelect>
         </Field>
-        <Field id="sms_consent_source" label="How consent was given" error={err("sms_consent_source")} required={v.sms_consent !== "none"}>
+        <Field
+          id="sms_consent_source"
+          label="How consent was given"
+          error={err("sms_consent_source")}
+          required={v.sms_consent !== "none"}
+        >
           <Input
             id="sms_consent_source"
             value={v.sms_consent_source}
@@ -327,7 +491,10 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
           />
         </Field>
         <label className="flex items-start gap-3 sm:col-span-2">
-          <Checkbox checked={v.email_opt_out} onCheckedChange={(c) => set("email_opt_out", c === true)} />
+          <Checkbox
+            checked={v.email_opt_out}
+            onCheckedChange={(c) => set("email_opt_out", c === true)}
+          />
           <span>
             <span className="text-sm font-semibold">Unsubscribed from email (CAN-SPAM)</span>
           </span>
@@ -336,7 +503,12 @@ export function ContactForm({ initial }: { initial?: ContactFormInitial }) {
 
       <FormSection title="Notes">
         <Field id="notes" label="Notes" className="sm:col-span-2">
-          <Textarea id="notes" rows={4} value={v.notes} onChange={(e) => set("notes", e.target.value)} />
+          <Textarea
+            id="notes"
+            rows={4}
+            value={v.notes}
+            onChange={(e) => set("notes", e.target.value)}
+          />
         </Field>
       </FormSection>
 

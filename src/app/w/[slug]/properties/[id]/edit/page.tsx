@@ -8,9 +8,12 @@ import { getWorkspaceContext } from "@/server/workspace";
 
 export const metadata: Metadata = { title: "Edit property" };
 
-const s = (v: string | number | null | undefined) => (v === null || v === undefined ? "" : String(v));
+const s = (v: string | number | null | undefined) =>
+  v === null || v === undefined ? "" : String(v);
 
-export default async function EditPropertyPage({ params }: PageProps<"/w/[slug]/properties/[id]/edit">) {
+export default async function EditPropertyPage({
+  params,
+}: PageProps<"/w/[slug]/properties/[id]/edit">) {
   const { slug, id } = await params;
   const { workspace, canWrite } = await getWorkspaceContext(slug);
   if (!canWrite) redirect(`/w/${slug}/properties/${id}`);
@@ -18,7 +21,10 @@ export default async function EditPropertyPage({ params }: PageProps<"/w/[slug]/
   if (!p || p.deleted_at) notFound();
   return (
     <div className="mx-auto max-w-4xl">
-      <PageHeader title={`Edit ${p.name ?? p.address}`} back={{ href: `/w/${slug}/properties/${id}`, label: "Back to property" }} />
+      <PageHeader
+        title={`Edit ${p.name ?? p.address}`}
+        back={{ href: `/w/${slug}/properties/${id}`, label: "Back to property" }}
+      />
       <PropertyForm
         initial={{
           id: p.id,
@@ -45,7 +51,9 @@ export default async function EditPropertyPage({ params }: PageProps<"/w/[slug]/
           notes: s(p.notes),
           tags: p.tags,
           owner: p.owner ? { id: p.owner.id, label: p.owner.full_name ?? "Owner" } : null,
-          ownerCompany: p.owner_company ? { id: p.owner_company.id, label: p.owner_company.name } : null,
+          ownerCompany: p.owner_company
+            ? { id: p.owner_company.id, label: p.owner_company.name }
+            : null,
         }}
       />
     </div>

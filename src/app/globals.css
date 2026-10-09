@@ -39,8 +39,10 @@
   --color-brand-ink: var(--brand-ink);
   --color-brand-surface: var(--brand-surface);
 
-  --font-sans: var(--brand-font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--brand-font-display), var(--brand-font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    var(--brand-font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display:
+    var(--brand-font-display), var(--brand-font-body), ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -94,7 +96,7 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background font-sans text-foreground antialiased;
   }
   h1,
   h2,

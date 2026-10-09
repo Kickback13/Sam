@@ -2,7 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { useWorkspace } from "@/components/shell/workspace-provider";
@@ -25,15 +25,20 @@ export function TaskList({
   emptyText?: string;
 }) {
   const ws = useWorkspace();
-  const [optimistic, setOptimistic] = useOptimistic(tasks, (state, update: { id: string; status: TaskItem["status"] | "deleted" }) =>
-    update.status === "deleted"
-      ? state.filter((t) => t.id !== update.id)
-      : state.map((t) => (t.id === update.id ? { ...t, status: update.status as TaskItem["status"] } : t)),
+  const [optimistic, setOptimistic] = useOptimistic(
+    tasks,
+    (state, update: { id: string; status: TaskItem["status"] | "deleted" }) =>
+      update.status === "deleted"
+        ? state.filter((t) => t.id !== update.id)
+        : state.map((t) =>
+            t.id === update.id ? { ...t, status: update.status as TaskItem["status"] } : t,
+          ),
   );
   const [, startTransition] = useTransition();
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
-  if (optimistic.length === 0) return <p className="py-3 text-sm text-muted-foreground">{emptyText}</p>;
+  if (optimistic.length === 0)
+    return <p className="py-3 text-sm text-muted-foreground">{emptyText}</p>;
 
   return (
     <ul className="divide-y" data-testid="task-list">
@@ -51,23 +56,37 @@ export function TaskList({
                 const status = checked ? "done" : "open";
                 startTransition(async () => {
                   setOptimistic({ id: task.id, status });
-                  const result = await setTaskStatus({ workspaceId: ws.id, taskId: task.id, status });
+                  const result = await setTaskStatus({
+                    workspaceId: ws.id,
+                    taskId: task.id,
+                    status,
+                  });
                   if (!result.ok) toast.error(result.error);
                   else if (status === "done") toast.success("Task completed");
                 });
               }}
             />
             <div className="min-w-0 flex-1">
-              <p className={cn("text-sm font-medium", done && "text-muted-foreground line-through")}>{task.title}</p>
+              <p
+                className={cn("text-sm font-medium", done && "text-muted-foreground line-through")}
+              >
+                {task.title}
+              </p>
               <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                 {task.dueAt && (
-                  <span className={cn(overdue && "font-semibold text-brand-danger")} title={formatDateTime(task.dueAt)}>
+                  <span
+                    className={cn(overdue && "font-semibold text-brand-danger")}
+                    title={formatDateTime(task.dueAt)}
+                  >
                     {overdue ? "Overdue · " : "Due "}
                     {formatRelative(task.dueAt)}
                   </span>
                 )}
                 {showRelated && task.related && (
-                  <Link href={`/w/${ws.slug}/${task.related.path}`} className="truncate font-medium text-brand-accent-text hover:underline">
+                  <Link
+                    href={`/w/${ws.slug}/${task.related.path}`}
+                    className="truncate font-medium text-brand-accent-text hover:underline"
+                  >
                     {task.related.name}
                   </Link>
                 )}

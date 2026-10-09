@@ -4,7 +4,14 @@ import { Building, Building2, CircleDot, Loader2, Plus, Search, Upload, User } f
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { dealNoun, navFor } from "@/lib/nav";
 import { searchWorkspace, type SearchHit } from "@/server/actions/workspace";
@@ -32,7 +39,13 @@ export function hitHref(slug: string, hit: Pick<SearchHit, "entityType" | "id">)
   }
 }
 
-export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function CommandMenu({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const ws = useWorkspace();
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -51,15 +64,19 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onOpenChange]);
 
+  const searching = query.trim().length >= 2;
+  const shownHits = searching ? hits : [];
+  const shownLoading = searching && loading;
+
+  function onQueryChange(next: string) {
+    setQuery(next);
+    if (next.trim().length >= 2) setLoading(true);
+  }
+
   useEffect(() => {
     const q = query.trim();
     const id = ++requestId.current;
-    if (q.length < 2) {
-      setHits([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
+    if (q.length < 2) return;
     const timer = setTimeout(async () => {
       const result = await searchWorkspace(ws.id, q);
       if (id !== requestId.current) return;
@@ -76,32 +93,35 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
   }
 
   const grouped = (Object.keys(ENTITY_META) as SearchHit["entityType"][])
-    .map((type) => ({ type, items: hits.filter((h) => h.entityType === type) }))
+    .map((type) => ({ type, items: shownHits.filter((h) => h.entityType === type) }))
     .filter((g) => g.items.length > 0);
 
   const deal = dealNoun(ws.businessType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent hideClose className="top-[12%] max-w-xl translate-y-0 gap-0 overflow-hidden p-0">
+      <DialogContent
+        hideClose
+        className="top-[12%] max-w-xl translate-y-0 gap-0 overflow-hidden p-0"
+      >
         <DialogTitle className="sr-only">Search {ws.name}</DialogTitle>
         <Command shouldFilter={false} label={`Search ${ws.name}`}>
           <CommandInput
             value={query}
-            onValueChange={setQuery}
+            onValueChange={onQueryChange}
             placeholder="Search people, companies, properties, deals…"
             data-testid="command-input"
           />
           <CommandList>
-            {query.trim().length >= 2 && !loading && grouped.length === 0 && (
+            {searching && !shownLoading && grouped.length === 0 && (
               <CommandEmpty>No matches in {ws.name}.</CommandEmpty>
             )}
-            {loading && (
+            {shownLoading && (
               <div className="flex items-center gap-2 px-3 py-6 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" aria-hidden /> Searching…
               </div>
             )}
-            {!loading &&
+            {!shownLoading &&
               grouped.map(({ type, items }) => {
                 const Icon = ENTITY_META[type].icon;
                 return (
@@ -117,7 +137,9 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-medium">{hit.title}</span>
                           {hit.subtitle && (
-                            <span className="block truncate text-xs text-muted-foreground">{hit.subtitle}</span>
+                            <span className="block truncate text-xs text-muted-foreground">
+                              {hit.subtitle}
+                            </span>
                           )}
                         </span>
                       </CommandItem>
@@ -125,7 +147,7 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
                   </CommandGroup>
                 );
               })}
-            {query.trim().length < 2 && (
+            {!searching && (
               <>
                 {ws.canWrite && (
                   <CommandGroup heading="Create">
@@ -149,7 +171,10 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
                     .map((item) => {
                       const Icon = NAV_ICONS[item.icon];
                       return (
-                        <CommandItem key={item.key} onSelect={() => go(`/w/${ws.slug}/${item.path}`)}>
+                        <CommandItem
+                          key={item.key}
+                          onSelect={() => go(`/w/${ws.slug}/${item.path}`)}
+                        >
                           <Icon aria-hidden /> {item.label}
                         </CommandItem>
                       );

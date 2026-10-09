@@ -14,15 +14,26 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Loader2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { useWorkspace } from "@/components/shell/workspace-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,7 +52,8 @@ type Columns = Record<string, BoardDeal[]>;
 
 function group(stages: Stage[], deals: BoardDeal[]): Columns {
   const cols: Columns = Object.fromEntries(stages.map((s) => [s.id, [] as BoardDeal[]]));
-  for (const d of [...deals].sort((a, b) => a.position - b.position)) (cols[d.stageId] ??= []).push(d);
+  for (const d of [...deals].sort((a, b) => a.position - b.position))
+    (cols[d.stageId] ??= []).push(d);
   return cols;
 }
 
@@ -66,24 +78,39 @@ function Column({
   return (
     <section
       aria-label={`${stage.name}: ${deals.length} deals`}
-      className={cn("flex w-72 shrink-0 flex-col rounded-xl border bg-muted/50", isOver && "ring-2 ring-brand-accent")}
+      className={cn(
+        "flex w-72 shrink-0 flex-col rounded-xl border bg-muted/50",
+        isOver && "ring-2 ring-brand-accent",
+      )}
       data-testid="stage-column"
       data-stage-name={stage.name}
     >
       <header className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
         <h2 className="flex min-w-0 items-center gap-2 font-sans text-sm font-bold">
-          <span aria-hidden className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: stage.color }} />
+          <span
+            aria-hidden
+            className="size-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: stage.color }}
+          />
           <span className="truncate">{stage.name}</span>
-          <span className="rounded-full bg-background px-1.5 text-xs font-semibold text-muted-foreground tabular">{deals.length}</span>
+          <span className="rounded-full bg-background px-1.5 text-xs font-semibold text-muted-foreground tabular">
+            {deals.length}
+          </span>
         </h2>
-        <span className="shrink-0 text-xs font-semibold text-muted-foreground tabular">{formatCurrency(total, { compact: true })}</span>
+        <span className="shrink-0 text-xs font-semibold text-muted-foreground tabular">
+          {formatCurrency(total, { compact: true })}
+        </span>
       </header>
       <SortableContext items={deals.map((d) => d.id)} strategy={verticalListSortingStrategy}>
         <ul ref={setNodeRef} className="flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto p-2">
           {deals.map((d) => (
             <SortableDealCard key={d.id} deal={d} onOpen={onOpen} disabled={disabled} />
           ))}
-          {deals.length === 0 && <li className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">Drop here</li>}
+          {deals.length === 0 && (
+            <li className="rounded-lg border border-dashed px-3 py-6 text-center text-xs text-muted-foreground">
+              Drop here
+            </li>
+          )}
         </ul>
       </SortableContext>
     </section>
@@ -106,20 +133,39 @@ export function PipelineView({
   const [cols, setCols] = useState<Columns>(() => group(pipeline.stages, deals));
   const [activeId, setActiveId] = useState<string | null>(null);
   const [dragOrigin, setDragOrigin] = useState<Columns | null>(null);
-  const [pendingLost, setPendingLost] = useState<{ dealId: string; stageId: string; position: number; revert: Columns } | null>(null);
+  const [pendingLost, setPendingLost] = useState<{
+    dealId: string;
+    stageId: string;
+    position: number;
+    revert: Columns;
+  } | null>(null);
   const [lostReason, setLostReason] = useState("");
   const [mobileStage, setMobileStage] = useState(
-    () => pipeline.stages.find((s) => deals.some((d) => d.stageId === s.id))?.id ?? pipeline.stages[0]?.id ?? "",
+    () =>
+      pipeline.stages.find((s) => deals.some((d) => d.stageId === s.id))?.id ??
+      pipeline.stages[0]?.id ??
+      "",
   );
   const [saving, startSaving] = useTransition();
 
   // Server data wins after every refresh (revalidation after a move/edit).
-  useEffect(() => setCols(group(pipeline.stages, deals)), [pipeline.stages, deals]);
+  const [synced, setSynced] = useState({ stages: pipeline.stages, deals });
+  if (synced.deals !== deals || synced.stages !== pipeline.stages) {
+    setSynced({ stages: pipeline.stages, deals });
+    setCols(group(pipeline.stages, deals));
+  }
 
   const openDealId = searchParams.get("deal");
   const showNew = searchParams.get("new") === "1";
-  const stageById = useMemo(() => new Map(pipeline.stages.map((s) => [s.id, s])), [pipeline.stages]);
-  const activeDeal = activeId ? Object.values(cols).flat().find((d) => d.id === activeId) : undefined;
+  const stageById = useMemo(
+    () => new Map(pipeline.stages.map((s) => [s.id, s])),
+    [pipeline.stages],
+  );
+  const activeDeal = activeId
+    ? Object.values(cols)
+        .flat()
+        .find((d) => d.id === activeId)
+    : undefined;
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -134,9 +180,21 @@ export function PipelineView({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  function persist(dealId: string, stageId: string, position: number, revert: Columns, lost?: string) {
+  function persist(
+    dealId: string,
+    stageId: string,
+    position: number,
+    revert: Columns,
+    lost?: string,
+  ) {
     startSaving(async () => {
-      const result = await moveDeal({ workspaceId: ws.id, dealId, stageId, position, lostReason: lost ?? null });
+      const result = await moveDeal({
+        workspaceId: ws.id,
+        dealId,
+        stageId,
+        position,
+        lostReason: lost ?? null,
+      });
       if (!result.ok) {
         setCols(revert);
         toast.error(result.error);
@@ -148,14 +206,27 @@ export function PipelineView({
   }
 
   /** Apply a move locally (optimistic) and persist it. */
-  function commitMove(dealId: string, toStage: string, toIndex: number, base: Columns, revert: Columns) {
-    const deal = Object.values(base).flat().find((d) => d.id === dealId);
+  function commitMove(
+    dealId: string,
+    toStage: string,
+    toIndex: number,
+    base: Columns,
+    revert: Columns,
+  ) {
+    const deal = Object.values(base)
+      .flat()
+      .find((d) => d.id === dealId);
     if (!deal) return;
-    const without = Object.fromEntries(Object.entries(base).map(([k, list]) => [k, list.filter((d) => d.id !== dealId)])) as Columns;
+    const without = Object.fromEntries(
+      Object.entries(base).map(([k, list]) => [k, list.filter((d) => d.id !== dealId)]),
+    ) as Columns;
     const target = without[toStage] ?? [];
     const position = positionAt(target, toIndex);
     const moved = { ...deal, stageId: toStage, position };
-    const next = { ...without, [toStage]: [...target.slice(0, toIndex), moved, ...target.slice(toIndex)] };
+    const next = {
+      ...without,
+      [toStage]: [...target.slice(0, toIndex), moved, ...target.slice(toIndex)],
+    };
     const fromStage = findStage(revert, dealId);
     const fromIndex = fromStage ? revert[fromStage].findIndex((d) => d.id === dealId) : -1;
     if (fromStage === toStage && fromIndex === toIndex) {
@@ -227,7 +298,12 @@ export function PipelineView({
     <>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         {pipelines.length > 1 && (
-          <NativeSelect aria-label="Pipeline" className="w-56" value={pipeline.id} onChange={(e) => router.push(`${pathname}?pipeline=${e.target.value}`)}>
+          <NativeSelect
+            aria-label="Pipeline"
+            className="w-56"
+            value={pipeline.id}
+            onChange={(e) => router.push(`${pathname}?pipeline=${e.target.value}`)}
+          >
             {pipelines.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -259,24 +335,42 @@ export function PipelineView({
           accessibility={{
             announcements: {
               onDragStart: ({ active }) => `Picked up ${active.data.current ? "deal" : ""}.`,
-              onDragOver: ({ over }) => (over ? `Over ${stageById.get(String(over.id))?.name ?? "a deal"}.` : "Not over a stage."),
+              onDragOver: ({ over }) =>
+                over
+                  ? `Over ${stageById.get(String(over.id))?.name ?? "a deal"}.`
+                  : "Not over a stage.",
               onDragEnd: ({ over }) => (over ? "Dropped." : "Move cancelled."),
               onDragCancel: () => "Move cancelled.",
             },
           }}
         >
-          <div className="-mx-3 flex gap-3 overflow-x-auto px-3 pb-4 sm:-mx-6 sm:px-6" data-testid="kanban">
+          <div
+            className="-mx-3 flex gap-3 overflow-x-auto px-3 pb-4 sm:-mx-6 sm:px-6"
+            data-testid="kanban"
+          >
             {stageTotals.map(({ stage, deals: list }) => (
-              <Column key={stage.id} stage={stage} deals={list} onOpen={(id) => setParam("deal", id)} disabled={!ws.canWrite} />
+              <Column
+                key={stage.id}
+                stage={stage}
+                deals={list}
+                onOpen={(id) => setParam("deal", id)}
+                disabled={!ws.canWrite}
+              />
             ))}
           </div>
-          <DragOverlay>{activeDeal ? <DealCardBody deal={activeDeal} dragging /> : null}</DragOverlay>
+          <DragOverlay>
+            {activeDeal ? <DealCardBody deal={activeDeal} dragging /> : null}
+          </DragOverlay>
         </DndContext>
       </div>
 
       {/* Phones: stage tabs + list, with a "Move to" control instead of dragging */}
       <div className="md:hidden" data-testid="stage-list">
-        <div role="tablist" aria-label="Stages" className="-mx-3 mb-3 flex gap-1.5 overflow-x-auto px-3 pb-1">
+        <div
+          role="tablist"
+          aria-label="Stages"
+          className="-mx-3 mb-3 flex gap-1.5 overflow-x-auto px-3 pb-1"
+        >
           {stageTotals.map(({ stage, deals: list }) => (
             <button
               key={stage.id}
@@ -285,10 +379,16 @@ export function PipelineView({
               onClick={() => setMobileStage(stage.id)}
               className={cn(
                 "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold",
-                mobile?.stage.id === stage.id ? "border-brand-ink bg-brand-ink text-white" : "bg-card",
+                mobile?.stage.id === stage.id
+                  ? "border-brand-ink bg-brand-ink text-white"
+                  : "bg-card",
               )}
             >
-              <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: stage.color }} />
+              <span
+                aria-hidden
+                className="size-2 rounded-full"
+                style={{ backgroundColor: stage.color }}
+              />
               {stage.name}
               <span className="tabular opacity-80">{list.length}</span>
             </button>
@@ -297,15 +397,22 @@ export function PipelineView({
         {mobile && (
           <div role="tabpanel" aria-label={mobile.stage.name}>
             <p className="mb-2 text-sm text-muted-foreground">
-              {mobile.deals.length} · {formatCurrency(mobile.deals.reduce((s, d) => s + (d.value ?? 0), 0))}
+              {mobile.deals.length} ·{" "}
+              {formatCurrency(mobile.deals.reduce((s, d) => s + (d.value ?? 0), 0))}
             </p>
             {mobile.deals.length === 0 ? (
-              <p className="rounded-lg border border-dashed px-3 py-8 text-center text-sm text-muted-foreground">Nothing in {mobile.stage.name}.</p>
+              <p className="rounded-lg border border-dashed px-3 py-8 text-center text-sm text-muted-foreground">
+                Nothing in {mobile.stage.name}.
+              </p>
             ) : (
               <ul className="space-y-2">
                 {mobile.deals.map((d) => (
                   <li key={d.id}>
-                    <button type="button" className="block w-full" onClick={() => setParam("deal", d.id)}>
+                    <button
+                      type="button"
+                      className="block w-full"
+                      onClick={() => setParam("deal", d.id)}
+                    >
                       <DealCardBody deal={d} />
                     </button>
                     {ws.canWrite && (
@@ -349,19 +456,34 @@ export function PipelineView({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Why was it lost?</DialogTitle>
-            <DialogDescription>The reason is saved on the deal and in its history.</DialogDescription>
+            <DialogDescription>
+              The reason is saved on the deal and in its history.
+            </DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               if (!pendingLost || !lostReason.trim()) return;
-              persist(pendingLost.dealId, pendingLost.stageId, pendingLost.position, pendingLost.revert, lostReason.trim());
+              persist(
+                pendingLost.dealId,
+                pendingLost.stageId,
+                pendingLost.position,
+                pendingLost.revert,
+                lostReason.trim(),
+              );
               setPendingLost(null);
             }}
             className="space-y-3"
           >
             <Label htmlFor="lost-reason">Reason</Label>
-            <Textarea id="lost-reason" autoFocus rows={3} value={lostReason} onChange={(e) => setLostReason(e.target.value)} placeholder="Seller took a higher offer, numbers didn't work…" />
+            <Textarea
+              id="lost-reason"
+              autoFocus
+              rows={3}
+              value={lostReason}
+              onChange={(e) => setLostReason(e.target.value)}
+              placeholder="Seller took a higher offer, numbers didn't work…"
+            />
             <DialogFooter>
               <Button type="submit" variant="destructive" disabled={!lostReason.trim()}>
                 Mark lost
@@ -379,15 +501,23 @@ export function PipelineView({
           const base = cols;
           const target = (base[stageId] ?? []).filter((d) => d.id !== dealId);
           const position = positionAt(target, 0);
-          const moving = Object.values(base).flat().find((d) => d.id === dealId);
+          const moving = Object.values(base)
+            .flat()
+            .find((d) => d.id === dealId);
           if (moving) {
-            const without = Object.fromEntries(Object.entries(base).map(([k, l]) => [k, l.filter((d) => d.id !== dealId)])) as Columns;
+            const without = Object.fromEntries(
+              Object.entries(base).map(([k, l]) => [k, l.filter((d) => d.id !== dealId)]),
+            ) as Columns;
             setCols({ ...without, [stageId]: [{ ...moving, stageId, position }, ...target] });
           }
           persist(dealId, stageId, position, base, lost);
         }}
       />
-      <NewDealDialog open={showNew} onOpenChange={(open) => setParam("new", open ? "1" : null)} pipeline={pipeline} />
+      <NewDealDialog
+        open={showNew}
+        onOpenChange={(open) => setParam("new", open ? "1" : null)}
+        pipeline={pipeline}
+      />
     </>
   );
 }

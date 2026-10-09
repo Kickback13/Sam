@@ -110,7 +110,10 @@ export function AppShell(props: AppShellProps) {
             </div>
           </header>
 
-          <main id="main" className="mx-auto w-full max-w-[1400px] px-3 pt-4 pb-24 sm:px-6 sm:pt-6 lg:pb-10">
+          <main
+            id="main"
+            className="mx-auto w-full max-w-[1400px] px-3 pt-4 pb-24 sm:px-6 sm:pt-6 lg:pb-10"
+          >
             {children}
           </main>
         </div>
@@ -134,7 +137,12 @@ export function AppShell(props: AppShellProps) {
                   active && "text-foreground",
                 )}
               >
-                <span className={cn("rounded-full px-3 py-0.5", active && "bg-primary text-primary-foreground")}>
+                <span
+                  className={cn(
+                    "rounded-full px-3 py-0.5",
+                    active && "bg-primary text-primary-foreground",
+                  )}
+                >
                   <Icon className="size-5" aria-hidden />
                 </span>
                 {item.label}
@@ -154,7 +162,10 @@ export function AppShell(props: AppShellProps) {
         </nav>
 
         <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-          <SheetContent side="left" className="w-[85%] max-w-xs border-0 bg-sidebar p-0 text-sidebar-foreground">
+          <SheetContent
+            side="left"
+            className="w-[85%] max-w-xs border-0 bg-sidebar p-0 text-sidebar-foreground"
+          >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
             <SidebarBody props={props} onNavigate={() => setMoreOpen(false)} />
           </SheetContent>

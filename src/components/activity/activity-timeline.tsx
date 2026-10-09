@@ -1,6 +1,15 @@
 "use client";
 
-import { ArrowRightLeft, CalendarDays, Mail, MessageSquare, Phone, Settings2, StickyNote, Trash2 } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CalendarDays,
+  Mail,
+  MessageSquare,
+  Phone,
+  Settings2,
+  StickyNote,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -41,9 +50,18 @@ export function ActivityTimeline({
     <ol className="relative space-y-4" data-testid="activity-timeline">
       {items.map((a) => {
         const Icon = ICONS[a.type];
-        const outcome = typeof a.metadata.outcome === "string" ? CALL_OUTCOMES.find((o) => o.value === a.metadata.outcome)?.label : null;
-        const duration = typeof a.metadata.duration_minutes === "number" ? `${a.metadata.duration_minutes} min` : null;
-        const canDelete = ws.canWrite && !["stage_change", "system"].includes(a.type) && (a.createdBy === ws.userId || ws.isAdmin);
+        const outcome =
+          typeof a.metadata.outcome === "string"
+            ? CALL_OUTCOMES.find((o) => o.value === a.metadata.outcome)?.label
+            : null;
+        const duration =
+          typeof a.metadata.duration_minutes === "number"
+            ? `${a.metadata.duration_minutes} min`
+            : null;
+        const canDelete =
+          ws.canWrite &&
+          !["stage_change", "system"].includes(a.type) &&
+          (a.createdBy === ws.userId || ws.isAdmin);
         return (
           <li key={a.id} className="group flex gap-3" data-activity-type={a.type}>
             <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
@@ -53,18 +71,26 @@ export function ActivityTimeline({
               <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
                 <span className="font-semibold">{ACTIVITY_LABELS[a.type]}</span>
                 {showSubject && a.subject && (
-                  <Link href={`/w/${ws.slug}/${a.subject.path}`} className="truncate font-medium text-brand-accent-text hover:underline">
+                  <Link
+                    href={`/w/${ws.slug}/${a.subject.path}`}
+                    className="truncate font-medium text-brand-accent-text hover:underline"
+                  >
                     {a.subject.name}
                   </Link>
                 )}
-                <span className="text-xs text-muted-foreground" title={formatDateTime(a.occurredAt)}>
+                <span
+                  className="text-xs text-muted-foreground"
+                  title={formatDateTime(a.occurredAt)}
+                >
                   {a.actorName} · {formatRelative(a.occurredAt)}
                 </span>
               </div>
               {(outcome || duration) && (
-                <p className="text-xs text-muted-foreground">{[outcome, duration].filter(Boolean).join(" · ")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {[outcome, duration].filter(Boolean).join(" · ")}
+                </p>
               )}
-              {a.body && <p className="mt-0.5 text-sm whitespace-pre-wrap break-words">{a.body}</p>}
+              {a.body && <p className="mt-0.5 text-sm break-words whitespace-pre-wrap">{a.body}</p>}
             </div>
             {canDelete && (
               <Button

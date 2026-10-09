@@ -41,15 +41,27 @@ function SheetContent({
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-1 border-b px-5 py-4 pr-12", className)} {...props} />;
+  return (
+    <div className={cn("flex flex-col gap-1 border-b px-5 py-4 pr-12", className)} {...props} />
+  );
 }
 
 function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
-  return <SheetPrimitive.Title className={cn("text-lg font-bold leading-tight", className)} {...props} />;
+  return (
+    <SheetPrimitive.Title className={cn("text-lg leading-tight font-bold", className)} {...props} />
+  );
 }
 
-function SheetDescription({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Description>) {
-  return <SheetPrimitive.Description className={cn("text-sm text-muted-foreground", className)} {...props} />;
+function SheetDescription({
+  className,
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Description>) {
+  return (
+    <SheetPrimitive.Description
+      className={cn("text-sm text-muted-foreground", className)}
+      {...props}
+    />
+  );
 }
 
 export { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger };

@@ -19,14 +19,22 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 }
 
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
-  return <tr className={cn("border-b transition-colors hover:bg-muted/40 data-[state=selected]:bg-muted", className)} {...props} />;
+  return (
+    <tr
+      className={cn(
+        "border-b transition-colors hover:bg-muted/40 data-[state=selected]:bg-muted",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       className={cn(
-        "h-9 whitespace-nowrap px-3 text-left align-middle text-xs font-semibold tracking-wide text-muted-foreground uppercase",
+        "h-9 px-3 text-left align-middle text-xs font-semibold tracking-wide whitespace-nowrap text-muted-foreground uppercase",
         className,
       )}
       {...props}

@@ -13,7 +13,15 @@ import type { ContactFilters } from "@/server/queries/contacts";
 
 type Facet = { value: string; count: number };
 
-export function ContactsFilters({ filters, tags, sources }: { filters: ContactFilters; tags: Facet[]; sources: Facet[] }) {
+export function ContactsFilters({
+  filters,
+  tags,
+  sources,
+}: {
+  filters: ContactFilters;
+  tags: Facet[];
+  sources: Facet[];
+}) {
   const ws = useWorkspace();
   const router = useRouter();
   const pathname = usePathname();
@@ -21,9 +29,13 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
   const [, start] = useTransition();
 
   function apply(next: Partial<ContactFilters>) {
-    const merged = { ...filters, ...next, page: undefined } as Record<string, string | number | undefined>;
+    const merged = { ...filters, ...next, page: undefined } as Record<
+      string,
+      string | number | undefined
+    >;
     const params = new URLSearchParams();
-    for (const [k, val] of Object.entries(merged)) if (val !== undefined && val !== "" && val !== null) params.set(k, String(val));
+    for (const [k, val] of Object.entries(merged))
+      if (val !== undefined && val !== "" && val !== null) params.set(k, String(val));
     start(() => router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false }));
   }
 
@@ -34,12 +46,21 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  const active = Boolean(filters.q || filters.role || filters.tag || filters.source || filters.assigned);
+  const active = Boolean(
+    filters.q || filters.role || filters.tag || filters.source || filters.assigned,
+  );
 
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2" role="search" aria-label="Filter people">
+    <div
+      className="mb-3 flex flex-wrap items-center gap-2"
+      role="search"
+      aria-label="Filter people"
+    >
       <div className="relative w-full sm:w-64">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <Search
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
         <Input
           type="search"
           aria-label="Search people"
@@ -50,7 +71,12 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
           data-testid="people-search"
         />
       </div>
-      <NativeSelect aria-label="Role" className="w-40" value={filters.role ?? ""} onChange={(e) => apply({ role: e.target.value || undefined })}>
+      <NativeSelect
+        aria-label="Role"
+        className="w-40"
+        value={filters.role ?? ""}
+        onChange={(e) => apply({ role: e.target.value || undefined })}
+      >
         <option value="">All roles</option>
         {CONTACT_ROLES.map((r) => (
           <option key={r.value} value={r.value}>
@@ -58,7 +84,12 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
           </option>
         ))}
       </NativeSelect>
-      <NativeSelect aria-label="Tag" className="w-40" value={filters.tag ?? ""} onChange={(e) => apply({ tag: e.target.value || undefined })}>
+      <NativeSelect
+        aria-label="Tag"
+        className="w-40"
+        value={filters.tag ?? ""}
+        onChange={(e) => apply({ tag: e.target.value || undefined })}
+      >
         <option value="">All tags</option>
         {tags.map((t) => (
           <option key={t.value} value={t.value}>
@@ -66,7 +97,12 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
           </option>
         ))}
       </NativeSelect>
-      <NativeSelect aria-label="Source" className="w-40" value={filters.source ?? ""} onChange={(e) => apply({ source: e.target.value || undefined })}>
+      <NativeSelect
+        aria-label="Source"
+        className="w-40"
+        value={filters.source ?? ""}
+        onChange={(e) => apply({ source: e.target.value || undefined })}
+      >
         <option value="">All sources</option>
         {sources.map((s) => (
           <option key={s.value} value={s.value}>
@@ -74,7 +110,12 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
           </option>
         ))}
       </NativeSelect>
-      <NativeSelect aria-label="Assigned to" className="w-40" value={filters.assigned ?? ""} onChange={(e) => apply({ assigned: e.target.value || undefined })}>
+      <NativeSelect
+        aria-label="Assigned to"
+        className="w-40"
+        value={filters.assigned ?? ""}
+        onChange={(e) => apply({ assigned: e.target.value || undefined })}
+      >
         <option value="">Anyone</option>
         <option value="unassigned">Unassigned</option>
         {ws.members.map((m) => (
@@ -89,7 +130,10 @@ export function ContactsFilters({ filters, tags, sources }: { filters: ContactFi
         value={`${filters.sort ?? "name"}:${filters.dir ?? ""}`}
         onChange={(e) => {
           const [sort, dir] = e.target.value.split(":");
-          apply({ sort: sort as ContactFilters["sort"], dir: (dir || undefined) as ContactFilters["dir"] });
+          apply({
+            sort: sort as ContactFilters["sort"],
+            dir: (dir || undefined) as ContactFilters["dir"],
+          });
         }}
       >
         <option value="name:">Name A–Z</option>

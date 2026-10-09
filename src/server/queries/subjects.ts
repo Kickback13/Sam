@@ -19,12 +19,16 @@ export async function resolveSubjects(
   refs: SubjectRef[],
 ): Promise<Map<string, ResolvedSubject>> {
   const out = new Map<string, ResolvedSubject>();
-  const ids = (type: SubjectType) => [...new Set(refs.filter((r) => r.type === type).map((r) => r.id))];
+  const ids = (type: SubjectType) => [
+    ...new Set(refs.filter((r) => r.type === type).map((r) => r.id)),
+  ];
 
   const [contacts, companies, properties, deals] = await Promise.all([
     ids("contact").length
       ? supabase.from("contacts").select("id, full_name, emails").in("id", ids("contact"))
-      : Promise.resolve({ data: [] as { id: string; full_name: string | null; emails: unknown }[] }),
+      : Promise.resolve({
+          data: [] as { id: string; full_name: string | null; emails: unknown }[],
+        }),
     ids("company").length
       ? supabase.from("companies").select("id, name").in("id", ids("company"))
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -37,12 +41,19 @@ export async function resolveSubjects(
   ]);
 
   for (const c of contacts.data ?? []) {
-    const email = Array.isArray(c.emails) ? (c.emails[0] as { value?: string } | undefined)?.value : undefined;
-    out.set(`contact:${c.id}`, { name: c.full_name ?? email ?? "Unnamed contact", path: PATHS.contact(c.id) });
+    const email = Array.isArray(c.emails)
+      ? (c.emails[0] as { value?: string } | undefined)?.value
+      : undefined;
+    out.set(`contact:${c.id}`, {
+      name: c.full_name ?? email ?? "Unnamed contact",
+      path: PATHS.contact(c.id),
+    });
   }
-  for (const c of companies.data ?? []) out.set(`company:${c.id}`, { name: c.name, path: PATHS.company(c.id) });
+  for (const c of companies.data ?? [])
+    out.set(`company:${c.id}`, { name: c.name, path: PATHS.company(c.id) });
   for (const p of properties.data ?? [])
     out.set(`property:${p.id}`, { name: p.name ?? p.address, path: PATHS.property(p.id) });
-  for (const d of deals.data ?? []) out.set(`deal:${d.id}`, { name: d.title, path: PATHS.deal(d.id) });
+  for (const d of deals.data ?? [])
+    out.set(`deal:${d.id}`, { name: d.title, path: PATHS.deal(d.id) });
   return out;
 }

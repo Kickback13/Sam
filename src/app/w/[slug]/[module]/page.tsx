@@ -5,7 +5,9 @@ import { ComingSoon } from "@/components/common/coming-soon";
 import { comingSoonModule } from "@/lib/nav";
 import { getWorkspaceContext } from "@/server/workspace";
 
-export async function generateMetadata({ params }: PageProps<"/w/[slug]/[module]">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/w/[slug]/[module]">): Promise<Metadata> {
   const { slug, module } = await params;
   const ctx = await getWorkspaceContext(slug);
   return { title: comingSoonModule(module, ctx.workspace.businessType)?.title ?? "Not found" };

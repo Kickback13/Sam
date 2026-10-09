@@ -18,18 +18,27 @@ export function Pagination({
   const from = (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
   return (
-    <nav aria-label="Pagination" className="mt-3 flex items-center justify-between text-sm text-muted-foreground">
+    <nav
+      aria-label="Pagination"
+      className="mt-3 flex items-center justify-between text-sm text-muted-foreground"
+    >
       <span className="tabular">
         {formatNumber(from)}–{formatNumber(to)} of {formatNumber(total)}
       </span>
       <span className="flex gap-2">
         {page > 1 ? (
-          <Link className="rounded-md border bg-card px-3 py-1.5 font-semibold text-foreground hover:bg-accent" href={hrefFor(page - 1)}>
+          <Link
+            className="rounded-md border bg-card px-3 py-1.5 font-semibold text-foreground hover:bg-accent"
+            href={hrefFor(page - 1)}
+          >
             Previous
           </Link>
         ) : null}
         {page < pages ? (
-          <Link className="rounded-md border bg-card px-3 py-1.5 font-semibold text-foreground hover:bg-accent" href={hrefFor(page + 1)}>
+          <Link
+            className="rounded-md border bg-card px-3 py-1.5 font-semibold text-foreground hover:bg-accent"
+            href={hrefFor(page + 1)}
+          >
             Next
           </Link>
         ) : null}

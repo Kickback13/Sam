@@ -17,7 +17,10 @@ export default async function EditContactPage({ params }: PageProps<"/w/[slug]/p
 
   return (
     <div className="mx-auto max-w-4xl">
-      <PageHeader title={`Edit ${contactDisplayName(c)}`} back={{ href: `/w/${slug}/people/${id}`, label: "Back to contact" }} />
+      <PageHeader
+        title={`Edit ${contactDisplayName(c)}`}
+        back={{ href: `/w/${slug}/people/${id}`, label: "Back to contact" }}
+      />
       <ContactForm
         initial={{
           id: c.id,
@@ -26,7 +29,11 @@ export default async function EditContactPage({ params }: PageProps<"/w/[slug]/p
           title: c.title,
           company: c.company ? { id: c.company.id, label: c.company.name } : null,
           roles: c.roles,
-          emails: (Array.isArray(c.emails) ? c.emails : []) as { value: string; label: string; is_primary: boolean }[],
+          emails: (Array.isArray(c.emails) ? c.emails : []) as {
+            value: string;
+            label: string;
+            is_primary: boolean;
+          }[],
           phones: (Array.isArray(c.phones) ? c.phones : []) as {
             value: string;
             label: string;

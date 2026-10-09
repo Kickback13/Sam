@@ -35,12 +35,52 @@ const ALIASES: Record<ImportField, string[]> = {
   last_name: ["last name", "lastname", "last", "surname", "family name", "contact last name"],
   full_name: ["name", "full name", "contact name", "contact", "fullname"],
   email: ["email", "e-mail", "email address", "primary email", "work email", "contact email"],
-  email_2: ["additional emails", "additional email", "email 2", "secondary email", "other email", "personal email"],
-  phone: ["phone", "phone number", "mobile", "mobile phone", "cell", "cell phone", "primary phone", "contact phone"],
-  phone_2: ["additional phones", "additional phone", "phone 2", "work phone", "office phone", "home phone", "landline"],
-  company: ["company", "company name", "business name", "organization", "organisation", "business", "brokerage"],
+  email_2: [
+    "additional emails",
+    "additional email",
+    "email 2",
+    "secondary email",
+    "other email",
+    "personal email",
+  ],
+  phone: [
+    "phone",
+    "phone number",
+    "mobile",
+    "mobile phone",
+    "cell",
+    "cell phone",
+    "primary phone",
+    "contact phone",
+  ],
+  phone_2: [
+    "additional phones",
+    "additional phone",
+    "phone 2",
+    "work phone",
+    "office phone",
+    "home phone",
+    "landline",
+  ],
+  company: [
+    "company",
+    "company name",
+    "business name",
+    "organization",
+    "organisation",
+    "business",
+    "brokerage",
+  ],
   title: ["title", "job title", "position", "role title"],
-  address: ["address", "street address", "address1", "address 1", "address line 1", "street", "mailing address"],
+  address: [
+    "address",
+    "street address",
+    "address1",
+    "address 1",
+    "address line 1",
+    "street",
+    "mailing address",
+  ],
   city: ["city", "town"],
   state: ["state", "province", "region", "state/province"],
   zip: ["zip", "zip code", "zipcode", "postal code", "postcode", "postal"],
@@ -99,7 +139,8 @@ export function mappingProblems(mapping: ColumnMapping): string[] {
   const identifies = ["first_name", "last_name", "full_name", "email", "phone"].some((f) =>
     fields.has(f as ImportField),
   );
-  if (!identifies) problems.push("Map at least one of: first name, last name, full name, email or phone.");
+  if (!identifies)
+    problems.push("Map at least one of: first name, last name, full name, email or phone.");
   const counts = new Map<string, number>();
   for (const f of Object.values(mapping)) if (f) counts.set(f, (counts.get(f) ?? 0) + 1);
   for (const [f, n] of counts) {

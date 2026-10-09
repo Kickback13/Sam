@@ -33,6 +33,9 @@ export function friendlyDbError(error: PgLikeError | null | undefined): string {
   }
 }
 
-export function fail(error: string, fieldErrors?: Record<string, string[] | undefined>): ActionResult<never> {
+export function fail(
+  error: string,
+  fieldErrors?: Record<string, string[] | undefined>,
+): ActionResult<never> {
   return { ok: false, error, fieldErrors };
 }

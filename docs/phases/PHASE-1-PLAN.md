@@ -14,12 +14,14 @@ Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (pr
 ## Task breakdown
 
 ### A. Bootstrap
+
 1. `.gitignore` first commit (env files, node_modules, .next, .vercel, test artifacts).
 2. Next.js 16 App Router + TS strict + Tailwind v4 + ESLint 9 + Prettier + Vitest + Playwright + pnpm.
 3. Vendored shadcn/ui primitives on `radix-ui`; lucide-react; sonner toasts; cmdk; dnd-kit.
 4. `CLAUDE.md`, `README.md`, `docs/ROADMAP.md`, `docs/DECISIONS.md`, `docs/ACCOUNTS.md`, `.env.example`.
 
 ### B. Data model (`supabase/migrations`)
+
 1. `init_core` — extensions (pg_trgm, citext), enums, `app_private` helper schema, workspaces, profiles (+ auth trigger), workspace_members, invites + RPCs (accept, preview).
 2. `crm_tables` — companies, contacts (compliance fields, dedupe keys), properties (`field_sources`), pipelines, pipeline_stages, deals, deal_contacts, deal_stage_history, activities, tasks, integrations, imports, audit_log.
 3. `rls_policies` — RLS on every table; member read, writer (owner/admin/agent) write, admin for settings/members.
@@ -29,6 +31,7 @@ Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (pr
 7. Generate `src/lib/db/types.ts`; run security + performance advisors.
 
 ### C. Auth & workspaces
+
 1. `@supabase/ssr` server/browser clients; `src/proxy.ts` refreshes the session and remembers last workspace.
 2. Login: magic link, Google OAuth, dev/test-only password (env-gated, hard-off on Vercel production).
 3. `/auth/callback` (PKCE code) + `/auth/confirm` (token_hash) + sign out.
@@ -36,11 +39,13 @@ Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (pr
 5. Workspace switcher; last-used workspace in cookie + `profiles.last_workspace_id`.
 
 ### D. Theming & shell
+
 1. Brand tokens from `workspaces.brand` → validated → CSS variables on the workspace layout; all four font families loaded.
 2. Sidebar (#0B0C10) with grouped nav + real count badges; top bar with ⌘K + user menu; mobile bottom nav + drawer.
 3. Nav per `business_type`; future modules get honest "Coming in Phase N" routes.
 
 ### E. CRM features
+
 1. Today: my due/overdue tasks, deals by stage (count + $), recent activity, guided empty states.
 2. People: table w/ search, filters, sort, pagination, bulk tag/assign; detail with compliance badges, linked deals/properties, timeline, tasks, log call/add note; create/edit/soft-delete.
 3. CSV import: upload → mapping (GHL presets) → preview → dedupe (skip/update) → chunked import → error report CSV; import history.
@@ -53,6 +58,7 @@ Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (pr
 10. Audit log written from every server action.
 
 ### F. Quality
+
 1. Vitest: normalization, Zod schemas, CSV mapping/dedupe, brand contrast, nav; RLS isolation suite (two users) against local stack.
 2. SQL RLS suite against hosted project via connector.
 3. Playwright smoke: sign in → contact → 10-row CSV → property → deal → drag → activity logged → switch workspace (isolation + re-skin).
@@ -60,8 +66,10 @@ Status: in progress · Branch: `claude/great-curie-5qbeoz` → PR → `main` (pr
 5. Lighthouse (mobile) on Today + People.
 
 ### G. Ship
+
 1. PR → CI green → merge to `main` → verify Vercel production deploy.
 2. Invite links for Keanu; handoff report.
 
 ## Out of scope (by design)
+
 Any outbound messaging, scraping, paid services, secrets in Vercel, service-role usage.

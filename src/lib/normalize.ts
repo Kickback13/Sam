@@ -8,7 +8,10 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export function normalizeEmail(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
-  const value = raw.trim().toLowerCase().replace(/^mailto:/, "");
+  const value = raw
+    .trim()
+    .toLowerCase()
+    .replace(/^mailto:/, "");
   return EMAIL_RE.test(value) ? value : null;
 }
 

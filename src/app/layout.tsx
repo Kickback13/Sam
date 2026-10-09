@@ -8,8 +8,16 @@ import { APP_NAME } from "@/lib/constants";
 import "./globals.css";
 
 // Housing4All: Plus Jakarta Sans (display) + Source Sans 3 (body)
-const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-plus-jakarta", display: "swap" });
-const sourceSans = Source_Sans_3({ subsets: ["latin"], variable: "--font-source-sans", display: "swap" });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
+});
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-source-sans",
+  display: "swap",
+});
 // AZH Builders: Big Shoulders (Google's current name for Big Shoulders Display; opsz axis) + Barlow
 const bigShoulders = Big_Shoulders({
   subsets: ["latin"],

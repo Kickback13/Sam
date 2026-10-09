@@ -6,7 +6,10 @@ import { brandStyleBlock } from "@/lib/brand";
 import { getMembers, getWorkspaceCounts } from "@/server/queries/members";
 import { getWorkspaceContext, type WorkspaceSummary } from "@/server/workspace";
 
-const BUSINESS_LABEL = { real_estate: "Real estate · Multifamily", construction: "General contractor" } as const;
+const BUSINESS_LABEL = {
+  real_estate: "Real estate · Multifamily",
+  construction: "General contractor",
+} as const;
 
 function toSwitcher(w: WorkspaceSummary): SwitcherWorkspace {
   return {
@@ -29,7 +32,10 @@ export async function generateMetadata({ params }: LayoutProps<"/w/[slug]">): Pr
 export default async function WorkspaceLayout({ children, params }: LayoutProps<"/w/[slug]">) {
   const { slug } = await params;
   const ctx = await getWorkspaceContext(slug);
-  const [counts, members] = await Promise.all([getWorkspaceCounts(ctx.workspace.id), getMembers(ctx.workspace.id)]);
+  const [counts, members] = await Promise.all([
+    getWorkspaceCounts(ctx.workspace.id),
+    getMembers(ctx.workspace.id),
+  ]);
 
   return (
     <>
@@ -46,7 +52,12 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
           canWrite: ctx.canWrite,
           isAdmin: ctx.isAdmin,
           userId: ctx.user.id,
-          members: members.map((m) => ({ id: m.userId, name: m.name, email: m.email, role: m.role })),
+          members: members.map((m) => ({
+            id: m.userId,
+            name: m.name,
+            email: m.email,
+            role: m.role,
+          })),
         }}
         current={toSwitcher(ctx.workspace)}
         workspaces={ctx.workspaces.map(toSwitcher)}

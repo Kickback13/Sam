@@ -13,7 +13,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { CONTACT_ROLES, labelFor } from "@/lib/constants";
 import { formatRelative } from "@/lib/format";
 import { formatPhone } from "@/lib/normalize";
@@ -50,7 +57,10 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
     });
   }
 
-  function run(fn: () => Promise<{ ok: boolean; error?: string; data?: { count: number } }>, success: (n: number) => string) {
+  function run(
+    fn: () => Promise<{ ok: boolean; error?: string; data?: { count: number } }>,
+    success: (n: number) => string,
+  ) {
     start(async () => {
       const result = await fn();
       if (!result.ok) {
@@ -66,7 +76,11 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
   return (
     <div className="overflow-hidden rounded-xl border bg-card">
       {ws.canWrite && selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border-b bg-brand-surface px-3 py-2" role="region" aria-label="Bulk actions">
+        <div
+          className="flex flex-wrap items-center gap-2 border-b bg-brand-surface px-3 py-2"
+          role="region"
+          aria-label="Bulk actions"
+        >
           <span className="text-sm font-semibold">{selected.size} selected</span>
           <Popover>
             <PopoverTrigger asChild>
@@ -78,14 +92,25 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
               <label htmlFor="bulk-tag" className="text-sm font-semibold">
                 Tags (comma-separated)
               </label>
-              <Input id="bulk-tag" value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="long-hold, priority" />
+              <Input
+                id="bulk-tag"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                placeholder="long-hold, priority"
+              />
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   disabled={!tagInput.trim() || pending}
                   onClick={() =>
                     run(
-                      () => bulkTagContacts({ workspaceId: ws.id, contactIds: ids, add: tagInput.split(","), remove: [] }),
+                      () =>
+                        bulkTagContacts({
+                          workspaceId: ws.id,
+                          contactIds: ids,
+                          add: tagInput.split(","),
+                          remove: [],
+                        }),
                       (n) => `Tagged ${n} contacts`,
                     )
                   }
@@ -98,7 +123,13 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
                   disabled={!tagInput.trim() || pending}
                   onClick={() =>
                     run(
-                      () => bulkTagContacts({ workspaceId: ws.id, contactIds: ids, add: [], remove: tagInput.split(",") }),
+                      () =>
+                        bulkTagContacts({
+                          workspaceId: ws.id,
+                          contactIds: ids,
+                          add: [],
+                          remove: tagInput.split(","),
+                        }),
                       (n) => `Removed tags from ${n} contacts`,
                     )
                   }
@@ -119,7 +150,12 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
                 const value = e.target.value;
                 if (!value) return;
                 run(
-                  () => bulkAssignContacts({ workspaceId: ws.id, contactIds: ids, assignedTo: value === "unassigned" ? null : value }),
+                  () =>
+                    bulkAssignContacts({
+                      workspaceId: ws.id,
+                      contactIds: ids,
+                      assignedTo: value === "unassigned" ? null : value,
+                    }),
                   (n) => `Assigned ${n} contacts`,
                 );
               }}
@@ -139,8 +175,16 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
             className="text-brand-danger"
             disabled={pending}
             onClick={() => {
-              if (!confirm(`Delete ${selected.size} contact(s)? They can be restored by an admin from the audit log.`)) return;
-              run(() => deleteContacts({ workspaceId: ws.id, contactIds: ids }), (n) => `Deleted ${n} contacts`);
+              if (
+                !confirm(
+                  `Delete ${selected.size} contact(s)? They can be restored by an admin from the audit log.`,
+                )
+              )
+                return;
+              run(
+                () => deleteContacts({ workspaceId: ws.id, contactIds: ids }),
+                (n) => `Deleted ${n} contacts`,
+              );
             }}
           >
             <Trash2 aria-hidden /> Delete
@@ -159,7 +203,9 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
                   <Checkbox
                     aria-label="Select all on this page"
                     checked={allSelected}
-                    onCheckedChange={(c) => setSelected(c ? new Set(rows.map((r) => r.id)) : new Set())}
+                    onCheckedChange={(c) =>
+                      setSelected(c ? new Set(rows.map((r) => r.id)) : new Set())
+                    }
                   />
                 </TableHead>
               )}
@@ -178,11 +224,18 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
               <TableRow key={c.id} data-state={selected.has(c.id) ? "selected" : undefined}>
                 {ws.canWrite && (
                   <TableCell>
-                    <Checkbox aria-label={`Select ${c.name}`} checked={selected.has(c.id)} onCheckedChange={() => toggle(c.id)} />
+                    <Checkbox
+                      aria-label={`Select ${c.name}`}
+                      checked={selected.has(c.id)}
+                      onCheckedChange={() => toggle(c.id)}
+                    />
                   </TableCell>
                 )}
                 <TableCell className="max-w-64">
-                  <Link href={`/w/${ws.slug}/people/${c.id}`} className="block truncate font-semibold hover:underline">
+                  <Link
+                    href={`/w/${ws.slug}/people/${c.id}`}
+                    className="block truncate font-semibold hover:underline"
+                  >
                     {c.name}
                   </Link>
                   <span className="block truncate text-xs text-muted-foreground">
@@ -193,15 +246,26 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
                   <RoleBadges roles={c.roles} />
                 </TableCell>
                 <TableCell className="max-w-56 truncate">{c.email ?? "—"}</TableCell>
-                <TableCell className="whitespace-nowrap tabular">{c.phone ? formatPhone(c.phone) : "—"}</TableCell>
+                <TableCell className="whitespace-nowrap tabular">
+                  {c.phone ? formatPhone(c.phone) : "—"}
+                </TableCell>
                 <TableCell className="max-w-40">
-                  <span className="block truncate text-xs text-muted-foreground">{c.tags.join(", ") || "—"}</span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {c.tags.join(", ") || "—"}
+                  </span>
                 </TableCell>
-                <TableCell className="whitespace-nowrap text-sm">{c.assignee ?? "—"}</TableCell>
+                <TableCell className="text-sm whitespace-nowrap">{c.assignee ?? "—"}</TableCell>
                 <TableCell>
-                  <ComplianceBadges dnc={c.dnc} smsConsent={c.smsConsent} emailOptOut={c.emailOptOut} compact />
+                  <ComplianceBadges
+                    dnc={c.dnc}
+                    smsConsent={c.smsConsent}
+                    emailOptOut={c.emailOptOut}
+                    compact
+                  />
                 </TableCell>
-                <TableCell className="text-right text-xs whitespace-nowrap text-muted-foreground">{formatRelative(c.updatedAt)}</TableCell>
+                <TableCell className="text-right text-xs whitespace-nowrap text-muted-foreground">
+                  {formatRelative(c.updatedAt)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -213,7 +277,12 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
         {rows.map((c) => (
           <li key={c.id} className="flex items-start gap-3 px-3 py-3">
             {ws.canWrite && (
-              <Checkbox className="mt-1" aria-label={`Select ${c.name}`} checked={selected.has(c.id)} onCheckedChange={() => toggle(c.id)} />
+              <Checkbox
+                className="mt-1"
+                aria-label={`Select ${c.name}`}
+                checked={selected.has(c.id)}
+                onCheckedChange={() => toggle(c.id)}
+              />
             )}
             <Link href={`/w/${ws.slug}/people/${c.id}`} className="min-w-0 flex-1">
               <span className="block truncate font-semibold">{c.name}</span>
@@ -222,11 +291,20 @@ export function ContactsTable({ rows }: { rows: ContactListItem[] }) {
               </span>
               <span className="mt-1 flex flex-wrap gap-1">
                 <RoleBadges roles={c.roles} />
-                <ComplianceBadges dnc={c.dnc} smsConsent={c.smsConsent} emailOptOut={c.emailOptOut} compact />
+                <ComplianceBadges
+                  dnc={c.dnc}
+                  smsConsent={c.smsConsent}
+                  emailOptOut={c.emailOptOut}
+                  compact
+                />
               </span>
             </Link>
             {c.phone && (
-              <a href={`tel:${c.phone}`} className="shrink-0 rounded-md border px-2 py-1 text-xs font-semibold" aria-label={`Call ${c.name}`}>
+              <a
+                href={`tel:${c.phone}`}
+                className="shrink-0 rounded-md border px-2 py-1 text-xs font-semibold"
+                aria-label={`Call ${c.name}`}
+              >
                 Call
               </a>
             )}

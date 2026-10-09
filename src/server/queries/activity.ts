@@ -48,7 +48,10 @@ async function hydrate(rows: Row[], withSubjects: boolean): Promise<ActivityItem
       occurredAt: r.occurred_at,
       metadata: (r.metadata ?? {}) as Record<string, unknown>,
       createdBy: r.created_by,
-      actorName: r.actor?.full_name?.trim() || r.actor?.email?.split("@")[0] || (r.created_by ? "Teammate" : "System"),
+      actorName:
+        r.actor?.full_name?.trim() ||
+        r.actor?.email?.split("@")[0] ||
+        (r.created_by ? "Teammate" : "System"),
       subject: s ? { type: r.subject_type, id: r.subject_id, ...s } : null,
     };
   });
@@ -73,7 +76,9 @@ export async function getSubjectActivity(
 ): Promise<ActivityItem[]> {
   if (subjects.length === 0) return [];
   const supabase = await createClient();
-  const filter = subjects.map((s) => `and(subject_type.eq.${s.type},subject_id.eq.${s.id})`).join(",");
+  const filter = subjects
+    .map((s) => `and(subject_type.eq.${s.type},subject_id.eq.${s.id})`)
+    .join(",");
   const { data, error } = await supabase
     .from("activities")
     .select(SELECT)

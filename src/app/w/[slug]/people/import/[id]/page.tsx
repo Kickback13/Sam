@@ -12,12 +12,17 @@ import { getWorkspaceContext } from "@/server/workspace";
 
 export const metadata: Metadata = { title: "Import details" };
 
-export default async function ImportDetailPage({ params }: PageProps<"/w/[slug]/people/import/[id]">) {
+export default async function ImportDetailPage({
+  params,
+}: PageProps<"/w/[slug]/people/import/[id]">) {
   const { slug, id } = await params;
   const { workspace } = await getWorkspaceContext(slug);
   const job = await getImport(workspace.id, id);
   if (!job) notFound();
-  const errors = (Array.isArray(job.errors) ? job.errors : []) as { row: number; message: string }[];
+  const errors = (Array.isArray(job.errors) ? job.errors : []) as {
+    row: number;
+    message: string;
+  }[];
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -37,7 +42,17 @@ export default async function ImportDetailPage({ params }: PageProps<"/w/[slug]/
       />
       <Card>
         <CardContent className="space-y-4 py-5">
-          <Badge variant={job.status === "completed" ? "success" : job.status === "failed" ? "danger" : "secondary"}>{job.status}</Badge>
+          <Badge
+            variant={
+              job.status === "completed"
+                ? "success"
+                : job.status === "failed"
+                  ? "danger"
+                  : "secondary"
+            }
+          >
+            {job.status}
+          </Badge>
           <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {[
               ["Rows", job.total_rows],
@@ -52,12 +67,18 @@ export default async function ImportDetailPage({ params }: PageProps<"/w/[slug]/
               </div>
             ))}
           </dl>
-          <p className="text-sm text-muted-foreground">Duplicate handling: {job.dedupe_strategy === "update" ? "update existing contacts" : "skip existing contacts"}.</p>
+          <p className="text-sm text-muted-foreground">
+            Duplicate handling:{" "}
+            {job.dedupe_strategy === "update"
+              ? "update existing contacts"
+              : "skip existing contacts"}
+            .
+          </p>
           {errors.length > 0 && (
             <ul className="max-h-96 divide-y overflow-y-auto rounded-lg border text-sm">
               {errors.slice(0, 200).map((e, i) => (
                 <li key={i} className="flex gap-3 px-3 py-2">
-                  <span className="w-14 shrink-0 tabular text-muted-foreground">Row {e.row}</span>
+                  <span className="w-14 shrink-0 text-muted-foreground tabular">Row {e.row}</span>
                   <span>{e.message}</span>
                 </li>
               ))}

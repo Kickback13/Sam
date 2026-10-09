@@ -1,6 +1,10 @@
 import { APP_TIMEZONE } from "@/lib/constants";
 
-const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const usd = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
 const usdCompact = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -10,7 +14,10 @@ const usdCompact = new Intl.NumberFormat("en-US", {
 });
 const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
-export function formatCurrency(value: number | string | null | undefined, opts?: { compact?: boolean }) {
+export function formatCurrency(
+  value: number | string | null | undefined,
+  opts?: { compact?: boolean },
+) {
   if (value === null || value === undefined || value === "") return "—";
   const n = typeof value === "string" ? Number(value) : value;
   if (!Number.isFinite(n)) return "—";
@@ -28,7 +35,11 @@ const dateFmt = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   year: "numeric",
 });
-const shortDateFmt = new Intl.DateTimeFormat("en-US", { timeZone: APP_TIMEZONE, month: "short", day: "numeric" });
+const shortDateFmt = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  month: "short",
+  day: "numeric",
+});
 const dateTimeFmt = new Intl.DateTimeFormat("en-US", {
   timeZone: APP_TIMEZONE,
   month: "short",
@@ -95,7 +106,10 @@ export function todayInAppTz(now: Date = new Date()): string {
 }
 
 function timezoneOffset(at: Date): string {
-  const name = new Intl.DateTimeFormat("en-US", { timeZone: APP_TIMEZONE, timeZoneName: "longOffset" })
+  const name = new Intl.DateTimeFormat("en-US", {
+    timeZone: APP_TIMEZONE,
+    timeZoneName: "longOffset",
+  })
     .formatToParts(at)
     .find((p) => p.type === "timeZoneName")?.value; // e.g. "GMT-07:00"
   const m = name?.match(/GMT([+-]\d{2}:\d{2})/);

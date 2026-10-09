@@ -22,7 +22,13 @@ export type WorkspaceClientContext = {
 
 const Ctx = createContext<WorkspaceClientContext | null>(null);
 
-export function WorkspaceProvider({ value, children }: { value: WorkspaceClientContext; children: React.ReactNode }) {
+export function WorkspaceProvider({
+  value,
+  children,
+}: {
+  value: WorkspaceClientContext;
+  children: React.ReactNode;
+}) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

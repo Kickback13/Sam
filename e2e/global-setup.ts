@@ -36,8 +36,20 @@ export default async function globalSetup() {
         `delete from public.deals where workspace_id = (select id from public.workspaces where slug = $1)`,
         [ws.slug],
       );
-      for (const table of ["activities", "tasks", "deal_contacts", "properties", "contacts", "companies", "imports", "audit_log"]) {
-        await db.query(`delete from public.${table} where workspace_id = (select id from public.workspaces where slug = $1)`, [ws.slug]);
+      for (const table of [
+        "activities",
+        "tasks",
+        "deal_contacts",
+        "properties",
+        "contacts",
+        "companies",
+        "imports",
+        "audit_log",
+      ]) {
+        await db.query(
+          `delete from public.${table} where workspace_id = (select id from public.workspaces where slug = $1)`,
+          [ws.slug],
+        );
       }
       await db.query(
         `insert into public.pipelines (workspace_id, name, kind, is_default)
@@ -75,7 +87,10 @@ export default async function globalSetup() {
          on conflict (provider_id, provider) do nothing`,
         [user.id, user.email, user.id],
       );
-      await db.query(`update public.profiles set full_name = $2, last_workspace_id = null where id = $1`, [user.id, user.name]);
+      await db.query(
+        `update public.profiles set full_name = $2, last_workspace_id = null where id = $1`,
+        [user.id, user.name],
+      );
       for (const m of user.memberships) {
         await db.query(
           `insert into public.workspace_members (workspace_id, user_id, role)

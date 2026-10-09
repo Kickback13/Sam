@@ -37,7 +37,15 @@ export function DealCardBody({ deal, dragging }: { deal: BoardDeal; dragging?: b
   );
 }
 
-export function SortableDealCard({ deal, onOpen, disabled }: { deal: BoardDeal; onOpen: (id: string) => void; disabled?: boolean }) {
+export function SortableDealCard({
+  deal,
+  onOpen,
+  disabled,
+}: {
+  deal: BoardDeal;
+  onOpen: (id: string) => void;
+  disabled?: boolean;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: deal.id,
     data: { type: "deal", stageId: deal.stageId },

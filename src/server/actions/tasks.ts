@@ -10,7 +10,8 @@ import { friendlyDbError } from "@/server/errors";
 
 export async function createTask(input: unknown): Promise<ActionResult<{ id: string }>> {
   const parsed = taskInputSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Check the form", fieldErrors: zodFieldErrors(parsed.error) };
+  if (!parsed.success)
+    return { ok: false, error: "Check the form", fieldErrors: zodFieldErrors(parsed.error) };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const t = parsed.data;
@@ -78,7 +79,10 @@ export async function setTaskStatus(input: z.input<typeof setStatusSchema>): Pro
   return { ok: true, data: undefined };
 }
 
-export async function deleteTask(input: { workspaceId: string; taskId: string }): Promise<ActionResult> {
+export async function deleteTask(input: {
+  workspaceId: string;
+  taskId: string;
+}): Promise<ActionResult> {
   const parsed = z.object({ workspaceId: z.uuid(), taskId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();

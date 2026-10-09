@@ -8,22 +8,43 @@ import { actionContext, NOT_SIGNED_IN, revalidateWorkspace } from "@/server/acti
 import { diffFields, writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
 
-const saveSchema = z.object({ workspaceId: z.uuid(), companyId: z.uuid().optional(), company: z.unknown() });
+const saveSchema = z.object({
+  workspaceId: z.uuid(),
+  companyId: z.uuid().optional(),
+  company: z.unknown(),
+});
 
-export async function saveCompany(input: z.input<typeof saveSchema>): Promise<ActionResult<{ id: string }>> {
+export async function saveCompany(
+  input: z.input<typeof saveSchema>,
+): Promise<ActionResult<{ id: string }>> {
   const envelope = saveSchema.safeParse(input);
   if (!envelope.success) return { ok: false, error: "Invalid request" };
   const parsed = companyInputSchema.safeParse(envelope.data.company);
-  if (!parsed.success) return { ok: false, error: "Check the highlighted fields", fieldErrors: zodFieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Check the highlighted fields",
+      fieldErrors: zodFieldErrors(parsed.error),
+    };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { workspaceId, companyId } = envelope.data;
   const row = parsed.data;
 
   if (companyId) {
-    const { data: before } = await ctx.supabase.from("companies").select("*").eq("workspace_id", workspaceId).eq("id", companyId).maybeSingle();
+    const { data: before } = await ctx.supabase
+      .from("companies")
+      .select("*")
+      .eq("workspace_id", workspaceId)
+      .eq("id", companyId)
+      .maybeSingle();
     if (!before) return { ok: false, error: "Company not found." };
-    const { data, error } = await ctx.supabase.from("companies").update(row).eq("workspace_id", workspaceId).eq("id", companyId).select("id");
+    const { data, error } = await ctx.supabase
+      .from("companies")
+      .update(row)
+      .eq("workspace_id", workspaceId)
+      .eq("id", companyId)
+      .select("id");
     if (error) return { ok: false, error: friendlyDbError(error) };
     if (!data?.length) return { ok: false, error: "You can't edit companies in this workspace." };
     await writeAudit(ctx.supabase, {
@@ -32,7 +53,11 @@ export async function saveCompany(input: z.input<typeof saveSchema>): Promise<Ac
       action: "company.update",
       entityType: "company",
       entityId: companyId,
-      diff: diffFields(before as Record<string, unknown>, row as Record<string, unknown>, Object.keys(row)),
+      diff: diffFields(
+        before as Record<string, unknown>,
+        row as Record<string, unknown>,
+        Object.keys(row),
+      ),
     });
     revalidateWorkspace();
     return { ok: true, data: { id: companyId } };
@@ -56,7 +81,10 @@ export async function saveCompany(input: z.input<typeof saveSchema>): Promise<Ac
   return { ok: true, data: { id: data.id } };
 }
 
-export async function deleteCompany(input: { workspaceId: string; companyId: string }): Promise<ActionResult> {
+export async function deleteCompany(input: {
+  workspaceId: string;
+  companyId: string;
+}): Promise<ActionResult> {
   const parsed = z.object({ workspaceId: z.uuid(), companyId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();

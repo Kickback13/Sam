@@ -1,6 +1,14 @@
 import { Building2, HardHat } from "lucide-react";
 
-export function AuthFrame({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+export function AuthFrame({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
     <main className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,520px)]">
       <section

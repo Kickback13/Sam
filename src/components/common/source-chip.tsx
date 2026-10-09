@@ -5,7 +5,13 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** "source · date" provenance chip shown next to every sourced value. */
-export function SourceChip({ source, className }: { source?: FieldSource | null; className?: string }) {
+export function SourceChip({
+  source,
+  className,
+}: {
+  source?: FieldSource | null;
+  className?: string;
+}) {
   if (!source) {
     return (
       <span
@@ -27,7 +33,13 @@ export function SourceChip({ source, className }: { source?: FieldSource | null;
   );
   if (source.url) {
     return (
-      <a href={source.url} target="_blank" rel="noreferrer" className={cn(classes, "hover:underline")} title={text}>
+      <a
+        href={source.url}
+        target="_blank"
+        rel="noreferrer"
+        className={cn(classes, "hover:underline")}
+        title={text}
+      >
         {text}
         <ExternalLink className="size-3" aria-hidden />
       </a>

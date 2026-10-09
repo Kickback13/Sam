@@ -11,7 +11,8 @@ import { friendlyDbError } from "@/server/errors";
 
 export async function logActivity(input: unknown): Promise<ActionResult<{ id: string }>> {
   const parsed = activityInputSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Check the form", fieldErrors: zodFieldErrors(parsed.error) };
+  if (!parsed.success)
+    return { ok: false, error: "Check the form", fieldErrors: zodFieldErrors(parsed.error) };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const a = parsed.data;
@@ -48,7 +49,10 @@ export async function logActivity(input: unknown): Promise<ActionResult<{ id: st
   return { ok: true, data: { id: data.id } };
 }
 
-export async function deleteActivity(input: { workspaceId: string; activityId: string }): Promise<ActionResult> {
+export async function deleteActivity(input: {
+  workspaceId: string;
+  activityId: string;
+}): Promise<ActionResult> {
   const parsed = z.object({ workspaceId: z.uuid(), activityId: z.uuid() }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();

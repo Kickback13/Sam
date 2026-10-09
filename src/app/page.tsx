@@ -36,8 +36,9 @@ export default async function Home() {
     <AuthFrame title="No workspace yet" subtitle={`Signed in as ${user.email ?? user.name}`}>
       <div className="space-y-4 text-sm text-muted-foreground">
         <p>
-          Your account doesn&apos;t have access to a workspace. Ask an admin to invite this email address from{" "}
-          <strong className="text-foreground">Settings → Members</strong>, then open the invite link.
+          Your account doesn&apos;t have access to a workspace. Ask an admin to invite this email
+          address from <strong className="text-foreground">Settings → Members</strong>, then open
+          the invite link.
         </p>
         <form action={signOut}>
           <Button variant="outline" className="w-full" type="submit">

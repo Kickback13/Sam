@@ -13,7 +13,10 @@ export default async function NewPropertyPage({ params }: PageProps<"/w/[slug]/p
   if (!canWrite) redirect(`/w/${slug}/properties`);
   return (
     <div className="mx-auto max-w-4xl">
-      <PageHeader title="New property" back={{ href: `/w/${slug}/properties`, label: "Properties" }} />
+      <PageHeader
+        title="New property"
+        back={{ href: `/w/${slug}/properties`, label: "Properties" }}
+      />
       <PropertyForm />
     </div>
   );

@@ -6,7 +6,13 @@ import { escapeLike } from "./contacts";
 
 export const PROPERTIES_PAGE_SIZE = 50;
 
-export type PropertyFilters = { q?: string; type?: string; minUnits?: number; page?: number; sort?: "updated" | "units" | "address" };
+export type PropertyFilters = {
+  q?: string;
+  type?: string;
+  minUnits?: number;
+  page?: number;
+  sort?: "updated" | "units" | "address";
+};
 
 export async function listProperties(workspaceId: string, f: PropertyFilters) {
   const supabase = await createClient();
@@ -50,7 +56,9 @@ export async function getPropertyDeals(workspaceId: string, propertyId: string) 
   const supabase = await createClient();
   const { data } = await supabase
     .from("deals")
-    .select("id, title, value, status, stage:pipeline_stages!deals_pipeline_id_stage_id_fkey(name, color)")
+    .select(
+      "id, title, value, status, stage:pipeline_stages!deals_pipeline_id_stage_id_fkey(name, color)",
+    )
     .eq("workspace_id", workspaceId)
     .eq("property_id", propertyId)
     .is("deleted_at", null);

@@ -6,7 +6,15 @@ import { toast } from "sonner";
 
 import { useWorkspace } from "@/components/shell/workspace-provider";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -96,16 +104,31 @@ export function NewTaskDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="task-date">Due date</Label>
-              <Input id="task-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Input
+                id="task-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="task-time">Time</Label>
-              <Input id="task-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} disabled={!date} />
+              <Input
+                id="task-time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                disabled={!date}
+              />
             </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="task-assignee">Assigned to</Label>
-            <NativeSelect id="task-assignee" value={assignee} onChange={(e) => setAssignee(e.target.value)}>
+            <NativeSelect
+              id="task-assignee"
+              value={assignee}
+              onChange={(e) => setAssignee(e.target.value)}
+            >
               <option value="">Unassigned</option>
               {ws.members.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -116,7 +139,12 @@ export function NewTaskDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="task-notes">Notes</Label>
-            <Textarea id="task-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Textarea
+              id="task-notes"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
           {error && (
             <p role="alert" className="text-sm text-brand-danger">

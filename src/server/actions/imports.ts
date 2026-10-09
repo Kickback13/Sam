@@ -9,7 +9,12 @@ import { toJson } from "@/lib/db/json";
 import type { Database } from "@/lib/db/types";
 import { normalizeEmail } from "@/lib/normalize";
 import type { ActionResult } from "@/lib/validation/common";
-import { actionContext, NOT_SIGNED_IN, revalidateWorkspace, type ActionContext } from "@/server/action-context";
+import {
+  actionContext,
+  NOT_SIGNED_IN,
+  revalidateWorkspace,
+  type ActionContext,
+} from "@/server/action-context";
 import { writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
 
@@ -44,7 +49,13 @@ async function fetchExisting(
       p_phone_keys: p,
     });
     if (error) throw error;
-    for (const d of data ?? []) out.set(d.id, { id: d.id, full_name: d.full_name, emailKeys: d.email_keys, phoneKeys: d.phone_keys });
+    for (const d of data ?? [])
+      out.set(d.id, {
+        id: d.id,
+        full_name: d.full_name,
+        emailKeys: d.email_keys,
+        phoneKeys: d.phone_keys,
+      });
   }
   for (let i = 0; i < ghlIds.length; i += batch) {
     const { data, error } = await ctx.supabase
@@ -55,7 +66,13 @@ async function fetchExisting(
       .in("ghl_contact_id", ghlIds.slice(i, i + batch));
     if (error) throw error;
     for (const d of data ?? [])
-      out.set(d.id, { id: d.id, full_name: d.full_name, emailKeys: d.email_keys, phoneKeys: d.phone_keys, ghlContactId: d.ghl_contact_id });
+      out.set(d.id, {
+        id: d.id,
+        full_name: d.full_name,
+        emailKeys: d.email_keys,
+        phoneKeys: d.phone_keys,
+        ghlContactId: d.ghl_contact_id,
+      });
   }
   return [...out.values()];
 }
@@ -74,7 +91,9 @@ export async function checkImportDuplicates(input: {
   workspaceId: string;
   rows: z.input<typeof keysRowSchema>[];
 }): Promise<ActionResult<DuplicateCheck[]>> {
-  const parsed = z.object({ workspaceId: z.uuid(), rows: z.array(keysRowSchema).max(MAX_ROWS) }).safeParse(input);
+  const parsed = z
+    .object({ workspaceId: z.uuid(), rows: z.array(keysRowSchema).max(MAX_ROWS) })
+    .safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid preview request" };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
@@ -82,7 +101,9 @@ export async function checkImportDuplicates(input: {
 
   const emailKeys = [...new Set(rows.flatMap((r) => r.emailKeys))];
   const phoneKeys = [...new Set(rows.flatMap((r) => r.phoneKeys))];
-  const ghlIds = [...new Set(rows.map((r) => r.ghlContactId).filter((v): v is string => Boolean(v)))];
+  const ghlIds = [
+    ...new Set(rows.map((r) => r.ghlContactId).filter((v): v is string => Boolean(v))),
+  ];
   try {
     const existing = await fetchExisting(ctx, workspaceId, emailKeys, phoneKeys, ghlIds);
     const plans = planRows(rows, existing);
@@ -90,8 +111,21 @@ export async function checkImportDuplicates(input: {
       ok: true,
       data: rows.map((r) => {
         const plan = plans.get(r.row)!;
-        if (plan.action === "match") return { row: r.row, action: "match", existingId: plan.existingId, existingName: plan.existingName, via: plan.via };
-        if (plan.action === "duplicate_in_file") return { row: r.row, action: "duplicate_in_file", firstRow: plan.firstRow, via: plan.via };
+        if (plan.action === "match")
+          return {
+            row: r.row,
+            action: "match",
+            existingId: plan.existingId,
+            existingName: plan.existingName,
+            via: plan.via,
+          };
+        if (plan.action === "duplicate_in_file")
+          return {
+            row: r.row,
+            action: "duplicate_in_file",
+            firstRow: plan.firstRow,
+            via: plan.via,
+          };
         return { row: r.row, action: "create" };
       }),
     };
@@ -110,7 +144,9 @@ const startSchema = z.object({
   defaultSource: z.string().max(100).default("CSV import"),
 });
 
-export async function startImport(input: z.input<typeof startSchema>): Promise<ActionResult<{ importId: string }>> {
+export async function startImport(
+  input: z.input<typeof startSchema>,
+): Promise<ActionResult<{ importId: string }>> {
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid import settings" };
   const ctx = await actionContext();
@@ -124,7 +160,11 @@ export async function startImport(input: z.input<typeof startSchema>): Promise<A
       filename: s.filename,
       status: "processing",
       dedupe_strategy: s.dedupeStrategy,
-      mapping: toJson({ columns: s.mapping, extraTags: s.extraTags, defaultSource: s.defaultSource }),
+      mapping: toJson({
+        columns: s.mapping,
+        extraTags: s.extraTags,
+        defaultSource: s.defaultSource,
+      }),
       total_rows: s.totalRows,
       created_by: ctx.user.id,
     })
@@ -145,7 +185,12 @@ const chunkSchema = z.object({
   workspaceId: z.uuid(),
   importId: z.uuid(),
   rows: z
-    .array(z.object({ row: z.number().int().positive(), raw: z.record(z.string().max(200), z.string().max(5000).optional()) }))
+    .array(
+      z.object({
+        row: z.number().int().positive(),
+        raw: z.record(z.string().max(200), z.string().max(5000).optional()),
+      }),
+    )
     .min(1)
     .max(MAX_CHUNK),
 });
@@ -179,7 +224,9 @@ function toInsert(m: MappedRow, workspaceId: string, userId: string, extraTags: 
   };
 }
 
-export async function importChunk(input: z.input<typeof chunkSchema>): Promise<ActionResult<ChunkResult>> {
+export async function importChunk(
+  input: z.input<typeof chunkSchema>,
+): Promise<ActionResult<ChunkResult>> {
   const parsed = chunkSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid import chunk" };
   const ctx = await actionContext();
@@ -188,14 +235,20 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
 
   const { data: job, error: jobError } = await ctx.supabase
     .from("imports")
-    .select("id, status, dedupe_strategy, mapping, created_count, updated_count, skipped_count, error_count, errors")
+    .select(
+      "id, status, dedupe_strategy, mapping, created_count, updated_count, skipped_count, error_count, errors",
+    )
     .eq("workspace_id", workspaceId)
     .eq("id", importId)
     .maybeSingle();
   if (jobError || !job) return { ok: false, error: "Import not found." };
   if (job.status !== "processing") return { ok: false, error: "This import is already finished." };
 
-  const settings = (job.mapping ?? {}) as { columns?: ColumnMapping; extraTags?: string[]; defaultSource?: string };
+  const settings = (job.mapping ?? {}) as {
+    columns?: ColumnMapping;
+    extraTags?: string[];
+    defaultSource?: string;
+  };
   const mapping = settings.columns ?? {};
   const extraTags = settings.extraTags ?? [];
   const result: ChunkResult = { created: 0, updated: 0, skipped: 0, errors: [] };
@@ -218,12 +271,19 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
       [...new Set(valid.map((v) => v.mapped.ghlContactId).filter((x): x is string => Boolean(x)))],
     );
     const plans = planRows(
-      valid.map((v) => ({ row: v.row, emailKeys: v.mapped.emailKeys, phoneKeys: v.mapped.phoneKeys, ghlContactId: v.mapped.ghlContactId })),
+      valid.map((v) => ({
+        row: v.row,
+        emailKeys: v.mapped.emailKeys,
+        phoneKeys: v.mapped.phoneKeys,
+        ghlContactId: v.mapped.ghlContactId,
+      })),
       existing,
     );
 
     // 3) Resolve companies by name (case-insensitive), creating missing ones.
-    const companyNames = [...new Set(valid.map((v) => v.mapped.companyName).filter((n): n is string => Boolean(n)))];
+    const companyNames = [
+      ...new Set(valid.map((v) => v.mapped.companyName).filter((n): n is string => Boolean(n))),
+    ];
     const companyIds = new Map<string, string>();
     if (companyNames.length) {
       const { data: companies } = await ctx.supabase
@@ -237,7 +297,13 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
       if (missing.length) {
         const { data: created, error } = await ctx.supabase
           .from("companies")
-          .insert(missing.map((name) => ({ workspace_id: workspaceId, name: name.slice(0, 200), created_by: ctx.user.id })))
+          .insert(
+            missing.map((name) => ({
+              workspace_id: workspaceId,
+              name: name.slice(0, 200),
+              created_by: ctx.user.id,
+            })),
+          )
           .select("id, name");
         if (error) throw error;
         for (const co of created ?? []) companyIds.set(co.name.toLowerCase(), co.id);
@@ -250,12 +316,18 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
     for (const v of valid) {
       const plan = plans.get(v.row)!;
       const insert = toInsert(v.mapped, workspaceId, ctx.user.id, extraTags);
-      insert.company_id = v.mapped.companyName ? (companyIds.get(v.mapped.companyName.toLowerCase()) ?? null) : null;
+      insert.company_id = v.mapped.companyName
+        ? (companyIds.get(v.mapped.companyName.toLowerCase()) ?? null)
+        : null;
       if (plan.action === "create") creates.push({ row: v.row, insert });
       else if (plan.action === "duplicate_in_file") {
         result.skipped++;
-        result.errors.push({ row: v.row, message: `Skipped: duplicate of row ${plan.firstRow} in this file (${plan.via})` });
-      } else if (job.dedupe_strategy === "update") updates.push({ row: v.row, existingId: plan.existingId, mapped: v.mapped });
+        result.errors.push({
+          row: v.row,
+          message: `Skipped: duplicate of row ${plan.firstRow} in this file (${plan.via})`,
+        });
+      } else if (job.dedupe_strategy === "update")
+        updates.push({ row: v.row, existingId: plan.existingId, mapped: v.mapped });
       else result.skipped++;
     }
 
@@ -286,7 +358,9 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
           continue;
         }
         const incoming = toInsert(u.mapped, workspaceId, ctx.user.id, extraTags);
-        incoming.company_id = u.mapped.companyName ? (companyIds.get(u.mapped.companyName.toLowerCase()) ?? null) : null;
+        incoming.company_id = u.mapped.companyName
+          ? (companyIds.get(u.mapped.companyName.toLowerCase()) ?? null)
+          : null;
         const { workspace_id: _w, created_by: _c, ...fields } = incoming;
         void _w;
         void _c;
@@ -294,8 +368,17 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
           before as unknown as Record<string, unknown>,
           fields as unknown as Record<string, unknown>,
         ) as Database["public"]["Tables"]["contacts"]["Update"];
-        if (before.ghl_contact_id && patch.ghl_contact_id && patch.ghl_contact_id !== before.ghl_contact_id) delete patch.ghl_contact_id;
-        const { error } = await ctx.supabase.from("contacts").update(patch).eq("id", u.existingId).eq("workspace_id", workspaceId);
+        if (
+          before.ghl_contact_id &&
+          patch.ghl_contact_id &&
+          patch.ghl_contact_id !== before.ghl_contact_id
+        )
+          delete patch.ghl_contact_id;
+        const { error } = await ctx.supabase
+          .from("contacts")
+          .update(patch)
+          .eq("id", u.existingId)
+          .eq("workspace_id", workspaceId);
         if (error) result.errors.push({ row: u.row, message: friendlyDbError(error) });
         else {
           result.updated++;
@@ -329,14 +412,23 @@ export async function importChunk(input: z.input<typeof chunkSchema>): Promise<A
   return { ok: true, data: result };
 }
 
-export async function finishImport(input: { workspaceId: string; importId: string; failed?: boolean }): Promise<ActionResult> {
-  const parsed = z.object({ workspaceId: z.uuid(), importId: z.uuid(), failed: z.boolean().optional() }).safeParse(input);
+export async function finishImport(input: {
+  workspaceId: string;
+  importId: string;
+  failed?: boolean;
+}): Promise<ActionResult> {
+  const parsed = z
+    .object({ workspaceId: z.uuid(), importId: z.uuid(), failed: z.boolean().optional() })
+    .safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid request" };
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { data, error } = await ctx.supabase
     .from("imports")
-    .update({ status: parsed.data.failed ? "failed" : "completed", completed_at: new Date().toISOString() })
+    .update({
+      status: parsed.data.failed ? "failed" : "completed",
+      completed_at: new Date().toISOString(),
+    })
     .eq("id", parsed.data.importId)
     .eq("workspace_id", parsed.data.workspaceId)
     .select("filename, total_rows, created_count, updated_count, skipped_count, error_count")

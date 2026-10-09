@@ -6,13 +6,19 @@ import { escapeLike } from "./contacts";
 
 export const COMPANIES_PAGE_SIZE = 50;
 
-export async function listCompanies(workspaceId: string, f: { q?: string; type?: string; page?: number }) {
+export async function listCompanies(
+  workspaceId: string,
+  f: { q?: string; type?: string; page?: number },
+) {
   const supabase = await createClient();
   let q = supabase
     .from("companies")
-    .select("id, name, type, website, phone, city, tags, updated_at, contacts:contacts!contacts_workspace_id_company_id_fkey(count)", {
-      count: "exact",
-    })
+    .select(
+      "id, name, type, website, phone, city, tags, updated_at, contacts:contacts!contacts_workspace_id_company_id_fkey(count)",
+      {
+        count: "exact",
+      },
+    )
     .eq("workspace_id", workspaceId)
     .is("deleted_at", null);
   const term = f.q?.trim().toLowerCase();
@@ -33,7 +39,12 @@ export async function listCompanies(workspaceId: string, f: { q?: string; type?:
 
 export async function getCompany(workspaceId: string, id: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("companies").select("*").eq("workspace_id", workspaceId).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("companies")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
