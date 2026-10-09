@@ -1,0 +1,11 @@
+Contact Id,First Name,Last Name,Phone,Email,Company Name,Tags,Source,Additional Emails,DND
+ghl-e2e-0001,Avery,Fixture,(619) 555-0161,avery.fixture@example.com,Fixture Holdings LLC,"owner,north-park",Facebook Ad,,false
+ghl-e2e-0002,Blake,Fixture,619-555-0162,blake.fixture@example.com,Fixture Holdings LLC,owner,Facebook Ad,blake.alt@example.com,false
+ghl-e2e-0003,Cameron,Fixture,+1 619 555 0163,cameron.fixture@example.com,,broker,Referral,,false
+ghl-e2e-0004,Devon,Fixture,6195550164,devon.fixture@example.com,Sample Brokerage,broker,Referral,,true
+ghl-e2e-0005,Emery,Fixture,(619) 555-0165,emery.fixture@example.com,,investor,Website,,false
+ghl-e2e-0006,Finley,Fixture,(619) 555-0166,not-an-email,,owner,Website,,false
+ghl-e2e-0007,Gray,Fixture,(619) 555-0167,gray.fixture@example.com,Sample Brokerage,"broker,priority",Referral,,false
+ghl-e2e-0008,Harper,Fixture,(619) 555-0168,harper.fixture@example.com,,property_manager,Website,,false
+ghl-e2e-0009,Indy,Fixture,(619) 555-0169,indy.fixture@example.com,,owner,Facebook Ad,,false
+ghl-e2e-0010,Jules,Manual,(619) 555-0170,jules.manual@example.com,,owner,Website,,false

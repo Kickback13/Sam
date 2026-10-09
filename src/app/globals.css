@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/*
+ * Theme tokens. Brand values (--brand-*) are written per workspace by the
+ * workspace layout from workspaces.brand (validated, see src/lib/brand.ts).
+ * Accent colors are FILLS ONLY with black text; use --brand-accent-text for
+ * colored text on white (WCAG AA).
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-deep: var(--brand-primary-deep);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-text: var(--brand-accent-text);
+  --color-brand-danger: var(--brand-danger);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-surface: var(--brand-surface);
+
+  --font-sans:
+    var(--brand-font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display:
+    var(--brand-font-display), var(--brand-font-body), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+}
+
+:root {
+  /* Defaults (Housing4All) — overridden per workspace */
+  --brand-primary: #2f439a;
+  --brand-primary-deep: #202f8b;
+  --brand-accent: #00d9e1;
+  --brand-accent-text: #007b82;
+  --brand-danger: #b42318;
+  --brand-ink: #0b0c10;
+  --brand-surface: #e8fbfc;
+  --brand-font-display: var(--font-plus-jakarta);
+  --brand-font-body: var(--font-source-sans);
+
+  --background: #ffffff;
+  --foreground: var(--brand-ink);
+  --canvas: color-mix(in srgb, var(--brand-surface) 40%, #ffffff);
+  --card: #ffffff;
+  --card-foreground: var(--brand-ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--brand-ink);
+  --primary: var(--brand-accent);
+  --primary-foreground: #000000;
+  --secondary: #f4f4f5;
+  --secondary-foreground: var(--brand-ink);
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #f4f4f5;
+  --accent-foreground: var(--brand-ink);
+  --destructive: var(--brand-danger);
+  --border: #e4e4e7;
+  /* form control borders meet 3:1 non-text contrast */
+  --input: #8e8e96;
+  --ring: var(--brand-accent-text);
+  --sidebar: #0b0c10;
+  --sidebar-foreground: #f4f4f5;
+  --sidebar-muted: #a1a1aa;
+  --sidebar-hover: #1c1d24;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
