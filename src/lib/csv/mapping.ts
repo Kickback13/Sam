@@ -110,7 +110,7 @@ export function autoMap(headers: string[]): ColumnMapping {
     const h = normalizeHeader(header);
     let match: ImportField | "" = "";
     for (const [field, aliases] of Object.entries(ALIASES) as [ImportField, string[]][]) {
-      if (!used.has(field) && aliases.includes(h)) {
+      if (!used.has(field) && aliases.some((a) => normalizeHeader(a) === h)) {
         match = field;
         break;
       }
