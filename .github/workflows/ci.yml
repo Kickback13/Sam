@@ -16,8 +16,8 @@ jobs:
     timeout-minutes: 15
     env:
       # Public-safe values (also in .env.example). The build never needs secrets.
-      NEXT_PUBLIC_SUPABASE_URL: https://tpurdmhizhcuxvawxmkk.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_-sjyNTevwfSFCDaaIjFQ8g_diugT3Mc
+      NEXT_PUBLIC_SUPABASE_URL: https://jcrjzmflepnvvvneahvs.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_Efz2TV3dVzugDBPGxZCXxQ_mfjvs5Ue
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4

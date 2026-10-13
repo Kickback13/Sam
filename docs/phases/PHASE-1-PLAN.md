@@ -4,7 +4,7 @@ Status: complete (see handoff report) · Branch: `claude/great-curie-5qbeoz` →
 
 ## Environment findings (session start)
 
-- Supabase MCP connector is available → migrations/seed/RLS tests go through `apply_migration` / `execute_sql` on `tpurdmhizhcuxvawxmkk`. No token needed.
+- Supabase MCP connector is available → migrations/seed/RLS tests go through `apply_migration` / `execute_sql` on `jcrjzmflepnvvvneahvs`. No token needed.
 - This cloud environment's egress policy blocks direct HTTPS to `*.supabase.co`, `*.vercel.app` and `ui.shadcn.com`.
   - E2E + Vitest RLS suites run against a **local Supabase stack** (Supabase CLI + Docker Hub images) with the exact same migrations.
   - The SQL RLS suite (`supabase/tests/rls_isolation.sql`) runs against the **hosted** project through the connector, inside a rolled-back transaction.
