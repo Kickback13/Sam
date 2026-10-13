@@ -12,7 +12,7 @@ Short ADRs. Status is Accepted unless noted. Newest at the bottom.
 
 ## ADR-002 — Supabase for Postgres, Auth, Storage, Realtime
 
-**Decision:** Supabase project `housing4all-platform` (us-west-1). Schema lives in `supabase/migrations/*.sql` (CLI-compatible, ordered, idempotent seeds). TS types generated into `src/lib/db/types.ts`.
+**Decision:** Supabase project `jcrjzmflepnvvvneahvs` (ca-central-1, Pro org Kondense AI — see ADR-018). Schema lives in `supabase/migrations/*.sql` (CLI-compatible, ordered, idempotent seeds). TS types generated into `src/lib/db/types.ts`.
 **Consequences:** RLS is the tenancy boundary; every query runs under the signed-in user's JWT. No service-role key in Phase 1.
 
 ## ADR-003 — Multi-tenancy via `workspace_id` + RLS helper functions
@@ -73,10 +73,10 @@ Short ADRs. Status is Accepted unless noted. Newest at the bottom.
 **Decision:** Auth forms use `<form action={serverAction}>` (`useActionState`) so they work before JavaScript loads. Other forms keep controlled state but disable their submit button until hydrated (`useHydrated()`); `<html data-hydrated>` is set for tests.
 **Consequences:** No accidental GET submits on slow phones; e2e waits on a deterministic signal.
 
-## ADR-014 — Vercel functions in `sfo1`
+## ADR-014 — Vercel functions in `yul1`
 
-**Decision:** `vercel.json` pins functions to `sfo1`, next to Supabase `us-west-1`. Every page is server-rendered with several RLS-scoped queries, so round-trip latency to the database dominates.
-**Consequences:** ~1–3 ms per query instead of ~70 ms from the default `iad1`. Revisit if the database region changes.
+**Decision:** `vercel.json` pins functions to `yul1` (Montréal), next to Supabase `ca-central-1`. Every page is server-rendered with several RLS-scoped queries, so round-trip latency to the database dominates. (Was `sfo1` next to `us-west-1` until ADR-018.)
+**Consequences:** Same-region database round trips instead of a cross-region hop from the default `iad1`. Revisit if the database region changes.
 
 ## ADR-015 — CSV import rules
 
@@ -93,6 +93,11 @@ Short ADRs. Status is Accepted unless noted. Newest at the bottom.
 **Context:** The Supabase connector pauses `DELETE`/`TRUNCATE` statements for manual confirmation.
 **Decision:** `supabase/tests/rls_isolation.sql` is a `pg_temp` function whose fixtures live in an always-rolled-back subtransaction. The hosted run (`node scripts/rls-hosted-sql.mjs`) omits the one `@destructive` assertion; that policy is verified locally, and a checksum of every function, policy, column and constraint proves the local and hosted schemas are identical.
 **Consequences:** RLS is proven on the hosted project with zero residue and no confirmation prompts.
+
+## ADR-018 — Supabase moved to Pro org Kondense AI (ca-central-1)
+
+**Decision:** Supabase moved to Pro org Kondense AI, project `jcrjzmflepnvvvneahvs` (ca-central-1); functions moved to `yul1`; old project `tpurdmhizhcuxvawxmkk` retired.
+**Consequences:** `.env.example`, CI and the docs point at the new project URL and publishable key; migrations are unchanged. Vercel's two `NEXT_PUBLIC_SUPABASE_*` env vars and the new project's Auth URL configuration must match. The Phase 1 hosted RLS run (ADR-017) was executed on the retired project — re-run `node scripts/rls-hosted-sql.mjs` against the new one.
 
 ## Notes
 
