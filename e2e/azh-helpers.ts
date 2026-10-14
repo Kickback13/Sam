@@ -29,6 +29,8 @@ export async function resetAzhWorkspace(slug = E2E_AZH_SLUG) {
   await sql(`delete from public.deals where workspace_id = ${ws}`, [slug]);
   await sql(`delete from public.tasks where workspace_id = ${ws}`, [slug]);
   await sql(`delete from public.contacts where workspace_id = ${ws}`, [slug]);
+  await sql(`delete from public.azh_zip_routes where workspace_id = ${ws}`, [slug]);
+  await sql(`select app_private.azh_init_workspace(${ws})`, [slug]);
   await sql(
     `update public.azh_settings set cslb_license = null, intake_enabled = true,
        service_types = app_private.azh_default_service_types(),
@@ -37,3 +39,9 @@ export async function resetAzhWorkspace(slug = E2E_AZH_SLUG) {
     [slug],
   );
 }
+
+/** A 1×1 PNG for photo uploads. */
+export const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
+  "base64",
+);

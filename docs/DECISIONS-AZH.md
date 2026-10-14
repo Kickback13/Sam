@@ -58,3 +58,8 @@ Spam/abuse: honeypot field (server action silently drops), server-side Zod valid
 ## AZH-011 — Local stack runs storage-api
 
 **Decision:** `pnpm db:start` no longer excludes `storage-api` (one token removed in `package.json`), because photo/file uploads and their e2e tests need the Storage API locally. CI is unaffected (it doesn't start Supabase).
+
+## AZH-012 — Embeddable form: `frame-ancestors *` on `/r/<slug>/embed` only
+
+**Decision:** The app keeps `X-Frame-Options: DENY` everywhere except `/r/<slug>/embed…`, which sends `Content-Security-Policy: frame-ancestors *` instead so AZH's website (domain not yet known) can iframe it. The page holds no session data and only writes through the insert-only intake path, so clickjacking risk is minimal. Once Sam's website domain is known, narrow it to `frame-ancestors https://<domain>`.
+**Consequences:** One regex `source` in `next.config.ts` headers; `/r` is added to the proxy's public paths.

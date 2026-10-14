@@ -147,6 +147,24 @@ revoke all on function app_private.azh_intake_open(text) from public;
 grant usage on schema app_private to anon;
 grant execute on function app_private.azh_intake_open(text) to anon, authenticated;
 
+-- What the public form needs to render (no login): only for open construction
+-- workspaces, and only display data (name, brand tokens, service list, id for the
+-- photo upload path).
+create or replace function public.azh_public_form(p_slug text)
+returns table (workspace_id uuid, name text, brand jsonb, service_types text[])
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select w.id, w.name, w.brand, s.service_types
+  from public.workspaces w
+  join public.azh_settings s on s.workspace_id = w.id
+  where w.slug = p_slug and w.business_type = 'construction' and s.intake_enabled;
+$$;
+revoke all on function public.azh_public_form(text) from public;
+grant execute on function public.azh_public_form(text) to anon, authenticated;
+
 create or replace function app_private.azh_intake_process()
 returns trigger
 language plpgsql

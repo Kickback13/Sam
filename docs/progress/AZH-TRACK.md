@@ -11,7 +11,7 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 - [x] 3. Project details — `azh_projects` (1:1 deal), `/w/[slug]/projects/[id]` with 7 link tabs, board card office + services via context hook, drawer “Project page →”. Tested: RLS suite, `e2e/azh-projects.spec.ts`.
 - [x] 4. Estimates — line items, markup/tax computed in DB (parity with `estimates/math.ts`), status dates, “Duplicate to revise”, PDF via `pdf-lib` with both offices + CSLB/“License # pending”. Tested: unit (math, PDF), RLS parity, e2e (live total $2,026.77, PDF download, v2).
 - [x] 5. AZH settings — `/w/[slug]/settings/azh` (construction only): CSLB, service list, office task assignees, Fallbrook ZIP list (default in migration, AZH-004), embed snippet. Tested: unit (routing, zip parsing), RLS (admin-only), e2e.
-- [ ] 6. Public homeowner request form (`/r/azh-builders`, EN/ES, consent, spam, embed)
+- [x] 6. Public homeowner request form — `/r/[slug]` (+ `/embed`, `/thanks`), EN/ES, 5 photos to an upload-only bucket, unchecked TCPA consent with stored wording, honeypot + DB rate limits, intake trigger creates contact/request/Lead/project/task/activities. Tested: unit (schema, i18n), RLS (anon insert-only, no reads, rate limit, dedupe), `e2e/azh-request-form.spec.ts`.
 - [ ] 7. Requests inbox
 - [ ] 8. Files & photos
 - [ ] 9. AZH Today cards
@@ -64,5 +64,11 @@ Self-review:
 - [x] 390px: tabs scroll horizontally, estimate lines stack into 2-column cards, forms single-column.
 - [x] Empty/error states: “No estimates yet”, locked-version notice, settings “not initialized” notice, friendly DB errors.
 - [x] Housing4All screens unchanged (card hook returns null outside construction boards; Phase 1 smoke + mobile e2e still pass).
+
+### Task 6 (public request form)
+
+Plan: (1) insert-only `azh_intake` + SECURITY DEFINER trigger; (2) `azh_public_form()` RPC for display data; (3) browser uploads photos to `azh-intake` under a random path; (4) server action validates (Zod), drops honeypot, hashes IP for rate limiting, inserts as anon; (5) EN/ES dictionary, thank-you + embed routes.
+
+Self-review: lane ✔ (routes `/r/**`, feature folder, 2 shared one-liners listed); RLS ✔ (anon can only insert; no select on intake/requests/buckets; tested); no secrets ✔; 390px ✔ (single column, full-width submit); errors honest + focused (`role=alert`, per-field messages EN/ES); H4A unchanged ✔ (headers change only exempts `/r/*/embed`).
 
 Note: my own (unmerged, never applied to hosted) AZH migrations were adjusted during development (RPC arg defaults, ZIP-replace RPC). Pre-existing migrations are untouched.

@@ -2197,6 +2197,15 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      azh_public_form: {
+        Args: { p_slug: string };
+        Returns: {
+          brand: Json;
+          name: string;
+          service_types: string[];
+          workspace_id: string;
+        }[];
+      };
       azh_replace_fallbrook_zips: {
         Args: { p_workspace_id: string; p_zips: string[] };
         Returns: number;
