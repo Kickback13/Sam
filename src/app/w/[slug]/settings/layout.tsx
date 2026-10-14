@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/common/page-header";
 import { SettingsNav } from "@/components/settings/settings-nav";
+import { AZH_SETTINGS_TABS } from "@/features/azh/nav";
 import { ROLE_LABELS } from "@/lib/constants";
 import { getWorkspaceContext } from "@/server/workspace";
 
@@ -15,7 +16,10 @@ export default async function SettingsLayout({
         title="Settings"
         description={`${workspace.name} · you are ${ROLE_LABELS[role].toLowerCase()}${isAdmin ? "" : " (read-only)"}`}
       />
-      <SettingsNav slug={slug} />
+      <SettingsNav
+        slug={slug}
+        extraTabs={workspace.businessType === "construction" ? AZH_SETTINGS_TABS : undefined}
+      />
       {children}
     </div>
   );

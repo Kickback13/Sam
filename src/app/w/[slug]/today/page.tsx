@@ -9,6 +9,7 @@ import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 import { TaskList } from "@/components/tasks/task-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AzhTodayCards } from "@/features/azh/components/azh-today-cards";
 import { APP_TIMEZONE } from "@/lib/constants";
 import { endOfTodayIso, formatCurrency, formatNumber } from "@/lib/format";
 import { dealNoun } from "@/lib/nav";
@@ -124,6 +125,10 @@ export default async function TodayPage({ params }: PageProps<"/w/[slug]/today">
             </>
           }
         />
+      )}
+
+      {workspace.businessType === "construction" && (
+        <AzhTodayCards workspaceId={workspace.id} slug={slug} />
       )}
 
       <section aria-label="Key numbers" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
