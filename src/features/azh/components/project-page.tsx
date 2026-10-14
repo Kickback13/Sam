@@ -22,6 +22,7 @@ import {
   getEstimateWithItems,
   getMilestones,
   getProject,
+  getPropertyLabel,
   getVisits,
   type ProjectDeal,
   signedUrls,
@@ -160,7 +161,10 @@ async function OverviewTab({
   approved: number;
   adjusted: number | null;
 }) {
-  const settings = await getAzhSettings(ctx.workspace.id);
+  const [settings, property] = await Promise.all([
+    getAzhSettings(ctx.workspace.id),
+    project?.property_id ? getPropertyLabel(ctx.workspace.id, project.property_id) : null,
+  ]);
   return (
     <ProjectOverviewForm
       dealId={deal.id}
@@ -171,7 +175,7 @@ async function OverviewTab({
       initial={{
         job_address: project?.job_address ?? "",
         job_zip: project?.job_zip ?? "",
-        property: deal.property && project?.property_id ? deal.property : null,
+        property,
         service_types: project?.service_types ?? [],
         office: project?.office ?? "",
         source: project?.source ?? "",

@@ -120,6 +120,20 @@ export async function getProject(workspaceId: string, dealId: string): Promise<P
   return data;
 }
 
+export async function getPropertyLabel(
+  workspaceId: string,
+  propertyId: string,
+): Promise<{ id: string; label: string } | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("properties")
+    .select("id, name, address")
+    .eq("workspace_id", workspaceId)
+    .eq("id", propertyId)
+    .maybeSingle();
+  return data ? { id: data.id, label: data.name ?? data.address } : null;
+}
+
 export type CardExtra = { office: Office | null; services: string[]; value: number | null };
 
 /** Office + services + contract value for every project card on a board. */

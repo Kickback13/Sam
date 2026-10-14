@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { expect, test } from "@playwright/test";
 
-import { E2E_AZH_SLUG, resetAzhWorkspace } from "./azh-helpers";
+import { E2E_AZH_SLUG, resetAzhWorkspace, sql } from "./azh-helpers";
 import { expectToast, goto, signIn } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
@@ -11,6 +11,14 @@ const base = `/w/${E2E_AZH_SLUG}`;
 
 test.beforeAll(async () => {
   await resetAzhWorkspace();
+  await sql(
+    `delete from public.properties where workspace_id = (select id from public.workspaces where slug = $1)`,
+    [E2E_AZH_SLUG],
+  );
+  await sql(
+    `insert into public.properties (workspace_id, address, city) select id, '55 Example Property Way', 'Fallbrook' from public.workspaces where slug = $1`,
+    [E2E_AZH_SLUG],
+  );
 });
 
 test("AZH projects: details → estimate (live totals, PDF, versions) → board card → settings", async ({
@@ -36,8 +44,13 @@ test("AZH projects: details → estimate (live totals, PDF, versions) → board 
   await page.getByLabel("Painting").check();
   await page.locator("#office").selectOption("fallbrook");
   await page.locator("#contract_value").fill("48,000");
+  await page.locator("#property").click();
+  await page.getByPlaceholder("Search properties…").fill("example property");
+  await page.getByRole("option", { name: /55 Example Property Way/ }).click();
   await page.getByTestId("save-project").click();
   await expectToast(page, "Project saved");
+  await page.reload();
+  await expect(page.locator("#property")).toContainText("55 Example Property Way");
   await expect(page.getByTestId("project-value")).toHaveText("$48,000.00");
 
   // Estimates: three lines, markup + tax, totals to the cent.
