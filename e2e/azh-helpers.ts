@@ -45,3 +45,27 @@ export const TINY_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
   "base64",
 );
+
+/** Submit a request through the real intake trigger (as the DB owner; no photos). */
+export async function seedRequest(fields: {
+  name: string;
+  phone: string;
+  zip: string;
+  service?: string;
+  description?: string;
+  slug?: string;
+}) {
+  await sql(
+    `insert into public.azh_intake (workspace_slug, name, phone, job_address, job_zip, service_type, description)
+     values ($1, $2, $3, $4, $5, $6, $7)`,
+    [
+      fields.slug ?? E2E_AZH_SLUG,
+      fields.name,
+      fields.phone,
+      "10 Example Ct",
+      fields.zip,
+      fields.service ?? "Painting",
+      fields.description ?? "Interior repaint",
+    ],
+  );
+}

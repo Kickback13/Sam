@@ -210,7 +210,7 @@ export type RequestListItem = {
   contact: { id: string; name: string; phone: string | null; email: string | null } | null;
 };
 
-export type RequestFilters = { office?: string; service?: string; status?: string };
+export type RequestFilters = { office?: string; service?: string; status?: string; q?: string };
 
 const REQUEST_SELECT =
   "id, status, office, service_type, description, job_address, job_zip, preferred_contact_time, language, photo_paths, sms_consent, sms_consent_at, sms_consent_text, submitted_at, source, deal_id, assigned_to, assignee:profiles!azh_requests_assigned_to_fkey(full_name, email), contact:contacts!azh_requests_workspace_id_contact_id_fkey(id, full_name, phones, emails)";
@@ -287,6 +287,14 @@ export async function getRequests(
   if (filters.office) q = q.eq("office", filters.office);
   if (filters.service) q = q.eq("service_type", filters.service);
   if (filters.status) q = q.eq("status", filters.status);
+  const term = filters.q
+    ?.trim()
+    .replace(/[%_,()\\]/g, " ")
+    .slice(0, 100);
+  if (term)
+    q = q.or(
+      `job_address.ilike.%${term}%,description.ilike.%${term}%,service_type.ilike.%${term}%,job_zip.ilike.%${term}%`,
+    );
   const { data, error } = await q;
   if (error) throw error;
   return ((data ?? []) as unknown as RequestQueryRow[]).map(toRequest);

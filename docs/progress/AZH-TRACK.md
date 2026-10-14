@@ -12,7 +12,7 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 - [x] 4. Estimates — line items, markup/tax computed in DB (parity with `estimates/math.ts`), status dates, “Duplicate to revise”, PDF via `pdf-lib` with both offices + CSLB/“License # pending”. Tested: unit (math, PDF), RLS parity, e2e (live total $2,026.77, PDF download, v2).
 - [x] 5. AZH settings — `/w/[slug]/settings/azh` (construction only): CSLB, service list, office task assignees, Fallbrook ZIP list (default in migration, AZH-004), embed snippet. Tested: unit (routing, zip parsing), RLS (admin-only), e2e.
 - [x] 6. Public homeowner request form — `/r/[slug]` (+ `/embed`, `/thanks`), EN/ES, 5 photos to an upload-only bucket, unchecked TCPA consent with stored wording, honeypot + DB rate limits, intake trigger creates contact/request/Lead/project/task/activities. Tested: unit (schema, i18n), RLS (anon insert-only, no reads, rate limit, dedupe), `e2e/azh-request-form.spec.ts`.
-- [ ] 7. Requests inbox
+- [x] 7. Requests inbox — `/w/[slug]/requests` with search + office/service/status filters, detail drawer (contact, consent evidence, photos via signed URLs, activity), assign / status / office, log call (→ contacted), “Convert to project” (Lead → Estimate). Tested: `e2e/azh-requests.spec.ts`.
 - [ ] 8. Files & photos
 - [ ] 9. AZH Today cards
 

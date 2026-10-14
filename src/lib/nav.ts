@@ -178,7 +178,6 @@ const CONSTRUCTION_NAV: NavItem[] = [
     path: "requests",
     icon: "requests",
     group: "Work",
-    comingIn: 8,
   },
   {
     key: "community",
