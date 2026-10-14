@@ -19,7 +19,7 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 ### Part 2: scheduling and budget
 
 - [x] 10. Estimate visit booking — “Schedule visit” dialog (date/time in San Diego time, length, office, estimator, address, notes) from a request or project; double-booking warning with “Book anyway”; request → estimate scheduled (trigger); `/w/[slug]/schedule` week view per office with double-booked badges, done/cancel. Internal only. Tested: unit (conflicts, DST-safe time), RLS (visit → status), `e2e/azh-schedule.spec.ts`.
-- [ ] 11. Project schedule (milestones)
+- [x] 11. Project schedule — milestones (name, planned date, done date, status; late badge; done date set by trigger) on the project Schedule tab with site visits; “Upcoming milestones” on `/schedule`. Tested: RLS (viewer can't add, isolation), `e2e/azh-milestones.spec.ts`.
 - [ ] 12. Project budget (lines, costs, change orders)
 - [ ] 13. Demo data in `demo-azh`
 - [ ] 14. End-to-end tests (+ 390px pass, Lighthouse a11y on the public form)

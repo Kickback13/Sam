@@ -10,7 +10,8 @@ import type { WorkspaceContext } from "@/server/workspace";
 import { OFFICES } from "../constants";
 import { doubleBookedIds } from "../schedule/conflicts";
 import { addDays, weekStart, zonedDateTime, zonedParts } from "../schedule/time";
-import { getVisits } from "../server/queries";
+import { getUpcomingMilestones, getVisits } from "../server/queries";
+import { UpcomingMilestones } from "./milestones-panel";
 import { VisitCard } from "./visit-list";
 
 type SP = Record<string, string | string[] | undefined>;
@@ -45,10 +46,13 @@ export async function SchedulePage({
     officeParam && OFFICES.some((o) => o.value === officeParam) ? officeParam : "all";
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 
-  const visits = await getVisits(ws.id, {
-    from: zonedDateTime(monday, "00:00").toISOString(),
-    to: zonedDateTime(addDays(monday, 7), "00:00").toISOString(),
-  });
+  const [visits, milestones] = await Promise.all([
+    getVisits(ws.id, {
+      from: zonedDateTime(monday, "00:00").toISOString(),
+      to: zonedDateTime(addDays(monday, 7), "00:00").toISOString(),
+    }),
+    getUpcomingMilestones(ws.id, 15),
+  ]);
   // Double-booking is per estimator across both offices.
   const clashing = doubleBookedIds(visits);
   const shown = office === "all" ? visits : visits.filter((v) => v.office === office);
@@ -148,6 +152,9 @@ export async function SchedulePage({
           and choose “Schedule visit”.
         </p>
       )}
+      <div className="mt-6 max-w-2xl">
+        <UpcomingMilestones items={milestones} slug={ws.slug} />
+      </div>
     </>
   );
 }

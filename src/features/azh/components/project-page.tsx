@@ -20,11 +20,16 @@ import {
   getBudget,
   getEstimates,
   getEstimateWithItems,
+  getMilestones,
   getProject,
+  getVisits,
   type ProjectDeal,
 } from "../server/queries";
 import { EstimatesPanel } from "./estimates-panel";
 import { FilesSection } from "./files-section";
+import { MilestonesPanel } from "./milestones-panel";
+import { ScheduleVisitDialog } from "./schedule-visit-dialog";
+import { VisitList } from "./visit-list";
 import { ProjectOverviewForm } from "./project-overview-form";
 import { ComingInThisTrack, parseProjectTab, PROJECT_TABS, ProjectTabs } from "./project-tabs";
 
@@ -124,7 +129,8 @@ export async function ProjectPage({
       {tab === "tasks" && <TasksTab ctx={ctx} deal={deal} />}
       {tab === "activity" && <ActivityTab ctx={ctx} deal={deal} />}
       {tab === "files" && <FilesSection workspaceId={ws.id} parent={{ dealId: deal.id }} />}
-      {(tab === "schedule" || tab === "budget") && (
+      {tab === "schedule" && <ScheduleTab ctx={ctx} deal={deal} project={project} />}
+      {tab === "budget" && (
         <ComingInThisTrack title={PROJECT_TABS.find((t) => t.key === tab)!.label} />
       )}
     </>
@@ -216,5 +222,36 @@ async function ActivityTab({ ctx, deal }: { ctx: WorkspaceContext; deal: Project
       {ctx.canWrite && <LogActivity subjectType="deal" subjectId={deal.id} />}
       <ActivityTimeline items={activity} emptyText="No activity yet." />
     </section>
+  );
+}
+
+async function ScheduleTab({
+  ctx,
+  deal,
+  project,
+}: {
+  ctx: WorkspaceContext;
+  deal: ProjectDeal;
+  project: Awaited<ReturnType<typeof getProject>>;
+}) {
+  const [milestones, visits] = await Promise.all([
+    getMilestones(ctx.workspace.id, deal.id),
+    getVisits(ctx.workspace.id, { dealId: deal.id }),
+  ]);
+  return (
+    <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
+      <MilestonesPanel dealId={deal.id} milestones={milestones} />
+      <section className="space-y-3 rounded-xl border bg-card p-4" aria-label="Estimate visits">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-bold">Site visits</h2>
+          <ScheduleVisitDialog
+            dealId={deal.id}
+            defaultOffice={project?.office === "fallbrook" ? "fallbrook" : "san_diego"}
+            defaultAddress={[project?.job_address, project?.job_zip].filter(Boolean).join(" ")}
+          />
+        </div>
+        <VisitList visits={visits} emptyText="No site visits booked." />
+      </section>
+    </div>
   );
 }
