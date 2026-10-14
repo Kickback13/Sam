@@ -179,6 +179,7 @@ const CONSTRUCTION_NAV: NavItem[] = [
     icon: "requests",
     group: "Work",
   },
+  { key: "schedule", label: "Schedule", path: "schedule", icon: "calendar", group: "Work" },
   {
     key: "community",
     label: "Community",

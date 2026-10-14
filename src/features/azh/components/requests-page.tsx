@@ -14,6 +14,7 @@ import type { WorkspaceContext } from "@/server/workspace";
 import { OFFICES, officeLabel, REQUEST_STATUSES } from "../constants";
 import { getAzhSettings, getRequest, getRequests, signedUrls } from "../server/queries";
 import { FilesSection } from "./files-section";
+import { RequestVisits } from "./visits-section";
 import { REQUEST_STATUS_BADGE, RequestDrawer } from "./request-drawer";
 
 type SP = Record<string, string | string[] | undefined>;
@@ -163,12 +164,15 @@ export async function RequestsPage({
           activity={activity}
           extra={
             open ? (
-              <FilesSection
-                workspaceId={ws.id}
-                parent={{ requestId: open.id }}
-                compact
-                title="Files"
-              />
+              <>
+                <RequestVisits workspaceId={ws.id} request={open} />
+                <FilesSection
+                  workspaceId={ws.id}
+                  parent={{ requestId: open.id }}
+                  compact
+                  title="Files"
+                />
+              </>
             ) : undefined
           }
         />
