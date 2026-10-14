@@ -110,6 +110,968 @@ export type Database = {
           },
         ];
       };
+      azh_budget_lines: {
+        Row: {
+          budgeted: number;
+          category: string;
+          created_at: string;
+          deal_id: string;
+          id: string;
+          position: number;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          budgeted?: number;
+          category: string;
+          created_at?: string;
+          deal_id: string;
+          id?: string;
+          position?: number;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          budgeted?: number;
+          category?: string;
+          created_at?: string;
+          deal_id?: string;
+          id?: string;
+          position?: number;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_budget_lines_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_budget_lines_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_change_orders: {
+        Row: {
+          amount: number;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          decided_on: string | null;
+          description: string;
+          id: string;
+          number: number;
+          status: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount: number;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          decided_on?: string | null;
+          description: string;
+          id?: string;
+          number: number;
+          status?: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          decided_on?: string | null;
+          description?: string;
+          id?: string;
+          number?: number;
+          status?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_change_orders_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_change_orders_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_change_orders_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_costs: {
+        Row: {
+          amount: number;
+          category: string;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          id: string;
+          notes: string | null;
+          receipt_file_id: string | null;
+          spent_on: string;
+          updated_at: string;
+          vendor: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          amount: number;
+          category: string;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          id?: string;
+          notes?: string | null;
+          receipt_file_id?: string | null;
+          spent_on?: string;
+          updated_at?: string;
+          vendor?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          amount?: number;
+          category?: string;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          id?: string;
+          notes?: string | null;
+          receipt_file_id?: string | null;
+          spent_on?: string;
+          updated_at?: string;
+          vendor?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_costs_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_costs_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_costs_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_costs_workspace_id_receipt_file_id_fkey";
+            columns: ["workspace_id", "receipt_file_id"];
+            isOneToOne: false;
+            referencedRelation: "azh_files";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      azh_estimate_items: {
+        Row: {
+          created_at: string;
+          description: string;
+          estimate_id: string;
+          id: string;
+          line_total: number;
+          position: number;
+          qty: number;
+          unit: string | null;
+          unit_price: number;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          description: string;
+          estimate_id: string;
+          id?: string;
+          line_total?: number;
+          position?: number;
+          qty?: number;
+          unit?: string | null;
+          unit_price?: number;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          estimate_id?: string;
+          id?: string;
+          line_total?: number;
+          position?: number;
+          qty?: number;
+          unit?: string | null;
+          unit_price?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_estimate_items_workspace_id_estimate_id_fkey";
+            columns: ["workspace_id", "estimate_id"];
+            isOneToOne: false;
+            referencedRelation: "azh_estimates";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_estimate_items_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_estimates: {
+        Row: {
+          accepted_on: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          declined_on: string | null;
+          id: string;
+          markup_amount: number;
+          markup_pct: number;
+          notes: string | null;
+          revised_from: string | null;
+          sent_on: string | null;
+          status: string;
+          subtotal: number;
+          tax_amount: number;
+          tax_pct: number;
+          title: string;
+          total: number;
+          updated_at: string;
+          valid_until: string | null;
+          version: number;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_on?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          declined_on?: string | null;
+          id?: string;
+          markup_amount?: number;
+          markup_pct?: number;
+          notes?: string | null;
+          revised_from?: string | null;
+          sent_on?: string | null;
+          status?: string;
+          subtotal?: number;
+          tax_amount?: number;
+          tax_pct?: number;
+          title?: string;
+          total?: number;
+          updated_at?: string;
+          valid_until?: string | null;
+          version?: number;
+          workspace_id: string;
+        };
+        Update: {
+          accepted_on?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          declined_on?: string | null;
+          id?: string;
+          markup_amount?: number;
+          markup_pct?: number;
+          notes?: string | null;
+          revised_from?: string | null;
+          sent_on?: string | null;
+          status?: string;
+          subtotal?: number;
+          tax_amount?: number;
+          tax_pct?: number;
+          title?: string;
+          total?: number;
+          updated_at?: string;
+          valid_until?: string | null;
+          version?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_estimates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_estimates_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_estimates_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_estimates_workspace_id_revised_from_fkey";
+            columns: ["workspace_id", "revised_from"];
+            isOneToOne: false;
+            referencedRelation: "azh_estimates";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      azh_files: {
+        Row: {
+          created_at: string;
+          deal_id: string | null;
+          id: string;
+          kind: string;
+          mime_type: string;
+          name: string;
+          path: string;
+          request_id: string | null;
+          size_bytes: number;
+          uploaded_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          deal_id?: string | null;
+          id?: string;
+          kind?: string;
+          mime_type: string;
+          name: string;
+          path: string;
+          request_id?: string | null;
+          size_bytes: number;
+          uploaded_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          deal_id?: string | null;
+          id?: string;
+          kind?: string;
+          mime_type?: string;
+          name?: string;
+          path?: string;
+          request_id?: string | null;
+          size_bytes?: number;
+          uploaded_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_files_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_files_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_files_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_files_workspace_id_request_id_fkey";
+            columns: ["workspace_id", "request_id"];
+            isOneToOne: false;
+            referencedRelation: "azh_requests";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      azh_intake: {
+        Row: {
+          client_key: string | null;
+          consent_text: string | null;
+          created_at: string;
+          description: string;
+          email: string | null;
+          id: string;
+          job_address: string;
+          job_zip: string;
+          language: string;
+          name: string;
+          page_url: string | null;
+          phone: string;
+          photo_paths: string[];
+          preferred_contact_time: string;
+          processed_at: string | null;
+          request_id: string | null;
+          service_type: string;
+          sms_consent: boolean;
+          workspace_id: string | null;
+          workspace_slug: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_key?: string | null;
+          consent_text?: string | null;
+          created_at?: string;
+          description: string;
+          email?: string | null;
+          id?: string;
+          job_address: string;
+          job_zip: string;
+          language?: string;
+          name: string;
+          page_url?: string | null;
+          phone: string;
+          photo_paths?: string[];
+          preferred_contact_time?: string;
+          processed_at?: string | null;
+          request_id?: string | null;
+          service_type: string;
+          sms_consent?: boolean;
+          workspace_id?: string | null;
+          workspace_slug: string;
+        };
+        Update: {
+          client_key?: string | null;
+          consent_text?: string | null;
+          created_at?: string;
+          description?: string;
+          email?: string | null;
+          id?: string;
+          job_address?: string;
+          job_zip?: string;
+          language?: string;
+          name?: string;
+          page_url?: string | null;
+          phone?: string;
+          photo_paths?: string[];
+          preferred_contact_time?: string;
+          processed_at?: string | null;
+          request_id?: string | null;
+          service_type?: string;
+          sms_consent?: boolean;
+          workspace_id?: string | null;
+          workspace_slug?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_intake_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_milestones: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          done_on: string | null;
+          id: string;
+          name: string;
+          notes: string | null;
+          planned_on: string | null;
+          position: number;
+          status: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          done_on?: string | null;
+          id?: string;
+          name: string;
+          notes?: string | null;
+          planned_on?: string | null;
+          position?: number;
+          status?: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          done_on?: string | null;
+          id?: string;
+          name?: string;
+          notes?: string | null;
+          planned_on?: string | null;
+          position?: number;
+          status?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_milestones_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_milestones_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_milestones_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_projects: {
+        Row: {
+          bid_sent_on: string | null;
+          completed_on: string | null;
+          contract_value: number | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          estimate_total: number | null;
+          job_address: string | null;
+          job_zip: string | null;
+          notes: string | null;
+          office: string | null;
+          project_lead: string | null;
+          property_id: string | null;
+          service_types: string[];
+          source: string | null;
+          start_on: string | null;
+          target_on: string | null;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          bid_sent_on?: string | null;
+          completed_on?: string | null;
+          contract_value?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id: string;
+          estimate_total?: number | null;
+          job_address?: string | null;
+          job_zip?: string | null;
+          notes?: string | null;
+          office?: string | null;
+          project_lead?: string | null;
+          property_id?: string | null;
+          service_types?: string[];
+          source?: string | null;
+          start_on?: string | null;
+          target_on?: string | null;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          bid_sent_on?: string | null;
+          completed_on?: string | null;
+          contract_value?: number | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string;
+          estimate_total?: number | null;
+          job_address?: string | null;
+          job_zip?: string | null;
+          notes?: string | null;
+          office?: string | null;
+          project_lead?: string | null;
+          property_id?: string | null;
+          service_types?: string[];
+          source?: string | null;
+          start_on?: string | null;
+          target_on?: string | null;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_projects_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_projects_project_lead_fkey";
+            columns: ["project_lead"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_projects_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_projects_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_projects_workspace_id_property_id_fkey";
+            columns: ["workspace_id", "property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      azh_requests: {
+        Row: {
+          assigned_to: string | null;
+          closed_at: string | null;
+          contact_id: string | null;
+          contacted_at: string | null;
+          converted_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string | null;
+          description: string | null;
+          id: string;
+          job_address: string | null;
+          job_zip: string | null;
+          language: string;
+          office: string;
+          photo_paths: string[];
+          preferred_contact_time: string | null;
+          service_type: string | null;
+          sms_consent: boolean;
+          sms_consent_at: string | null;
+          sms_consent_text: string | null;
+          source: string;
+          status: string;
+          submitted_at: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          assigned_to?: string | null;
+          closed_at?: string | null;
+          contact_id?: string | null;
+          contacted_at?: string | null;
+          converted_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          description?: string | null;
+          id?: string;
+          job_address?: string | null;
+          job_zip?: string | null;
+          language?: string;
+          office?: string;
+          photo_paths?: string[];
+          preferred_contact_time?: string | null;
+          service_type?: string | null;
+          sms_consent?: boolean;
+          sms_consent_at?: string | null;
+          sms_consent_text?: string | null;
+          source?: string;
+          status?: string;
+          submitted_at?: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          assigned_to?: string | null;
+          closed_at?: string | null;
+          contact_id?: string | null;
+          contacted_at?: string | null;
+          converted_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          description?: string | null;
+          id?: string;
+          job_address?: string | null;
+          job_zip?: string | null;
+          language?: string;
+          office?: string;
+          photo_paths?: string[];
+          preferred_contact_time?: string | null;
+          service_type?: string | null;
+          sms_consent?: boolean;
+          sms_consent_at?: string | null;
+          sms_consent_text?: string | null;
+          source?: string;
+          status?: string;
+          submitted_at?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_requests_assigned_to_fkey";
+            columns: ["assigned_to"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_requests_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_requests_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_requests_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_requests_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_settings: {
+        Row: {
+          created_at: string;
+          cslb_license: string | null;
+          fallbrook_assignee: string | null;
+          intake_enabled: boolean;
+          san_diego_assignee: string | null;
+          service_types: string[];
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          cslb_license?: string | null;
+          fallbrook_assignee?: string | null;
+          intake_enabled?: boolean;
+          san_diego_assignee?: string | null;
+          service_types?: string[];
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          cslb_license?: string | null;
+          fallbrook_assignee?: string | null;
+          intake_enabled?: boolean;
+          san_diego_assignee?: string | null;
+          service_types?: string[];
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_settings_fallbrook_assignee_fkey";
+            columns: ["fallbrook_assignee"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_settings_san_diego_assignee_fkey";
+            columns: ["san_diego_assignee"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      azh_visits: {
+        Row: {
+          address: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string | null;
+          ends_at: string;
+          estimator_id: string | null;
+          id: string;
+          notes: string | null;
+          office: string;
+          request_id: string | null;
+          starts_at: string;
+          status: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          address?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          ends_at: string;
+          estimator_id?: string | null;
+          id?: string;
+          notes?: string | null;
+          office: string;
+          request_id?: string | null;
+          starts_at: string;
+          status?: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          address?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          ends_at?: string;
+          estimator_id?: string | null;
+          id?: string;
+          notes?: string | null;
+          office?: string;
+          request_id?: string | null;
+          starts_at?: string;
+          status?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_visits_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_visits_estimator_id_fkey";
+            columns: ["estimator_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_visits_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "azh_visits_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "azh_visits_workspace_id_request_id_fkey";
+            columns: ["workspace_id", "request_id"];
+            isOneToOne: false;
+            referencedRelation: "azh_requests";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      azh_zip_routes: {
+        Row: {
+          created_at: string;
+          office: string;
+          workspace_id: string;
+          zip: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          office: string;
+          workspace_id: string;
+          zip: string;
+        };
+        Update: {
+          created_at?: string;
+          office?: string;
+          workspace_id?: string;
+          zip?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_zip_routes_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       companies: {
         Row: {
           address: string | null;
@@ -1203,6 +2165,78 @@ export type Database = {
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string };
       accept_pending_invites: { Args: Record<PropertyKey, never>; Returns: number };
+      azh_duplicate_estimate: {
+        Args: { p_estimate_id: string };
+        Returns: {
+          accepted_on: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          declined_on: string | null;
+          id: string;
+          markup_amount: number;
+          markup_pct: number;
+          notes: string | null;
+          revised_from: string | null;
+          sent_on: string | null;
+          status: string;
+          subtotal: number;
+          tax_amount: number;
+          tax_pct: number;
+          title: string;
+          total: number;
+          updated_at: string;
+          valid_until: string | null;
+          version: number;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "azh_estimates";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      azh_save_estimate: {
+        Args: {
+          p_estimate_id: string;
+          p_items: Json;
+          p_markup_pct: number;
+          p_notes: string;
+          p_tax_pct: number;
+          p_title: string;
+          p_valid_until: string;
+        };
+        Returns: {
+          accepted_on: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string;
+          declined_on: string | null;
+          id: string;
+          markup_amount: number;
+          markup_pct: number;
+          notes: string | null;
+          revised_from: string | null;
+          sent_on: string | null;
+          status: string;
+          subtotal: number;
+          tax_amount: number;
+          tax_pct: number;
+          title: string;
+          total: number;
+          updated_at: string;
+          valid_until: string | null;
+          version: number;
+          workspace_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "azh_estimates";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       contact_facets: { Args: { p_workspace_id: string }; Returns: Json };
       contacts_bulk_tag: {
         Args: {
