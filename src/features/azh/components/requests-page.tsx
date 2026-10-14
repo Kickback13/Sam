@@ -13,6 +13,7 @@ import type { WorkspaceContext } from "@/server/workspace";
 
 import { OFFICES, officeLabel, REQUEST_STATUSES } from "../constants";
 import { getAzhSettings, getRequest, getRequests, signedUrls } from "../server/queries";
+import { FilesSection } from "./files-section";
 import { REQUEST_STATUS_BADGE, RequestDrawer } from "./request-drawer";
 
 type SP = Record<string, string | string[] | undefined>;
@@ -21,12 +22,9 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 export async function RequestsPage({
   ctx,
   searchParams,
-  requestExtra,
 }: {
   ctx: WorkspaceContext;
   searchParams: SP;
-  /** Server-rendered sections for the open request (files, visits). */
-  requestExtra?: (requestId: string, dealId: string | null) => React.ReactNode;
 }) {
   const ws = ctx.workspace;
   const filters = {
@@ -163,7 +161,16 @@ export async function RequestsPage({
           request={open}
           photoUrls={photoUrls}
           activity={activity}
-          extra={open && requestExtra ? requestExtra(open.id, open.dealId) : undefined}
+          extra={
+            open ? (
+              <FilesSection
+                workspaceId={ws.id}
+                parent={{ requestId: open.id }}
+                compact
+                title="Files"
+              />
+            ) : undefined
+          }
         />
       </Suspense>
     </>

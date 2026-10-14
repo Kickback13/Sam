@@ -13,7 +13,7 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 - [x] 5. AZH settings — `/w/[slug]/settings/azh` (construction only): CSLB, service list, office task assignees, Fallbrook ZIP list (default in migration, AZH-004), embed snippet. Tested: unit (routing, zip parsing), RLS (admin-only), e2e.
 - [x] 6. Public homeowner request form — `/r/[slug]` (+ `/embed`, `/thanks`), EN/ES, 5 photos to an upload-only bucket, unchecked TCPA consent with stored wording, honeypot + DB rate limits, intake trigger creates contact/request/Lead/project/task/activities. Tested: unit (schema, i18n), RLS (anon insert-only, no reads, rate limit, dedupe), `e2e/azh-request-form.spec.ts`.
 - [x] 7. Requests inbox — `/w/[slug]/requests` with search + office/service/status filters, detail drawer (contact, consent evidence, photos via signed URLs, activity), assign / status / office, log call (→ contacted), “Convert to project” (Lead → Estimate). Tested: `e2e/azh-requests.spec.ts`.
-- [ ] 8. Files & photos
+- [x] 8. Files & photos — private `azh-files` bucket (workspace RLS, 10 MB, allow-list), `azh_files` metadata, `FilesPanel` (image previews via signed URLs, document list, delete) on the project Files tab and in the request drawer. Tested: unit (allow-list, name sanitizing), RLS (isolation, anon can't read/upload), `e2e/azh-files.spec.ts`.
 - [ ] 9. AZH Today cards
 
 ### Part 2: scheduling and budget

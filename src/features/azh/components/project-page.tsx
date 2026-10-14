@@ -24,6 +24,7 @@ import {
   type ProjectDeal,
 } from "../server/queries";
 import { EstimatesPanel } from "./estimates-panel";
+import { FilesSection } from "./files-section";
 import { ProjectOverviewForm } from "./project-overview-form";
 import { ComingInThisTrack, parseProjectTab, PROJECT_TABS, ProjectTabs } from "./project-tabs";
 
@@ -122,7 +123,8 @@ export async function ProjectPage({
       )}
       {tab === "tasks" && <TasksTab ctx={ctx} deal={deal} />}
       {tab === "activity" && <ActivityTab ctx={ctx} deal={deal} />}
-      {(tab === "files" || tab === "schedule" || tab === "budget") && (
+      {tab === "files" && <FilesSection workspaceId={ws.id} parent={{ dealId: deal.id }} />}
+      {(tab === "schedule" || tab === "budget") && (
         <ComingInThisTrack title={PROJECT_TABS.find((t) => t.key === tab)!.label} />
       )}
     </>
