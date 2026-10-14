@@ -23,11 +23,13 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 - [x] 12. Project budget — budget lines (inline edit), costs (date, vendor, amount, category, optional receipt in `azh-files`), budget vs. actual with variance + % used (unbudgeted spend shown, not hidden), change orders (auto-numbered, pending/approved/declined, credits allowed); approved COs add to the contract value and the deal value (trigger). Math in `budget/math.ts`. Tested: unit, RLS (deal value sync), `e2e/azh-budget.spec.ts`.
 - [x] 13. Demo data — `20261014060600_azh_seed_demo.sql`, `demo-azh` only (idempotent): 4 companies, 12 contacts (Sample/Example, 555-01xx, @example.com, 2 Spanish, demo consent records), 9 projects across every stage, 6 estimates (draft/sent/accepted/declined + a v2 revision), 6 requests in every status, 4 visits, 9 milestones, budgets/costs (incl. unbudgeted spend) and change orders (incl. a credit), 4 tasks. Verified: 0 AZH rows outside demo workspaces after reset; RLS suite green.
 - [x] 14. End-to-end tests — `e2e/azh-flow.spec.ts` runs the whole chain (public form + photo → inbox → visit → convert → estimate $3,829.17 → PDF → Bid Sent → change order → budget vs actual). `e2e/azh-mobile.spec.ts`: every AZH screen at 390px, no sideways scroll (budget rows reworked for phones after reviewing screenshots). Lighthouse (mobile) accessibility: public form EN/ES/embed/thanks **100**; AZH Today/Requests/Schedule/Project budget/estimates **100** (Today was 96 → fixed tap-target size).
-- [ ] 15. Final review pass + handoff
+- [x] 15. Final review pass + handoff — lane check clean, diff re-read (fixed linked-property bug + added e2e), every check re-run green; handoff below and in the PR.
 
 ## Done
 
 ## Blockers
+
+None. (Docker wasn't running initially; starting `dockerd` once worked, so all DB/RLS/e2e tests ran.)
 
 ## Shared files touched
 
@@ -49,6 +51,8 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 See `docs/DECISIONS-AZH.md`.
 
 ## What we need from Sam
+
+See handoff §9 below.
 
 ## Task notes
 
@@ -72,3 +76,114 @@ Plan: (1) insert-only `azh_intake` + SECURITY DEFINER trigger; (2) `azh_public_f
 Self-review: lane ✔ (routes `/r/**`, feature folder, 2 shared one-liners listed); RLS ✔ (anon can only insert; no select on intake/requests/buckets; tested); no secrets ✔; 390px ✔ (single column, full-width submit); errors honest + focused (`role=alert`, per-field messages EN/ES); H4A unchanged ✔ (headers change only exempts `/r/*/embed`).
 
 Note: my own (unmerged, never applied to hosted) AZH migrations were adjusted during development (RPC arg defaults, ZIP-replace RPC). Pre-existing migrations are untouched.
+
+# AZH TRACK HANDOFF
+
+## 1. What was built (by checklist number)
+
+1. **Collaboration doc** — `docs/COLLABORATION.md` (two tracks, lanes, shared-file + migration rules, "never merge Track B without Keanu's review"); one-line pointer in `CLAUDE.md`.
+2. **AZH Demo workspace** — `demo-azh` (is_demo, construction, AZH brand, own Projects pipeline). Members of `demo` are copied in with the same role.
+3. **Project details** — `azh_projects` (1:1 with the deal): job address/ZIP or linked property, service types, office, source, estimate total (automatic), contract value, bid/start/target/completed dates, project lead, notes. Project page `/w/[slug]/projects/[id]` with tabs Overview · Estimates · Files & Photos · Schedule · Budget · Tasks · Activity. Board cards show office + services + value; the deal drawer links to the project page.
+4. **Estimates** — line items, markup %, tax %, totals to the cent (computed in the database; same rules in a tested TS module), draft/sent/accepted/declined with dates, "Duplicate to revise" versions, **Download PDF** (AZH branding, both offices + phones, CSLB number or "License # pending"). Download only.
+5. **AZH settings** — Settings → AZH (construction only): CSLB number, editable service list, office task assignees, Fallbrook ZIP list (default North County list in a migration, AZH-004), copy-paste embed snippet.
+6. **Public request form** — `/r/azh-builders` (works for any construction workspace slug), no login, English/Spanish, up to 5 photos, unchecked TCPA consent with stored wording/source/time, honeypot + per-IP/per-phone/per-workspace rate limits, server + DB validation. Anon can only INSERT into `azh_intake`; a SECURITY DEFINER trigger creates/merges the contact (homeowner), the request, a Lead deal + project row, a task for the routed office and activities. Photos go to an upload-only bucket under a random path. Thank-you page EN/ES, iframe version `/r/<slug>/embed`. No automatic replies.
+7. **Requests inbox** — filters (office, service, status + search), detail drawer with photos, consent evidence and activity; assign, change status/office, log call, "Convert to project" (Lead → Estimate).
+8. **Files & photos** — private `azh-files` bucket (workspace RLS, 10 MB, type allow-list), previews, PDF/doc uploads, delete; on the project page and in the request drawer.
+9. **AZH Today** — 5 real-data cards: new requests (7 days), estimates awaiting reply, projects in progress, estimate visits this week, tasks due.
+10. **Estimate visit booking** — internal only, from a request or project; date/time (San Diego time), office, estimator, address, notes; double-booking warning with "Book anyway"; request → "estimate scheduled"; week view per office at `/w/[slug]/schedule`.
+11. **Project schedule** — milestones (name, planned date, done date, status, late badge) + "Upcoming milestones".
+12. **Project budget** — budget lines, cost entries (date, vendor, amount, category, optional receipt), budget vs. actual with variance, change orders (pending/approved/declined, credits allowed); approved ones add to the contract value and the deal value.
+13. **Demo data** — fictional Sample/Example records in `demo-azh` only (projects in every stage, estimates incl. a revision, requests in every status, visits, milestones, budgets, change orders, tasks).
+14. **End-to-end tests** — the full chain in one spec, a 390px pass over every AZH screen, Lighthouse accessibility.
+15. **Final review pass** — lane check, re-read of the diff (fixed: project form showed the deal's property instead of the project's), all checks re-run.
+
+## 2. How to see it (local)
+
+```bash
+pnpm install
+pnpm db:start            # now also starts storage-api (needed for photos/files)
+pnpm db:reset            # applies all migrations incl. AZH + demo data
+pnpm dev                 # http://localhost:3000
+```
+
+- Public form (no login): http://localhost:3000/r/azh-builders (or `/r/demo-azh`), `?lang=es` for Spanish, `/embed` for the iframe.
+- Signed-in screens: sign in (magic link via Mailpit http://127.0.0.1:54324, or `ENABLE_TEST_PASSWORD_LOGIN=true` with a local user), then add yourself to **`demo-azh`** (e.g. `insert into workspace_members (workspace_id, user_id, role) select id, '<your user id>', 'admin' from workspaces where slug = 'demo-azh';`). Open `/w/demo-azh/today`, `/requests`, `/schedule`, `/pipeline` → a card → "Project page →", and Settings → AZH.
+
+## 3. Tests run and results
+
+| Check                                              | Result                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`, `pnpm lint`, `pnpm typecheck` | pass                                                                                                                                                                                                                                                                            |
+| `pnpm test` (unit)                                 | **108 / 108** (13 files; 39 new AZH tests: estimate math, budget/variance/change orders, ZIP routing, double-booking, San Diego time/DST, form validation + EN/ES, file allow-list, PDF)                                                                                        |
+| `pnpm test:rls`                                    | **32 / 32** — includes `supabase/tests/azh_rls.sql` **78 / 0** (isolation on every AZH table + both buckets, viewer/admin rules, anon insert-only intake, anon can't read any bucket, rate limit, dedupe, estimate-total parity, deal-value sync) and the existing suite 42 / 0 |
+| `pnpm e2e`                                         | **15 / 15** (8 new AZH specs incl. the 9-step chain `e2e/azh-flow.spec.ts` and `e2e/azh-mobile.spec.ts` at 390px); Phase 1 smoke + mobile still pass                                                                                                                            |
+| `pnpm build`                                       | pass                                                                                                                                                                                                                                                                            |
+| Lighthouse (mobile) accessibility                  | public form EN / ES / embed / thanks **100**; AZH Today, Requests, Schedule, project Budget, Estimates **100**                                                                                                                                                                  |
+| GitHub CI on PR                                    | green                                                                                                                                                                                                                                                                           |
+
+## 4. Shared files touched (and why)
+
+| File                                       | Change                                                                                                         | Why                                                       |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `CLAUDE.md`                                | +1 line → `docs/COLLABORATION.md`                                                                              | Requested                                                 |
+| `package.json`, `pnpm-lock.yaml`           | `pdf-lib` dep; `db:start` no longer excludes `storage-api`                                                     | Estimate PDFs; uploads need Storage locally (AZH-011)     |
+| `vitest.config.mts`                        | unit include `src/features/**/*.test.ts`                                                                       | Tests beside AZH code                                     |
+| `src/lib/db/types.ts`                      | regenerated (`pnpm db:types`), additions only                                                                  | New tables/RPCs                                           |
+| `src/lib/nav.ts`                           | Requests no longer "coming in 8"; + Schedule item (construction)                                               | New pages                                                 |
+| `tests/unit/misc.test.ts`                  | "Requests is a phase-8 placeholder" now asserts Community (still phase 8) + Requests resolves to the real page | Behavior intentionally changed; coverage kept             |
+| `src/components/pipeline/deal-card.tsx`    | 1 import + `useDealCardExtra()` + `{extra}`                                                                    | Board card office/services (context hook, null elsewhere) |
+| `src/components/pipeline/deal-drawer.tsx`  | "Project page →" link for construction                                                                         | Reach the project page                                    |
+| `src/app/w/[slug]/pipeline/page.tsx`       | fetch card extras (construction) + provider                                                                    | Feeds the card hook                                       |
+| `src/components/settings/settings-nav.tsx` | optional `extraTabs` prop                                                                                      | AZH tab only for construction                             |
+| `src/app/w/[slug]/settings/layout.tsx`     | passes the AZH tab for construction                                                                            | Same                                                      |
+| `src/app/w/[slug]/today/page.tsx`          | 1 import + 1 line `<AzhTodayCards>`                                                                            | AZH Today                                                 |
+| `src/lib/supabase/proxy.ts`                | `/r` added to public paths                                                                                     | Form needs no login                                       |
+| `next.config.ts`                           | DENY framing everywhere except `/r/<slug>/embed` (`frame-ancestors *`)                                         | Embeddable form (AZH-012)                                 |
+| `tests/rls/azh-sql-suite.test.ts` (new)    | runs `supabase/tests/azh_rls.sql` in `pnpm test:rls`                                                           | RLS tests run with the existing command                   |
+
+No Track A files, CI workflow files, Settings → Buy box/Integrations or `/api/inbound/*` were touched.
+
+## 5. New migrations (in order) — **Must be applied to hosted by Keanu AFTER merge**
+
+1. `20261014060000_azh_demo_workspace.sql` — `demo-azh` workspace, Projects pipeline + stages, integration rows, members copied from `demo`.
+2. `20261014060100_azh_core.sql` — `azh_settings`, `azh_zip_routes` (+ default Fallbrook ZIPs, init trigger on new construction workspaces), `azh_projects`, `azh_estimates` + `azh_estimate_items` (DB-computed totals, status dates, project estimate_total), RPCs `azh_save_estimate`, `azh_duplicate_estimate`, `azh_replace_fallbrook_zips`; RLS.
+3. `20261014060200_azh_requests.sql` — `azh_requests`, insert-only `azh_intake` + SECURITY DEFINER processing trigger, `azh_public_form()` RPC, `azh-intake` bucket (anon upload-only) + policies; RLS.
+4. `20261014060300_azh_files.sql` — `azh_files` + `azh-files` bucket (10 MB, allow-list) + workspace policies.
+5. `20261014060400_azh_visits.sql` — `azh_visits` + request-status trigger; RLS.
+6. `20261014060500_azh_schedule_budget.sql` — `azh_milestones`, `azh_budget_lines`, `azh_costs`, `azh_change_orders`, deal-value sync triggers; RLS.
+7. `20261014060600_azh_seed_demo.sql` — fictional sample data in `demo-azh` only (idempotent).
+
+All additive (no table/column/policy/function renamed or dropped; no existing migration edited). They add one trigger on `workspaces` (construction only) and grant `usage` on `app_private` to `anon` (still not exposed via the Data API). Track A has **no** migrations on any branch yet, so there is no out-of-order concern today; if Track A ships later-timestamped migrations to hosted first, these AZH files don't depend on them and can be applied out of order (`supabase db push --include-all`). Regenerate types after applying.
+
+## 6. Merge readiness
+
+- `main` has not moved since the branch was cut → **no conflicts**.
+- **CI green** on the PR (lint, typecheck, unit, build).
+- Draft → Ready for review. **Do not merge without Keanu's review.**
+
+## 7. Blockers and what I tried
+
+None blocking. Docker wasn't running at first; starting `dockerd` once worked, so DB, RLS and e2e tests all **ran** locally.
+
+## 8. Decisions made
+
+See `docs/DECISIONS-AZH.md` (AZH-001 … AZH-012): feature folder; project details 1:1 with deals; integer-cent money math with the DB authoritative; ZIP routing table + default list; insert-only intake + SECURITY DEFINER trigger; TCPA consent handling; visits double-booking is a warning; deal value follows the project; pdf-lib PDFs; separate `demo-azh`; storage-api in the local stack; `frame-ancestors *` on the embed only.
+
+Things I'd revisit: narrow `frame-ancestors` once AZH's website domain is known; move intake photo uploads to server-issued signed upload URLs so they share the rate limit.
+
+## 9. What we need from Sam
+
+1. The **CSLB license number** (PDFs say "License # pending" until it's entered in Settings → AZH).
+2. Confirm the **Fallbrook ZIP list** (AZH-004) — e.g. should Temecula/Murrieta, Ramona or Encinitas go to Fallbrook?
+3. Confirm the **service list** (Framing, Drywall, Painting, Carpentry, Cement & concrete, ADU, Tenant improvement, Renovation, Other).
+4. Who gets new-request tasks for each office (Settings → AZH)?
+5. Should sales tax apply to labor, or only materials (AZH-003)?
+6. The website domain that will embed the form.
+7. The full Fallbrook office ZIP for the address on PDFs ("532 E. Fallbrook Ave, Fallbrook, CA").
+
+## 10. Recommended next steps
+
+1. Keanu reviews, merges, applies the 7 migrations to hosted, regenerates types, adds members to `demo-azh`.
+2. Enter the CSLB number and confirm ZIPs/services; embed `/r/azh-builders/embed` on the AZH website.
+3. Known issues / tech debt (ranked): (a) orphaned intake photos when a form isn't submitted — add a cleanup job; (b) anon photo uploads aren't rate-limited at the storage layer (10 MB image-only, random path) — switch to signed upload URLs; (c) editing a deal's value in the drawer is overwritten by the project/estimate/change-order sync (by design, AZH-008); (d) demo visit dates are relative to when the seed runs; (e) AZH pages' mobile LCP ≈ 4 s in Lighthouse simulation (extra queries + display font) — worth caching later; (f) the shared `ListFilters` can drop a filter if two are changed before the URL updates (seen in e2e, not fixed — Track A's shared component); (g) changing a request's office doesn't change its project's office.
+4. Later phases: Google Calendar sync for visits (Phase 5), messaging/GHL (Phase 5), AZH community (Phase 6 engine).
