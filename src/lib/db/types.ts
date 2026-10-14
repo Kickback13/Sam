@@ -2197,15 +2197,19 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      azh_replace_fallbrook_zips: {
+        Args: { p_workspace_id: string; p_zips: string[] };
+        Returns: number;
+      };
       azh_save_estimate: {
         Args: {
           p_estimate_id: string;
           p_items: Json;
           p_markup_pct: number;
-          p_notes: string;
+          p_notes?: string;
           p_tax_pct: number;
           p_title: string;
-          p_valid_until: string;
+          p_valid_until?: string;
         };
         Returns: {
           accepted_on: string | null;

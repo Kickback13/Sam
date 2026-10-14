@@ -143,6 +143,28 @@ create trigger azh_workspaces_after_insert
 
 select app_private.azh_init_workspace(w.id) from public.workspaces w where w.business_type = 'construction';
 
+-- Replace a workspace's Fallbrook ZIP list atomically (SECURITY INVOKER → admin RLS applies).
+create or replace function public.azh_replace_fallbrook_zips(p_workspace_id uuid, p_zips text[])
+returns integer
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  n integer;
+begin
+  if exists (select 1 from unnest(coalesce(p_zips, '{}')) z where z !~ '^[0-9]{5}$') then
+    raise exception 'ZIPs must be 5 digits' using errcode = '22023';
+  end if;
+  delete from public.azh_zip_routes where workspace_id = p_workspace_id;
+  insert into public.azh_zip_routes (workspace_id, zip, office)
+  select distinct p_workspace_id, z, 'fallbrook' from unnest(coalesce(p_zips, '{}')) z;
+  get diagnostics n = row_count;
+  return n;
+end;
+$$;
+grant execute on function public.azh_replace_fallbrook_zips(uuid, text[]) to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- Project details (1:1 with a deal in a construction pipeline)
 -- ---------------------------------------------------------------------------
@@ -400,9 +422,9 @@ create or replace function public.azh_save_estimate(
   p_title text,
   p_markup_pct numeric,
   p_tax_pct numeric,
-  p_valid_until date,
-  p_notes text,
-  p_items jsonb
+  p_items jsonb,
+  p_valid_until date default null,
+  p_notes text default null
 )
 returns public.azh_estimates
 language plpgsql
@@ -439,7 +461,7 @@ begin
   return e;
 end;
 $$;
-grant execute on function public.azh_save_estimate(uuid, text, numeric, numeric, date, text, jsonb) to authenticated;
+grant execute on function public.azh_save_estimate(uuid, text, numeric, numeric, jsonb, date, text) to authenticated;
 
 -- "Duplicate to revise": copy an estimate + items as the next version (draft).
 create or replace function public.azh_duplicate_estimate(p_estimate_id uuid)

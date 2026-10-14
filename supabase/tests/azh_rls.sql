@@ -140,7 +140,7 @@ begin
 
     -- Writing in A: estimate totals are computed by the database.
     insert into public.azh_estimates (workspace_id, deal_id) values (ws_a, deal_a) returning id into est_a;
-    select * into e from public.azh_save_estimate(est_a, 'Kitchen', 12.5, 7.75, null, null,
+    select * into e from public.azh_save_estimate(est_a, 'Kitchen', 12.5, 7.75,
       '[{"description":"Drywall sheets","qty":120,"unit":"sheet","unit_price":2.35},
         {"description":"Labor","qty":16,"unit":"hr","unit_price":65},
         {"description":"Fixture","qty":1,"unit_price":349.99}]'::jsonb);

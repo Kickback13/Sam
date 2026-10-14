@@ -12,11 +12,18 @@ const TABS = [
   { path: "/integrations", label: "Integrations" },
 ];
 
-export function SettingsNav({ slug }: { slug: string }) {
+export function SettingsNav({
+  slug,
+  extraTabs = [],
+}: {
+  slug: string;
+  /** Business-specific tabs (e.g. AZH for construction workspaces). */
+  extraTabs?: { path: string; label: string }[];
+}) {
   const pathname = usePathname();
   return (
     <nav aria-label="Settings" className="mb-5 flex gap-1 overflow-x-auto border-b">
-      {TABS.map((t) => {
+      {[...TABS, ...extraTabs].map((t) => {
         const href = `/w/${slug}/settings${t.path}`;
         const active = pathname === href;
         return (
