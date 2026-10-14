@@ -112,14 +112,14 @@ export function BudgetPanel({
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm" data-testid="variance-table">
+            <table className="w-full min-w-[420px] text-sm" data-testid="variance-table">
               <thead className="text-left text-xs text-muted-foreground uppercase">
                 <tr>
                   <th className="py-1 font-semibold">Category</th>
                   <th className="py-1 text-right font-semibold">Budgeted</th>
                   <th className="py-1 text-right font-semibold">Actual</th>
                   <th className="py-1 text-right font-semibold">Variance</th>
-                  <th className="py-1 text-right font-semibold">Used</th>
+                  <th className="hidden py-1 text-right font-semibold sm:table-cell">Used</th>
                   <th className="w-9" />
                 </tr>
               </thead>
@@ -259,11 +259,11 @@ export function BudgetPanel({
                 className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm"
                 data-testid="change-order-row"
               >
-                <span className="w-10 font-semibold text-muted-foreground tabular">
-                  #{o.number}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block">{o.description}</span>
+                <span className="min-w-0 flex-1 basis-56">
+                  <span className="block">
+                    <span className="font-semibold text-muted-foreground tabular">#{o.number}</span>{" "}
+                    {o.description}
+                  </span>
                   {o.decided_on && (
                     <span className="text-xs text-muted-foreground">
                       {o.status === "approved" ? "Approved" : "Declined"} {formatDate(o.decided_on)}
@@ -570,13 +570,10 @@ function CostsSection({
               className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm"
               data-testid="cost-row"
             >
-              <span className="w-24 text-xs text-muted-foreground tabular">
-                {formatDate(c.spent_on)}
-              </span>
-              <span className="min-w-0 flex-1">
+              <span className="min-w-0 flex-1 basis-48">
                 <span className="block font-semibold">{c.vendor || "—"}</span>
                 <span className="text-xs text-muted-foreground">
-                  {c.category}
+                  <span className="tabular">{formatDate(c.spent_on)}</span> · {c.category}
                   {c.notes ? ` · ${c.notes}` : ""}
                 </span>
               </span>

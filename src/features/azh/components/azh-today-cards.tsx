@@ -42,7 +42,7 @@ function Card({
         </p>
         {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
       </Link>
-      {children && <ul className="mt-2 space-y-1 border-t pt-2 text-xs">{children}</ul>}
+      {children && <ul className="mt-2 space-y-0.5 border-t pt-2 text-xs">{children}</ul>}
     </section>
   );
 }
@@ -65,7 +65,10 @@ export async function AzhTodayCards({ workspaceId, slug }: { workspaceId: string
       >
         {t.newRequests.latest.map((r) => (
           <li key={r.id} className="flex justify-between gap-2">
-            <Link href={`${base}/requests?request=${r.id}`} className="truncate hover:underline">
+            <Link
+              href={`${base}/requests?request=${r.id}`}
+              className="block min-h-6 truncate py-0.5 hover:underline"
+            >
               {r.label}
             </Link>
             <span className="shrink-0 text-muted-foreground">{formatRelative(r.submittedAt)}</span>
@@ -88,7 +91,7 @@ export async function AzhTodayCards({ workspaceId, slug }: { workspaceId: string
           <li key={e.id} className="truncate">
             <Link
               href={`${base}/projects/${e.dealId}?tab=estimates&estimate=${e.id}`}
-              className="hover:underline"
+              className="block min-h-6 truncate py-0.5 hover:underline"
             >
               {e.label}
             </Link>
@@ -104,7 +107,10 @@ export async function AzhTodayCards({ workspaceId, slug }: { workspaceId: string
       >
         {t.inProgress.latest.map((d) => (
           <li key={d.id} className="truncate">
-            <Link href={`${base}/projects/${d.id}`} className="hover:underline">
+            <Link
+              href={`${base}/projects/${d.id}`}
+              className="block min-h-6 truncate py-0.5 hover:underline"
+            >
               {d.title}
             </Link>
           </li>
