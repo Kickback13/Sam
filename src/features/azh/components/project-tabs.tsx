@@ -44,13 +44,3 @@ export function ProjectTabs({ base, active }: { base: string; active: ProjectTab
     </nav>
   );
 }
-
-/** Honest placeholder for a tab not built yet. */
-export function ComingInThisTrack({ title }: { title: string }) {
-  return (
-    <div className="rounded-xl border border-dashed bg-card px-6 py-10 text-center">
-      <h2 className="text-base font-bold">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Coming in this track.</p>
-    </div>
-  );
-}

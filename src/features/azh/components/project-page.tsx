@@ -24,14 +24,16 @@ import {
   getProject,
   getVisits,
   type ProjectDeal,
+  signedUrls,
 } from "../server/queries";
+import { BudgetPanel } from "./budget-panel";
 import { EstimatesPanel } from "./estimates-panel";
 import { FilesSection } from "./files-section";
 import { MilestonesPanel } from "./milestones-panel";
 import { ScheduleVisitDialog } from "./schedule-visit-dialog";
 import { VisitList } from "./visit-list";
 import { ProjectOverviewForm } from "./project-overview-form";
-import { ComingInThisTrack, parseProjectTab, PROJECT_TABS, ProjectTabs } from "./project-tabs";
+import { parseProjectTab, ProjectTabs } from "./project-tabs";
 
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
@@ -131,7 +133,15 @@ export async function ProjectPage({
       {tab === "files" && <FilesSection workspaceId={ws.id} parent={{ dealId: deal.id }} />}
       {tab === "schedule" && <ScheduleTab ctx={ctx} deal={deal} project={project} />}
       {tab === "budget" && (
-        <ComingInThisTrack title={PROJECT_TABS.find((t) => t.key === tab)!.label} />
+        <BudgetPanel
+          dealId={deal.id}
+          contractValue={project?.contract_value ?? null}
+          budget={budget}
+          receiptUrls={await signedUrls(
+            "azh-files",
+            budget.costs.flatMap((c) => (c.receipt ? [c.receipt.path] : [])),
+          )}
+        />
       )}
     </>
   );

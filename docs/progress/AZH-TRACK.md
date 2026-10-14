@@ -20,7 +20,7 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 
 - [x] 10. Estimate visit booking — “Schedule visit” dialog (date/time in San Diego time, length, office, estimator, address, notes) from a request or project; double-booking warning with “Book anyway”; request → estimate scheduled (trigger); `/w/[slug]/schedule` week view per office with double-booked badges, done/cancel. Internal only. Tested: unit (conflicts, DST-safe time), RLS (visit → status), `e2e/azh-schedule.spec.ts`.
 - [x] 11. Project schedule — milestones (name, planned date, done date, status; late badge; done date set by trigger) on the project Schedule tab with site visits; “Upcoming milestones” on `/schedule`. Tested: RLS (viewer can't add, isolation), `e2e/azh-milestones.spec.ts`.
-- [ ] 12. Project budget (lines, costs, change orders)
+- [x] 12. Project budget — budget lines (inline edit), costs (date, vendor, amount, category, optional receipt in `azh-files`), budget vs. actual with variance + % used (unbudgeted spend shown, not hidden), change orders (auto-numbered, pending/approved/declined, credits allowed); approved COs add to the contract value and the deal value (trigger). Math in `budget/math.ts`. Tested: unit, RLS (deal value sync), `e2e/azh-budget.spec.ts`.
 - [ ] 13. Demo data in `demo-azh`
 - [ ] 14. End-to-end tests (+ 390px pass, Lighthouse a11y on the public form)
 - [ ] 15. Final review pass + handoff
