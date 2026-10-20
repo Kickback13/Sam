@@ -30,7 +30,7 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 - [x] A1. Lock down form photo uploads — `POST /r/[slug]/upload` + `azh_issue_upload_tickets()` (types, 10 MB, same IP/phone/workspace limits as submits) → signed upload URLs; broad anon insert policy dropped, Storage only accepts live ticket paths; intake requires photos ticketed to the same phone (migration `20261020060100`, AZH-013). Tested: RLS suite 90/0 (random-path upload refused, ticketed upload ok, bad type/size/count/phone/real-estate refused, wrong-phone photo refused, tickets unreadable), e2e (form + photo still works; route validation; direct Storage upload refused; full chain).
 - [x] A2. Office changes follow through — trigger `azh_requests_office_sync` (migration `20261020060000`) moves the linked project's office and logs a system activity on the project. Tested: RLS suite (+3 assertions, 81/0), `e2e/azh-requests.spec.ts` (office change → project office + activity).
 - [x] A3. Clean up unused uploads — admin-only button in Settings → AZH; `azh_unused_intake_photos()` (admin-checked, RLS) lists photos > 24 h old not on any request; files removed via the Storage API; old tickets pruned; shows how many were removed (migration `20261020060200`, AZH-014). Tested: RLS (+3: lists only the orphan; agents refused), `e2e/azh-cleanup.spec.ts` (removes 1 of 2, keeps the attached one; second run “Nothing to clean up”; hidden for agents).
-- [ ] A4. Follow-ups handoff + re-run every check
+- [x] A4. Follow-ups handoff — every check re-run green (unit 108, RLS 32 incl. AZH SQL 93/0, e2e 18/18, build); report below and in the PR.
 
 Plans:
 
@@ -202,3 +202,55 @@ Things I'd revisit: narrow `frame-ancestors` once AZH's website domain is known;
 2. Enter the CSLB number and confirm ZIPs/services; embed `/r/azh-builders/embed` on the AZH website.
 3. Known issues / tech debt (ranked): (a) orphaned intake photos when a form isn't submitted — add a cleanup job; (b) anon photo uploads aren't rate-limited at the storage layer (10 MB image-only, random path) — switch to signed upload URLs; (c) editing a deal's value in the drawer is overwritten by the project/estimate/change-order sync (by design, AZH-008); (d) demo visit dates are relative to when the seed runs; (e) AZH pages' mobile LCP ≈ 4 s in Lighthouse simulation (extra queries + display font) — worth caching later; (f) the shared `ListFilters` can drop a filter if two are changed before the URL updates (seen in e2e, not fixed — Track A's shared component); (g) changing a request's office doesn't change its project's office.
 4. Later phases: Google Calendar sync for visits (Phase 5), messaging/GHL (Phase 5), AZH community (Phase 6 engine).
+
+# AZH FOLLOW-UPS HANDOFF
+
+## 1. What was built
+
+- **A1. Photo uploads locked down.** The form now asks `POST /r/<slug>/upload` for upload slots. That server route checks the slug, photo types and the 10 MB limit, and the database applies the same per-IP / per-phone / per-workspace limits as form submits. The route returns signed upload URLs. Anon's broad insert policy on `azh-intake` is gone: Storage only accepts the exact paths the server issued (live 15 minutes, write-once), and the intake trigger only accepts photos issued to the same phone number. (AZH-013)
+- **A2. Office changes follow through.** Changing a request's office moves the linked project's office and logs "Office changed from X to Y (from the request)" on the project.
+- **A3. Clean up unused uploads.** An admin-only button in Settings → AZH removes form photos older than 24 hours that never got attached to a submitted request, and says how many it removed. No scheduled jobs. (AZH-014)
+- **A4.** This report; every check re-run. PR left open.
+
+## 2. How to see it locally
+
+`pnpm db:start && pnpm db:reset && pnpm dev`. Public form at `/r/azh-builders` (add photos). Settings → AZH → "Clean up unused uploads" in `demo-azh` (add yourself as admin first; SQL in the PR).
+
+## 3. Tests run
+
+| Check                             | Result                                                                                                                                                                                                              |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| format / lint / typecheck / build | pass                                                                                                                                                                                                                |
+| Unit                              | 108 / 108                                                                                                                                                                                                           |
+| RLS                               | 32 / 32; AZH SQL suite now **93 / 0** (was 78: +random-path upload refused, ticketed upload ok, ticket validation ×5, wrong-phone photo refused, tickets unreadable, office sync ×3, cleanup ×3); core suite 42 / 0 |
+| e2e                               | **18 / 18** (new: `azh-cleanup.spec.ts` ×2, upload-route checks in `azh-request-form.spec.ts`, office change in `azh-requests.spec.ts`; full chain with photo still passes)                                         |
+
+## 4. Shared files touched
+
+None beyond what the original AZH handoff lists. The new code sits in the AZH lane: a route under `/r/**`, files in `src/features/azh/**`, `*_azh_*` migrations and AZH tests. `src/lib/db/types.ts` was regenerated.
+
+## 5. New migrations (after the original 7) — **Keanu applies them to hosted after merge, AZH first, then Phase 2A**
+
+8. `20261020060000_azh_request_office_sync.sql`: trigger that moves the project's office and logs it.
+9. `20261020060100_azh_upload_tickets.sql`: `azh_upload_tickets` table, `azh_issue_upload_tickets()` RPC, a ticket-only Storage insert policy replacing anon's direct insert, and the intake trigger now checks tickets.
+10. `20261020060200_azh_cleanup_uploads.sql`: `azh_unused_intake_photos()` RPC (admin only); admins may prune old tickets.
+
+## 6. Merge order and readiness
+
+Merge this PR first, then Phase 2A. `main` hasn't moved, so there are no conflicts. CI is green.
+
+## 7. Blockers
+
+None.
+
+## 8. Decisions
+
+AZH-013 (server-issued upload slots), AZH-014 (manual cleanup) in `docs/DECISIONS-AZH.md`.
+
+## 9. What we need from Sam
+
+Same as the original handoff: CSLB number, Fallbrook ZIPs, service list, office assignees, tax on labor, website domain, Fallbrook office ZIP.
+
+## 10. Next steps
+
+Narrow `frame-ancestors` to Sam's domain once known. Optionally run the cleanup on a schedule once Inngest is in (Phase 2+).
