@@ -27,12 +27,14 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 
 ## Follow-ups (overnight run)
 
-- [ ] A1. Lock down form photo uploads (server-issued signed upload URLs, no anon direct insert)
+- [x] A1. Lock down form photo uploads — `POST /r/[slug]/upload` + `azh_issue_upload_tickets()` (types, 10 MB, same IP/phone/workspace limits as submits) → signed upload URLs; broad anon insert policy dropped, Storage only accepts live ticket paths; intake requires photos ticketed to the same phone (migration `20261020060100`, AZH-013). Tested: RLS suite 90/0 (random-path upload refused, ticketed upload ok, bad type/size/count/phone/real-estate refused, wrong-phone photo refused, tickets unreadable), e2e (form + photo still works; route validation; direct Storage upload refused; full chain).
 - [x] A2. Office changes follow through — trigger `azh_requests_office_sync` (migration `20261020060000`) moves the linked project's office and logs a system activity on the project. Tested: RLS suite (+3 assertions, 81/0), `e2e/azh-requests.spec.ts` (office change → project office + activity).
 - [ ] A3. Clean up unused uploads (admin button in Settings → AZH)
 - [ ] A4. Follow-ups handoff + re-run every check
 
 Plans:
+
+- A1: tickets table + SECURITY DEFINER RPC with the submit limits → server route issues signed upload URLs → replace the anon insert policy with a ticket-gated one → intake trigger checks ticket + phone → RLS + e2e.
 
 - A2: trigger on `azh_requests` office update → update `azh_projects.office` when different → `system` activity (SECURITY DEFINER, since users can't insert system activities) → RLS + e2e tests.
 

@@ -954,6 +954,51 @@ export type Database = {
           },
         ];
       };
+      azh_upload_tickets: {
+        Row: {
+          client_key: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          mime_type: string;
+          path: string;
+          phone_key: string;
+          size_bytes: number;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          client_key?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          mime_type: string;
+          path: string;
+          phone_key: string;
+          size_bytes: number;
+          workspace_id: string;
+        };
+        Update: {
+          client_key?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          mime_type?: string;
+          path?: string;
+          phone_key?: string;
+          size_bytes?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "azh_upload_tickets_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       azh_visits: {
         Row: {
           address: string | null;
@@ -2196,6 +2241,12 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      azh_issue_upload_tickets: {
+        Args: { p_client_key?: string; p_files: Json; p_phone: string; p_slug: string };
+        Returns: {
+          path: string;
+        }[];
       };
       azh_public_form: {
         Args: { p_slug: string };

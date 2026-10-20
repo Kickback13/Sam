@@ -111,3 +111,36 @@ test("embed can be framed; the rest of the app can't; real-estate slugs 404", as
   expect((await request.get(`/r/e2e-realty`)).status()).toBe(404);
   expect((await request.get(`/r/does-not-exist`)).status()).toBe(404);
 });
+
+test("photo uploads only go through server-issued slots", async ({ request }) => {
+  // The upload route validates type and size before issuing anything.
+  const bad = await request.post(`/r/${E2E_AZH_SLUG}/upload`, {
+    data: { phone: "(619) 555-0145", files: [{ type: "application/pdf", size: 100 }] },
+  });
+  expect(bad.status()).toBe(400);
+  expect((await bad.json()).error).toBe("photoType");
+  const big = await request.post(`/r/${E2E_AZH_SLUG}/upload`, {
+    data: { phone: "(619) 555-0145", files: [{ type: "image/png", size: 10 * 1024 * 1024 + 1 }] },
+  });
+  expect((await big.json()).error).toBe("photoSize");
+  const closed = await request.post(`/r/e2e-realty/upload`, {
+    data: { phone: "(619) 555-0145", files: [{ type: "image/png", size: 10 }] },
+  });
+  expect(closed.status()).toBe(404);
+
+  // Uploading straight to Storage (no ticket) is refused.
+  const [{ id: ws }] = await sql<{ id: string }>(
+    `select id from public.workspaces where slug = $1`,
+    [E2E_AZH_SLUG],
+  );
+  const key = "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH"; // local stack default (public)
+  const direct = await request.post(
+    `http://127.0.0.1:54321/storage/v1/object/azh-intake/${ws}/${crypto.randomUUID()}/0.png`,
+    {
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "image/png" },
+      data: TINY_PNG,
+    },
+  );
+  expect(direct.ok()).toBe(false);
+  expect(await direct.json()).toMatchObject({ statusCode: "403", message: /row-level security/ });
+});

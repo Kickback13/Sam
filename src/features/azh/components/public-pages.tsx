@@ -21,7 +21,6 @@ export async function PublicRequestPage({ slug, lang: rawLang, embed }: Props) {
       <p className="mt-1 mb-5 text-muted-foreground">{t.intro}</p>
       <RequestForm
         slug={slug}
-        workspaceId={form.workspaceId}
         lang={lang}
         serviceTypes={form.serviceTypes}
         thanksPath={`${base}/thanks?lang=${lang}`}

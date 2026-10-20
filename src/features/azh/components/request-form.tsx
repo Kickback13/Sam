@@ -15,7 +15,7 @@ import { useHydrated } from "@/lib/use-hydrated";
 
 import { CONTACT_TIMES, INTAKE_PHOTO_TYPES, MAX_FILE_BYTES, MAX_INTAKE_PHOTOS } from "../constants";
 import { DICTS, type Lang } from "../intake/i18n";
-import { intakePhotoPath } from "../intake/schema";
+import type { UploadResponse } from "../intake/upload-schema";
 import { submitIntake } from "../server/actions/intake";
 
 type Photo = { file: File; url: string; ext: string; type: string };
@@ -57,13 +57,11 @@ function Req() {
 
 export function RequestForm({
   slug,
-  workspaceId,
   lang,
   serviceTypes,
   thanksPath,
 }: {
   slug: string;
-  workspaceId: string;
   lang: Lang;
   serviceTypes: string[];
   thanksPath: string;
@@ -139,24 +137,41 @@ export function RequestForm({
     let photoPaths: string[] = [];
     if (photos.length) {
       setPhase("uploading");
-      const supabase = createClient();
-      const batch = crypto.randomUUID();
+      const failed = (key: keyof typeof t.errors, field?: FieldKey) => {
+        setPhase("idle");
+        if (field) setFieldErrors({ [field]: t.errors[key] });
+        setFormError(field ? t.errors.fix : t.errors[key]);
+        requestAnimationFrame(() => errorRef.current?.focus());
+      };
       try {
+        // 1) Ask our server for upload slots (validates + rate-limits), 2) upload to those signed URLs.
+        const res = await fetch(`/r/${slug}/upload`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: values.phone,
+            files: photos.map((p) => ({ type: p.type, size: p.file.size })),
+          }),
+        });
+        const body = (await res.json()) as UploadResponse;
+        if (!body.ok) {
+          if (body.error === "phone") return failed("phone", "phone");
+          return failed(body.error);
+        }
+        const supabase = createClient();
         photoPaths = await Promise.all(
-          photos.map(async (p, i) => {
-            const path = intakePhotoPath(workspaceId, batch, i, p.ext);
+          body.slots.map(async (slot, i) => {
             const { error } = await supabase.storage
               .from("azh-intake")
-              .upload(path, p.file, { contentType: p.type, upsert: false });
+              .uploadToSignedUrl(slot.path, slot.token, photos[i].file, {
+                contentType: photos[i].type,
+              });
             if (error) throw error;
-            return path;
+            return slot.path;
           }),
         );
       } catch {
-        setPhase("idle");
-        setFormError(t.errors.photoUpload);
-        errorRef.current?.focus();
-        return;
+        return failed("photoUpload");
       }
     }
 

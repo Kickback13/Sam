@@ -238,12 +238,42 @@ begin
     select count(*) into n from storage.objects where bucket_id in ('azh-files', 'azh-intake');
     results := results || jsonb_build_object('test', 'anon cannot read any AZH bucket', 'passed', n = 0, 'detail', n);
 
-    photo := ws_a || '/' || gen_random_uuid() || '/0.jpg';
+    -- A1: no more direct uploads to arbitrary paths…
+    begin
+      insert into storage.objects (bucket_id, name) values ('azh-intake', ws_a || '/' || gen_random_uuid() || '/0.jpg');
+      results := results || jsonb_build_object('test', 'anon can no longer upload directly to a random intake path', 'passed', false, 'detail', 'insert succeeded');
+    exception when others then
+      results := results || jsonb_build_object('test', 'anon can no longer upload directly to a random intake path', 'passed', sqlstate = '42501', 'detail', sqlstate);
+    end;
+    -- …only to a path the server issued a ticket for.
+    select t2.path into photo from public.azh_issue_upload_tickets('azh-rls-test-a', '[{"type":"image/jpeg","size":2048}]'::jsonb, '(619) 555-0177', repeat('b', 64)) t2;
+    results := results || jsonb_build_object('test', 'upload tickets are issued for open construction forms',
+      'passed', photo like ws_a || '/%/0.jpg', 'detail', photo);
     begin
       insert into storage.objects (bucket_id, name) values ('azh-intake', photo);
-      results := results || jsonb_build_object('test', 'anon uploads an intake photo to a random path', 'passed', true, 'detail', 'ok');
+      results := results || jsonb_build_object('test', 'anon uploads to a ticketed path', 'passed', true, 'detail', 'ok');
     exception when others then
-      results := results || jsonb_build_object('test', 'anon uploads an intake photo to a random path', 'passed', false, 'detail', sqlstate || ' ' || sqlerrm);
+      results := results || jsonb_build_object('test', 'anon uploads to a ticketed path', 'passed', false, 'detail', sqlstate || ' ' || sqlerrm);
+    end;
+    for r in select * from (values
+      ('tickets refuse non-image types', 'azh-rls-test-a', '[{"type":"application/pdf","size":10}]', '(619) 555-0177', '22023'),
+      ('tickets refuse files over 10 MB', 'azh-rls-test-a', '[{"type":"image/png","size":10485761}]', '(619) 555-0177', '22023'),
+      ('tickets refuse more than 5 photos', 'azh-rls-test-a', '[{"type":"image/png","size":1},{"type":"image/png","size":1},{"type":"image/png","size":1},{"type":"image/png","size":1},{"type":"image/png","size":1},{"type":"image/png","size":1}]', '(619) 555-0177', '22023'),
+      ('tickets require a valid phone', 'azh-rls-test-a', '[{"type":"image/png","size":1}]', '555-01', '22023'),
+      ('tickets refuse real-estate workspaces', 'azh-rls-test-re', '[{"type":"image/png","size":1}]', '(619) 555-0177', 'PT404')
+    ) as x(test, slug, files, phone, code) loop
+      begin
+        perform public.azh_issue_upload_tickets(r.slug, r.files::jsonb, r.phone);
+        results := results || jsonb_build_object('test', r.test, 'passed', false, 'detail', 'ticket issued');
+      exception when others then
+        results := results || jsonb_build_object('test', r.test, 'passed', sqlstate = r.code, 'detail', sqlstate);
+      end;
+    end loop;
+    begin
+      select count(*) into n from public.azh_upload_tickets;
+      results := results || jsonb_build_object('test', 'anon cannot read upload tickets', 'passed', false, 'detail', n);
+    exception when others then
+      results := results || jsonb_build_object('test', 'anon cannot read upload tickets', 'passed', sqlstate = '42501', 'detail', sqlstate);
     end;
     for r in select * from (values
       ('anon cannot upload to azh-files', 'azh-files', ws_a || '/' || gen_random_uuid() || '/x.pdf'),
@@ -271,6 +301,13 @@ begin
       results := results || jsonb_build_object('test', 'anon can submit the public request form', 'passed', false, 'detail', sqlstate || ' ' || sqlerrm);
     end;
 
+    begin
+      insert into public.azh_intake (workspace_slug, name, phone, job_address, job_zip, service_type, description, photo_paths)
+      values ('azh-rls-test-a', 'Wrong Phone', '(619) 555-0199', '1 Example Way', '92104', 'Drywall', 'x', array[photo]);
+      results := results || jsonb_build_object('test', 'intake rejects photos ticketed to another phone', 'passed', false, 'detail', 'insert succeeded');
+    exception when others then
+      results := results || jsonb_build_object('test', 'intake rejects photos ticketed to another phone', 'passed', sqlstate = '22023', 'detail', sqlstate);
+    end;
     begin
       insert into public.azh_intake (workspace_slug, name, phone, job_address, job_zip, service_type, description)
       values ('azh-rls-test-a', 'Bad Service', '(619) 555-0178', '1 Example Way', '92104', 'Rocket repair', 'x');
