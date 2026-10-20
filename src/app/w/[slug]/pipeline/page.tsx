@@ -6,6 +6,8 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/common/page-header";
 import { PipelineView } from "@/components/pipeline/pipeline-view";
 import { Button } from "@/components/ui/button";
+import { DealCardExtrasProvider } from "@/features/azh/components/card-extras";
+import { getCardExtras } from "@/features/azh/server/queries";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { dealNoun } from "@/lib/nav";
 import { getBoardDeals } from "@/server/queries/deals";
@@ -42,7 +44,10 @@ export default async function PipelinePage({
     );
   }
 
-  const deals = await getBoardDeals(workspace.id, pipeline.id);
+  const [deals, cardExtras] = await Promise.all([
+    getBoardDeals(workspace.id, pipeline.id),
+    workspace.businessType === "construction" ? getCardExtras(workspace.id, pipeline.id) : null,
+  ]);
   const open = deals.filter((d) => d.status === "open");
   const noun = dealNoun(workspace.businessType, true);
   const title = workspace.businessType === "construction" ? "Projects" : pipeline.name;
@@ -67,11 +72,13 @@ export default async function PipelinePage({
         }
       />
       <Suspense>
-        <PipelineView
-          pipeline={pipeline}
-          pipelines={pipelines.map((p) => ({ id: p.id, name: p.name }))}
-          deals={deals}
-        />
+        <DealCardExtrasProvider extras={cardExtras}>
+          <PipelineView
+            pipeline={pipeline}
+            pipelines={pipelines.map((p) => ({ id: p.id, name: p.name }))}
+            deals={deals}
+          />
+        </DealCardExtrasProvider>
       </Suspense>
     </>
   );

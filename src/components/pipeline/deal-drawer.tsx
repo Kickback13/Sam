@@ -159,6 +159,15 @@ function DealDrawerBody({
                 {d.status}
               </Badge>
               <span className="font-bold text-foreground tabular">{formatCurrency(d.value)}</span>
+              {ws.businessType === "construction" && (
+                <Link
+                  href={`/w/${ws.slug}/projects/${d.id}`}
+                  className="font-semibold text-brand-accent-text hover:underline"
+                  data-testid="open-project"
+                >
+                  Project page →
+                </Link>
+              )}
             </SheetDescription>
           </SheetHeader>
           <div className="flex-1 space-y-6 overflow-y-auto px-5 py-4">

@@ -4,11 +4,13 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Building, User } from "lucide-react";
 
+import { useDealCardExtra } from "@/features/azh/components/card-extras";
 import { formatCurrency, formatRelative } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { BoardDeal } from "@/server/queries/deals";
 
 export function DealCardBody({ deal, dragging }: { deal: BoardDeal; dragging?: boolean }) {
+  const extra = useDealCardExtra(deal.id);
   return (
     <div
       className={cn(
@@ -18,6 +20,7 @@ export function DealCardBody({ deal, dragging }: { deal: BoardDeal; dragging?: b
     >
       <p className="line-clamp-2 text-sm font-semibold">{deal.title}</p>
       <p className="mt-1 text-sm font-bold tabular">{formatCurrency(deal.value)}</p>
+      {extra}
       <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
         {deal.propertyLabel && (
           <p className="flex items-center gap-1 truncate">

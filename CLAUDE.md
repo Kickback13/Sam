@@ -4,6 +4,8 @@
 
 Read this first in every session. The 9-phase roadmap is in `docs/ROADMAP.md`, architecture decisions in `docs/DECISIONS.md`, accounts in `docs/ACCOUNTS.md`, and the per-phase plans in `docs/phases/`.
 
+Two tracks build in parallel (Housing4All `h4a/*`, AZH `azh/track`): follow `docs/COLLABORATION.md`.
+
 ## Who
 
 - **Client / owner:** Sam Rodriguez, CEO of **Housing4All Premier Solutions** (CA brokerage, DRE #01735348) and **AZH Builders** (general contractor). Sam owns the code and every account.
