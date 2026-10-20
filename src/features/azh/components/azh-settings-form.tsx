@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, ExternalLink, Loader2, Plus, Save, X } from "lucide-react";
+import { Brush, Check, Copy, ExternalLink, Loader2, Plus, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -17,7 +17,11 @@ import { useHydrated } from "@/lib/use-hydrated";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import { LICENSE_PENDING } from "../constants";
-import { saveAzhSettings, saveFallbrookZips } from "../server/actions/settings";
+import {
+  cleanupUnusedUploads,
+  saveAzhSettings,
+  saveFallbrookZips,
+} from "../server/actions/settings";
 
 export function AzhSettingsForm({
   initial,
@@ -47,6 +51,8 @@ export function AzhSettingsForm({
   const [saving, startSaving] = useTransition();
   const [savingZips, startSavingZips] = useTransition();
   const [copied, setCopied] = useState(false);
+  const [cleaning, startCleaning] = useTransition();
+  const [cleanupResult, setCleanupResult] = useState<string | null>(null);
 
   const snippet = `<iframe src="${embedUrl}" title="Request an estimate from AZH Builders" style="width:100%;max-width:640px;height:1500px;border:0" loading="lazy"></iframe>`;
 
@@ -307,6 +313,50 @@ export function AzhSettingsForm({
           </Button>
         </div>
       </section>
+      {ws.isAdmin && (
+        <section className="rounded-xl border bg-card p-4 sm:p-6" aria-labelledby="cleanup-heading">
+          <h2 id="cleanup-heading" className="text-sm font-bold">
+            Clean up unused uploads
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Removes request-form photos older than 24 hours that were never attached to a submitted
+            request (for example, someone added photos and then left the form). Photos on submitted
+            requests are never touched.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!hydrated || cleaning}
+              data-testid="cleanup-uploads"
+              onClick={() =>
+                startCleaning(async () => {
+                  setCleanupResult(null);
+                  const result = await cleanupUnusedUploads({ workspaceId: ws.id });
+                  if (!result.ok) {
+                    toast.error(result.error);
+                    return;
+                  }
+                  const n = result.data.removed;
+                  setCleanupResult(
+                    n === 0
+                      ? "Nothing to clean up."
+                      : `Removed ${n} unused upload${n === 1 ? "" : "s"}.`,
+                  );
+                })
+              }
+            >
+              {cleaning ? <Loader2 className="animate-spin" aria-hidden /> : <Brush aria-hidden />}{" "}
+              Clean up unused uploads
+            </Button>
+            {cleanupResult && (
+              <p role="status" className="text-sm font-semibold" data-testid="cleanup-result">
+                {cleanupResult}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

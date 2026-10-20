@@ -73,6 +73,11 @@ begin
     insert into storage.objects (bucket_id, name) values
       ('azh-files', ws_b || '/00000000-0000-4000-a000-000000000001/plan.pdf'),
       ('azh-intake', ws_b || '/00000000-0000-4000-a000-000000000002/0.jpg');
+    -- A3 fixtures: two 2-day-old intake photos, one attached to a request.
+    insert into storage.objects (bucket_id, name, created_at) values
+      ('azh-intake', ws_b || '/00000000-0000-4000-a000-000000000003/0.jpg', now() - interval '2 days'),
+      ('azh-intake', ws_b || '/00000000-0000-4000-a000-000000000004/0.jpg', now() - interval '2 days');
+    update public.azh_requests set photo_paths = array[ws_b || '/00000000-0000-4000-a000-000000000004/0.jpg'] where id = req_b;
 
     -- ---------- defaults created for new construction workspaces ----------
     select count(*) into n from public.azh_settings where workspace_id in (ws_a, ws_b);
@@ -130,6 +135,14 @@ begin
     delete from public.azh_change_orders where workspace_id = ws_b;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'A cannot delete B change orders', 'passed', n = 0, 'detail', n);
+    for t in select unnest(array[ws_a::text, ws_b::text]) loop
+      begin
+        perform public.azh_unused_intake_photos(t::uuid);
+        results := results || jsonb_build_object('test', 'non-admins cannot list uploads for cleanup (' || left(t, 8) || ')', 'passed', false, 'detail', 'listed');
+      exception when others then
+        results := results || jsonb_build_object('test', 'non-admins cannot list uploads for cleanup (' || left(t, 8) || ')', 'passed', sqlstate = '42501', 'detail', sqlstate);
+      end;
+    end loop;
 
     begin
       select count(*) into n from public.azh_intake;
@@ -219,7 +232,10 @@ begin
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'admin updates own AZH settings', 'passed', n = 1, 'detail', n);
     select count(*) into n from storage.objects where bucket_id in ('azh-files', 'azh-intake') and name like ws_b || '/%';
-    results := results || jsonb_build_object('test', 'B members read their own storage objects', 'passed', n = 2, 'detail', n);
+    results := results || jsonb_build_object('test', 'B members read their own storage objects', 'passed', n = 4, 'detail', n);
+    select string_agg(u.name, ',') into t from public.azh_unused_intake_photos(ws_b) u;
+    results := results || jsonb_build_object('test', 'cleanup lists only old photos not on a request',
+      'passed', t = ws_b || '/00000000-0000-4000-a000-000000000003/0.jpg', 'detail', t);
 
     -- ---------- anon ----------
     perform set_config('role', 'anon', true);

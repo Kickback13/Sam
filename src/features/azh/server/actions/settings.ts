@@ -84,3 +84,56 @@ export async function saveFallbrookZips(input: {
   revalidateWorkspace();
   return { ok: true, data: { count: data } };
 }
+
+/**
+ * Remove public-form photos older than 24 hours that never got attached to a
+ * submitted request (AZH-014). Admin only (the RPC checks); files are deleted
+ * through the Storage API.
+ */
+export async function cleanupUnusedUploads(input: {
+  workspaceId: string;
+}): Promise<ActionResult<{ removed: number }>> {
+  const ws = z.uuid().safeParse(input.workspaceId);
+  if (!ws.success) return { ok: false, error: "Invalid request" };
+  const ctx = await actionContext();
+  if (!ctx) return NOT_SIGNED_IN;
+
+  const { data, error } = await ctx.supabase.rpc("azh_unused_intake_photos", {
+    p_workspace_id: ws.data,
+  });
+  if (error) return { ok: false, error: friendlyDbError(error) };
+  const paths = (data ?? []).map((r) => r.name);
+
+  let removed = 0;
+  for (let i = 0; i < paths.length; i += 100) {
+    const chunk = paths.slice(i, i + 100);
+    const { data: gone, error: removeError } = await ctx.supabase.storage
+      .from("azh-intake")
+      .remove(chunk);
+    if (removeError) {
+      console.error("azh-intake cleanup failed", { message: removeError.message });
+      return {
+        ok: false,
+        error: removed
+          ? `Removed ${removed}, then Storage refused the rest. Try again.`
+          : "Storage refused the cleanup. Try again.",
+      };
+    }
+    removed += gone?.length ?? 0;
+  }
+  await ctx.supabase
+    .from("azh_upload_tickets")
+    .delete()
+    .eq("workspace_id", ws.data)
+    .lt("created_at", new Date(Date.now() - 24 * 3600_000).toISOString());
+
+  await writeAudit(ctx.supabase, {
+    workspaceId: ws.data,
+    actorId: ctx.user.id,
+    action: "azh_uploads.cleanup",
+    entityType: "workspace",
+    entityId: ws.data,
+    diff: { removed },
+  });
+  return { ok: true, data: { removed } };
+}

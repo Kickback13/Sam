@@ -2301,6 +2301,12 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      azh_unused_intake_photos: {
+        Args: { p_workspace_id: string };
+        Returns: {
+          name: string;
+        }[];
+      };
       contact_facets: { Args: { p_workspace_id: string }; Returns: Json };
       contacts_bulk_tag: {
         Args: {
