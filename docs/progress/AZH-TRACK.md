@@ -25,6 +25,17 @@ Branch `azh/track` · rules in `docs/COLLABORATION.md` · ADRs in `docs/DECISION
 - [x] 14. End-to-end tests — `e2e/azh-flow.spec.ts` runs the whole chain (public form + photo → inbox → visit → convert → estimate $3,829.17 → PDF → Bid Sent → change order → budget vs actual). `e2e/azh-mobile.spec.ts`: every AZH screen at 390px, no sideways scroll (budget rows reworked for phones after reviewing screenshots). Lighthouse (mobile) accessibility: public form EN/ES/embed/thanks **100**; AZH Today/Requests/Schedule/Project budget/estimates **100** (Today was 96 → fixed tap-target size).
 - [x] 15. Final review pass + handoff — lane check clean, diff re-read (fixed linked-property bug + added e2e), every check re-run green; handoff below and in the PR.
 
+## Follow-ups (overnight run)
+
+- [ ] A1. Lock down form photo uploads (server-issued signed upload URLs, no anon direct insert)
+- [x] A2. Office changes follow through — trigger `azh_requests_office_sync` (migration `20261020060000`) moves the linked project's office and logs a system activity on the project. Tested: RLS suite (+3 assertions, 81/0), `e2e/azh-requests.spec.ts` (office change → project office + activity).
+- [ ] A3. Clean up unused uploads (admin button in Settings → AZH)
+- [ ] A4. Follow-ups handoff + re-run every check
+
+Plans:
+
+- A2: trigger on `azh_requests` office update → update `azh_projects.office` when different → `system` activity (SECURITY DEFINER, since users can't insert system activities) → RLS + e2e tests.
+
 ## Done
 
 ## Blockers

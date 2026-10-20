@@ -16,7 +16,7 @@ describe("AZH SQL RLS suite", () => {
       const last = (Array.isArray(results) ? results[results.length - 1] : results).rows[0];
       expect(last.failures).toBe("");
       expect(Number(last.failed)).toBe(0);
-      expect(Number(last.passed)).toBeGreaterThanOrEqual(78);
+      expect(Number(last.passed)).toBeGreaterThanOrEqual(81);
       expect(Number(last.leftover_workspaces)).toBe(0);
       expect(Number(last.leftover_users)).toBe(0);
     } finally {

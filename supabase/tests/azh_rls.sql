@@ -183,6 +183,18 @@ begin
     select status into t from public.azh_requests where id = req_a;
     results := results || jsonb_build_object('test', 'booking a visit marks the request estimate scheduled', 'passed', t = 'estimate_scheduled', 'detail', t);
 
+    -- A2: changing a request's office moves its project and logs it.
+    insert into public.azh_requests (workspace_id, deal_id, office) values (ws_a, deal_a, 'san_diego') returning id into req_a;
+    update public.azh_projects set office = 'san_diego' where deal_id = deal_a;
+    update public.azh_requests set office = 'fallbrook' where id = req_a;
+    select office into t from public.azh_projects where deal_id = deal_a;
+    results := results || jsonb_build_object('test', 'request office change moves the project office', 'passed', t = 'fallbrook', 'detail', t);
+    select count(*) into n from public.activities where subject_id = deal_a and metadata ->> 'event' = 'azh_office_changed';
+    results := results || jsonb_build_object('test', 'office change is logged on the project', 'passed', n = 1, 'detail', n);
+    update public.azh_requests set status = 'contacted' where id = req_a;
+    select count(*) into n from public.activities where subject_id = deal_a and metadata ->> 'event' = 'azh_office_changed';
+    results := results || jsonb_build_object('test', 'non-office updates log nothing', 'passed', n = 1, 'detail', n);
+
     update public.azh_milestones set status = 'done' where workspace_id = ws_b;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'A cannot update B milestones', 'passed', n = 0, 'detail', n);

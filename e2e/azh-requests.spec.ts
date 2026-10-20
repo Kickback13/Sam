@@ -58,12 +58,20 @@ test("requests inbox: filter → drawer → log call → assign → convert to p
   await drawer.locator("#req-assignee").selectOption({ label: "Erin Tester" });
   await expectToast(page, "Assignment updated");
 
+  // A2: changing the office moves the linked project too, and it's logged.
+  await drawer.locator("#req-office").selectOption("san_diego");
+  await expectToast(page, "Office updated");
+
   await drawer.getByTestId("convert-request").click();
   await expectToast(page, "Converted to a project");
   await page.waitForURL(/\/projects\/[0-9a-f-]{36}$/);
   await expect(page.getByText("Estimate", { exact: true }).first()).toBeVisible();
-  await expect(page.locator("#office")).toHaveValue("fallbrook");
+  await expect(page.locator("#office")).toHaveValue("san_diego");
   await expect(page.locator("#job_zip")).toHaveValue("92028");
+  await page.getByRole("link", { name: "Activity" }).click();
+  await expect(
+    page.getByText("Office changed from Fallbrook to San Diego (from the request)"),
+  ).toBeVisible();
 
   await goto(page, `/w/${E2E_AZH_SLUG}/requests?status=converted`);
   await expect(page.getByTestId("request-row")).toHaveCount(1);
