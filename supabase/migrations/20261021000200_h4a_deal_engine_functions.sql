@@ -1134,7 +1134,11 @@ begin
     where e.workspace_id = v_ws and e.provider_email_id = v_pid;
     v_duplicate := true;
   end if;
-  return jsonb_build_object('email_id', v_id, 'workspace_id', v_ws, 'duplicate', v_duplicate, 'parse_status', v_status);
+  return jsonb_build_object(
+    'email_id', v_id, 'workspace_id', v_ws,
+    'workspace_slug', (select w.slug from public.workspaces w where w.id = v_ws),
+    'duplicate', v_duplicate, 'parse_status', v_status
+  );
 end;
 $$;
 
