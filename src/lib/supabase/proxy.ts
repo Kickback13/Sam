@@ -6,7 +6,7 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 
 export const LAST_WORKSPACE_COOKIE = "h4a_last_ws";
 
-const PUBLIC_PATHS = ["/login", "/auth", "/invite", "/r"];
+const PUBLIC_PATHS = ["/login", "/auth", "/invite", "/r", "/api/inbound", "/api/inngest"];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

@@ -10,6 +10,7 @@ import { TaskList } from "@/components/tasks/task-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AzhTodayCards } from "@/features/azh/components/azh-today-cards";
+import { H4aTodayCards } from "@/features/h4a/components/h4a-today-cards";
 import { APP_TIMEZONE } from "@/lib/constants";
 import { endOfTodayIso, formatCurrency, formatNumber } from "@/lib/format";
 import { dealNoun } from "@/lib/nav";
@@ -43,7 +44,7 @@ function Stat({
 
 export default async function TodayPage({ params }: PageProps<"/w/[slug]/today">) {
   const { slug } = await params;
-  const { workspace, user, canWrite } = await getWorkspaceContext(slug);
+  const { workspace, user, canWrite, isAdmin } = await getWorkspaceContext(slug);
   const base = `/w/${slug}`;
   const deals = dealNoun(workspace.businessType, true);
 
@@ -129,6 +130,14 @@ export default async function TodayPage({ params }: PageProps<"/w/[slug]/today">
 
       {workspace.businessType === "construction" && (
         <AzhTodayCards workspaceId={workspace.id} slug={slug} />
+      )}
+      {workspace.businessType === "real_estate" && (
+        <H4aTodayCards
+          workspaceId={workspace.id}
+          slug={slug}
+          canWrite={canWrite}
+          isAdmin={isAdmin}
+        />
       )}
 
       <section aria-label="Key numbers" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
