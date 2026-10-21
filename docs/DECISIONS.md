@@ -144,7 +144,7 @@ Alerts: an in-app alert when a **new or updated** listing (from an ingest) score
 - The webhook and the job call token-gated `SECURITY DEFINER` functions (`h4a_inbound_*`) with the publishable key. The token is the same capability as the address itself: it reaches only that workspace, only through those functions (emails, listings from that email, scores for listings that email touched). `anon` still has no table access (tested). 500 emails per workspace per hour.
 - Idempotent per Resend email id (retries don't duplicate). Unknown recipients and other event types get 200 so Resend doesn't retry them.
 
-**Consequences:** No new powerful secret in Vercel. Anyone who learns the address can submit listings — as with any email-in inbox — so they land as New/Needs review, never promoted, and the admin can rotate the address. The token travels in the Inngest event payload (Inngest account owned by Sam). Exact setup steps: `docs/ACCOUNTS.md`.
+**Consequences:** No new powerful secret in Vercel. Anyone who learns the address can submit listings — as with any email-in inbox — so they land as New/Needs review, never promoted, and the admin can rotate the address. The token travels in the Inngest event payload, so the Inngest account is as sensitive as the inbox (today Keanu's, moving to Sam — `docs/ACCOUNTS.md`). Exact setup steps: `docs/ACCOUNTS.md`.
 
 ## ADR-023 — Inngest for forwarded email; user actions stay synchronous
 
