@@ -29,7 +29,7 @@ const MAX_TEXT = 500_000;
  */
 export async function processInboundEmailJob(
   job: InboundEmailJob,
-  opts: { fetch?: FetchLike; apiBaseUrl?: string } = {},
+  opts: { fetch?: FetchLike } = {},
 ) {
   const cfg = inboundConfig();
   const store = inboundStore(inboundClient(), job.token, job.emailId);
@@ -44,7 +44,6 @@ export async function processInboundEmailJob(
 
   const body = await fetchReceivedEmail(job.providerEmailId, {
     apiKey: cfg.apiKey,
-    baseUrl: opts.apiBaseUrl ?? process.env.RESEND_API_BASE_URL,
     fetch: opts.fetch,
   });
   await store.updateEmail({
