@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { InboundEmailCard } from "@/features/h4a/components/inbound-email-card";
 import { INTEGRATIONS, plannedOwner } from "@/lib/integrations";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceContext } from "@/server/workspace";
@@ -19,7 +20,7 @@ export default async function IntegrationsPage({
   params,
 }: PageProps<"/w/[slug]/settings/integrations">) {
   const { slug } = await params;
-  const { workspace } = await getWorkspaceContext(slug);
+  const { workspace, isAdmin } = await getWorkspaceContext(slug);
   const supabase = await createClient();
   const [{ data: rows }, { data: ws }] = await Promise.all([
     supabase
@@ -37,6 +38,9 @@ export default async function IntegrationsPage({
         the phase listed, under Sam&apos;s own account — tokens will live in Supabase Vault, never
         in the database tables.
       </p>
+      {workspace.businessType === "real_estate" && (
+        <InboundEmailCard workspaceId={workspace.id} isAdmin={isAdmin} />
+      )}
       <div className="grid gap-4 md:grid-cols-2" data-testid="integrations">
         {INTEGRATIONS.map((i) => {
           const row = byProvider.get(i.provider);

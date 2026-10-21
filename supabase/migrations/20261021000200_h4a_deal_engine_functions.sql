@@ -384,8 +384,11 @@ begin
     end if;
 
     if v_same then
-      -- Seen again: refresh the source when this one ranks the same or higher.
-      if v_rank_new >= v_rank_cur then
+      -- Seen again from the same kind of source (e.g. a newer alert email): refresh its
+      -- date. A different source repeating the value (a manual re-save, a CSV row
+      -- agreeing with an email) keeps the original provenance.
+      if not (l.field_sources ? f)
+         or ((l.field_sources -> f ->> 'source') = (v_source ->> 'source') and v_origin <> 'manual') then
         v_sources := jsonb_set(v_sources, array[f], v_source);
       end if;
       continue;

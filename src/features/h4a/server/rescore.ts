@@ -7,6 +7,11 @@ import type { ScoreRow } from "../pipeline/types";
 import { buyBoxFromRow, scoreListing, type BuyBox } from "../scoring/score";
 
 const OPEN = ["new", "needs_review"];
+
+/** Never scored (any status), or an open listing scored against an older buy box. */
+function staleFilter(version: number) {
+  return `scored_buy_box_version.is.null,and(status.in.(new,needs_review),scored_buy_box_version.neq.${version})`;
+}
 const PAGE = 1000;
 const BATCH = 500;
 
@@ -43,11 +48,9 @@ export async function rescoreOpenListings(
         "id, zip, city, submarket, property_type, units, price, year_built, scored_buy_box_version",
       )
       .eq("workspace_id", workspaceId)
-      .in("status", OPEN)
       .order("id")
       .range(from, from + PAGE - 1);
-    if (opts.onlyStale)
-      q = q.or(`scored_buy_box_version.is.null,scored_buy_box_version.neq.${buyBox.version}`);
+    q = opts.onlyStale ? q.or(staleFilter(buyBox.version)) : q.in("status", OPEN);
     const { data, error } = await q;
     if (error) throw error;
     const rows = data ?? [];
@@ -76,14 +79,13 @@ export async function rescoreOpenListings(
   return { scored, version: buyBox.version };
 }
 
-/** How many open listings were scored against an older buy box (or never). */
+/** How many listings need (re)scoring: never scored, or open and scored against an older buy box. */
 export async function countStale(supabase: ServerSupabase, workspaceId: string, version: number) {
   const { count, error } = await supabase
     .from("h4a_listings")
     .select("id", { count: "exact", head: true })
     .eq("workspace_id", workspaceId)
-    .in("status", OPEN)
-    .or(`scored_buy_box_version.is.null,scored_buy_box_version.neq.${version}`);
+    .or(staleFilter(version));
   if (error) throw error;
   return count ?? 0;
 }
