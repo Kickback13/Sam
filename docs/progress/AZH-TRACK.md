@@ -40,6 +40,11 @@ Plans:
 
 - A2: trigger on `azh_requests` office update → update `azh_projects.office` when different → `system` activity (SECURITY DEFINER, since users can't insert system activities) → RLS + e2e tests.
 
+## Office assignees (2026-10-26)
+
+- [x] Several people per office get every new request — migration `20261026220000_azh_office_assignees.sql` (arrays + backfill, members-only validation, old single columns kept in sync, intake creates one task per assignee / one unassigned task when empty, request owner = first assignee), Settings → AZH checkbox list per office with a plain-words summary (AZH-015). Tested: AZH SQL suite **100/0** (+7: agent can't change, members only, dedupe + single-column sync, legacy single write, N tasks, empty → 1 unassigned, owner), unit (list validation), `e2e/azh-assignees.spec.ts` (2 assignees → form → each sees one task). Full suite: unit 229, RLS 41, e2e 24/24.
+- [ ] Human applies `2026-10-azh-office-assignees.sql` to the live DB → merge → deploy → Keanu invites Sam and Norma and picks them in Settings → AZH.
+
 ## Done
 
 ## Blockers

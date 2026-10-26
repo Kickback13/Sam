@@ -50,6 +50,7 @@ begin
 
     insert into public.workspace_members (workspace_id, user_id, role)
     values (ws_a, user_a, 'agent'), (ws_b, user_b, 'admin'), (ws_a, user_v, 'viewer');
+    update public.azh_settings set san_diego_assignees = array[user_a, user_v, user_a] where workspace_id = ws_a;
 
     insert into public.pipelines (workspace_id, name, kind, is_default) values (ws_a, 'Projects', 'construction_project', true) returning id into pipe_a;
     insert into public.pipelines (workspace_id, name, kind, is_default) values (ws_b, 'Projects', 'construction_project', true) returning id into pipe_b;
@@ -110,6 +111,9 @@ begin
     update public.azh_settings set cslb_license = '000000' where workspace_id = ws_a;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'agent cannot change AZH settings (admin only)', 'passed', n = 0, 'detail', n);
+    update public.azh_settings set san_diego_assignees = array[user_a] where workspace_id = ws_a;
+    get diagnostics n = row_count;
+    results := results || jsonb_build_object('test', 'agent cannot change office assignees (admin only)', 'passed', n = 0, 'detail', n);
     update public.azh_settings set cslb_license = '000000' where workspace_id = ws_b;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'A cannot change B settings', 'passed', n = 0, 'detail', n);
@@ -231,6 +235,20 @@ begin
     update public.azh_settings set cslb_license = '123456' where workspace_id = ws_b;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'admin updates own AZH settings', 'passed', n = 1, 'detail', n);
+    begin
+      update public.azh_settings set san_diego_assignees = array[user_b, user_a] where workspace_id = ws_b;
+      results := results || jsonb_build_object('test', 'office assignees must be workspace members', 'passed', false, 'detail', 'update succeeded');
+    exception when others then
+      results := results || jsonb_build_object('test', 'office assignees must be workspace members', 'passed', sqlstate = '23514', 'detail', sqlstate);
+    end;
+    update public.azh_settings set fallbrook_assignees = array[user_b, user_b] where workspace_id = ws_b;
+    select s.fallbrook_assignees, s.fallbrook_assignee into e from public.azh_settings s where s.workspace_id = ws_b;
+    results := results || jsonb_build_object('test', 'admin sets office assignees (deduped; old single column follows)',
+      'passed', e.fallbrook_assignees = array[user_b] and e.fallbrook_assignee = user_b, 'detail', concat_ws(' ', e.fallbrook_assignees, e.fallbrook_assignee));
+    update public.azh_settings set san_diego_assignee = user_b where workspace_id = ws_b;
+    select s.san_diego_assignees into e from public.azh_settings s where s.workspace_id = ws_b;
+    results := results || jsonb_build_object('test', 'writing only the old single column becomes a one-person list',
+      'passed', e.san_diego_assignees = array[user_b], 'detail', e.san_diego_assignees::text);
     select count(*) into n from storage.objects where bucket_id in ('azh-files', 'azh-intake') and name like ws_b || '/%';
     results := results || jsonb_build_object('test', 'B members read their own storage objects', 'passed', n = 4, 'detail', n);
     select string_agg(u.name, ',') into t from public.azh_unused_intake_photos(ws_b) u;
@@ -388,6 +406,19 @@ begin
       'passed', e.stage = 'Lead' and e.p_office = 'fallbrook' and e.service_types = array['Drywall'], 'detail', concat_ws(' ', e.stage, e.p_office, e.title));
     select count(*) into n from public.tasks where workspace_id = ws_a and title like '%Sample Homeowner (Fallbrook office)%';
     results := results || jsonb_build_object('test', 'intake creates a task for the routed office', 'passed', n = 1, 'detail', n);
+    select count(*) into n from public.tasks where workspace_id = ws_a and title like '%Sample Homeowner (Fallbrook office)%' and assigned_to is null;
+    results := results || jsonb_build_object('test', 'nobody set for the office → one unassigned task', 'passed', n = 1, 'detail', n);
+    perform set_config('role', 'anon', true);
+    insert into public.azh_intake (workspace_slug, name, phone, job_address, job_zip, service_type, description)
+    values ('azh-rls-test-a', 'Sample Twotask', '(619) 555-0191', '2 Example Way', '92104', 'Drywall', 'Two people should get this');
+    perform set_config('role', 'postgres', true);
+    select count(*) as n_tasks, count(distinct assigned_to) as n_people, bool_and(assigned_to in (user_a, user_v)) as members_only into e
+    from public.tasks where workspace_id = ws_a and title like '%Sample Twotask (San Diego office)%';
+    results := results || jsonb_build_object('test', 'intake creates one task per office assignee (no duplicates)',
+      'passed', e.n_tasks = 2 and e.n_people = 2 and e.members_only, 'detail', concat_ws(' ', e.n_tasks, e.n_people, e.members_only));
+    select rq.assigned_to::text into t from public.azh_requests rq join public.contacts ct on ct.id = rq.contact_id
+    where rq.workspace_id = ws_a and ct.last_name = 'Twotask';
+    results := results || jsonb_build_object('test', 'request owner = first office assignee', 'passed', t = user_a::text, 'detail', t);
     select count(*) into n from public.activities a
     where a.workspace_id = ws_a and a.metadata ->> 'event' = 'azh_request_received'
       and a.metadata ->> 'request_id' = (select r3.id::text from public.azh_requests r3

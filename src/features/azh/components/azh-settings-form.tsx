@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useHydrated } from "@/lib/use-hydrated";
 import type { FieldErrors } from "@/lib/validation/common";
@@ -33,8 +32,8 @@ export function AzhSettingsForm({
     cslb_license: string;
     service_types: string[];
     intake_enabled: boolean;
-    san_diego_assignee: string;
-    fallbrook_assignee: string;
+    san_diego_assignees: string[];
+    fallbrook_assignees: string[];
   };
   fallbrookZips: string[];
   formUrl: string;
@@ -71,8 +70,8 @@ export function AzhSettingsForm({
         workspaceId: ws.id,
         settings: {
           ...v,
-          san_diego_assignee: v.san_diego_assignee || null,
-          fallbrook_assignee: v.fallbrook_assignee || null,
+          san_diego_assignees: v.san_diego_assignees,
+          fallbrook_assignees: v.fallbrook_assignees,
         },
       });
       if (!result.ok) {
@@ -185,7 +184,7 @@ export function AzhSettingsForm({
 
           <FormSection
             title="Request form"
-            description="New requests create a task for the routed office, assigned to the person below (or unassigned)."
+            description="Every new request creates a follow-up task for each person you pick for its office. Nobody picked: one unassigned task."
           >
             <div className="flex items-center gap-2 sm:col-span-2">
               <Checkbox
@@ -197,24 +196,19 @@ export function AzhSettingsForm({
             </div>
             {(
               [
-                ["san_diego_assignee", "San Diego office tasks go to"],
-                ["fallbrook_assignee", "Fallbrook office tasks go to"],
+                ["san_diego_assignees", "San Diego"],
+                ["fallbrook_assignees", "Fallbrook"],
               ] as const
-            ).map(([key, label]) => (
-              <Field key={key} id={key} label={label}>
-                <NativeSelect
-                  id={key}
-                  value={v[key]}
-                  onChange={(e) => setV((p) => ({ ...p, [key]: e.target.value }))}
-                >
-                  <option value="">Unassigned</option>
-                  {ws.members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </Field>
+            ).map(([key, office]) => (
+              <OfficeAssignees
+                key={key}
+                id={key}
+                office={office}
+                members={ws.members}
+                value={v[key]}
+                error={errors[key]?.[0]}
+                onChange={(ids) => setV((p) => ({ ...p, [key]: ids }))}
+              />
             ))}
           </FormSection>
         </fieldset>
@@ -358,5 +352,74 @@ export function AzhSettingsForm({
         </section>
       )}
     </div>
+  );
+}
+
+/** Who gets new requests for one office: checkbox list (order of picking = order of the list). */
+function OfficeAssignees({
+  id,
+  office,
+  members,
+  value,
+  error,
+  onChange,
+}: {
+  id: string;
+  office: string;
+  members: { id: string; name: string }[];
+  value: string[];
+  error?: string;
+  onChange: (ids: string[]) => void;
+}) {
+  const current = value.filter((v) => members.some((m) => m.id === v));
+  const names = current.map((v) => members.find((m) => m.id === v)!.name);
+  const summary =
+    names.length === 0
+      ? `Nobody yet. Each new ${office} request creates one unassigned task.`
+      : `New ${office} requests go to ${names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`}${names.length > 1 ? " (one task each)" : ""}. ${names[0]} owns the request.`;
+  return (
+    <fieldset
+      className="space-y-2 sm:col-span-2"
+      aria-describedby={`${id}-summary`}
+      data-testid={`assignees-${id}`}
+    >
+      <legend className="text-sm font-semibold">{office} office: who gets new requests</legend>
+      {members.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Invite members first (Settings → Members & invites).
+        </p>
+      ) : (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {members.map((m) => {
+            const cbId = `${id}-${m.id}`;
+            return (
+              <li
+                key={m.id}
+                className="flex min-h-10 items-center gap-2 rounded-md border bg-background px-3"
+              >
+                <Checkbox
+                  id={cbId}
+                  checked={current.includes(m.id)}
+                  onCheckedChange={(on) =>
+                    onChange(on === true ? [...current, m.id] : current.filter((x) => x !== m.id))
+                  }
+                />
+                <Label htmlFor={cbId} className="flex-1 py-2 font-normal">
+                  {m.name}
+                </Label>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p id={`${id}-summary`} className="text-sm text-muted-foreground" aria-live="polite">
+        {summary}
+      </p>
+      {error && (
+        <p role="alert" className="text-xs font-medium text-brand-danger">
+          {error}
+        </p>
+      )}
+    </fieldset>
   );
 }
