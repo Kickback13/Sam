@@ -102,3 +102,70 @@ Short ADRs. Status is Accepted unless noted. Newest at the bottom.
 ## Notes
 
 - **Big Shoulders Display** is now published on Google Fonts as **Big Shoulders** with an optical-size axis (the display cut is its large-size end). We load `Big_Shoulders` with `axes: ["opsz"]`; the brand token key stays `big-shoulders-display`.
+
+---
+
+# Phase 2A — Deal Engine (Track A, Housing4All)
+
+## ADR-019 — Deal Finder listings, dedupe keys and source precedence
+
+**Context:** The same building reaches Sam many times (two marketplaces, repeat alerts, price drops, his own CSVs). Every number must keep its source.
+**Decision:**
+
+- Listings live in their own inbox table (`h4a_listings`), separate from Properties. "Promote" copies the sourced fields into a Property (new, or an existing one for the same building) and creates the Deal.
+- Dedupe keys are computed by one pure module (`src/features/h4a/listing/normalize.ts`): `apn:<digits>`, `addr:<street>|<ZIP5>` and `addr:<street>|<city>`. The street is normalized (suffixes and directions abbreviated, unit/suite dropped — we track whole buildings). Two listings are the same building when their APNs match, or their keys overlap and their APNs don't conflict. The database stores the keys, matches by array overlap (GIN index) and serializes ingestion per workspace (advisory lock), so two copies of an alert arriving together can't create duplicates.
+- Merge is field by field. Manual entries and county records outrank alert emails, CSV rows and pasted emails; a lower-ranked source never overwrites a higher-ranked value — it's recorded as "kept". Address, city, ZIP and APN only change through manual/county. A repeat with the same value from the same kind of source refreshes the date; a different source repeating a value keeps the original provenance.
+- Listings, history, emails and alerts are written only through `SECURITY DEFINER` functions (no insert/update/delete policies), so history can't be skipped or forged. Every function checks membership/role itself.
+
+**Consequences:** No duplicates; complete history ("Updated from LoopNet alert: price $4,950,000 → $4,800,000"). A listing with no ZIP and no city only matches others with the same bare street line (it lands in Needs review anyway).
+
+## ADR-020 — Email parser registry
+
+**Decision:** One pipeline for forwarded emails and "Paste an email": HTML → readable text (`htmlparser2`), unwrap Gmail/Outlook/Apple Mail forwards, pick the parser for the **original** sender, fall back to a generic reader, validate every field with the shared Zod schema (an unreadable value is dropped and noted, never fatal), then rate confidence: high (address + city/ZIP + price + units), medium, low. Anything below high lands in **Needs review** with the email shown beside the parsed fields. The generic reader is never high.
+Registry: one parser per sender format (`src/features/h4a/email/parsers/`). Phase 2A ships two **placeholder** formats written against made-up fixtures (a LoopNet-style digest and a Crexi-style HTML alert), labeled as such in code, notes and tests. Phase 2B adds/replaces parsers from Sam's real samples — a parser + its fixture + a test, nothing else changes. The Gmail forwarding-confirmation email is recognized and its code shown.
+Safety: links are recorded, never fetched. HTML is stored through an allow-list sanitizer (no scripts, styles, images or attributes beyond safe links) and only shown inside a sandboxed frame whose content policy blocks every network request. No AI parsing in 2A.
+**Consequences:** Until 2B, real alert emails will mostly go through the generic reader → Needs review. That's intended: honest, and nothing is guessed silently.
+
+## ADR-021 — Scoring: one pure module, stored with the buy-box version
+
+**Decision:** `src/features/h4a/scoring/score.ts` is the single scoring implementation. Only criteria the buy box sets count; weights location 25, units 20, price per unit 20, price 15, type 10, year built 10; score = points passed ÷ points set, 0–100. Missing data is "unknown" and earns nothing. Bounds are inclusive. An empty buy box gives no score (not 0). Each criterion produces one plain line ("Price/unit $206,250, over your $200,000 max.").
+Scores are stored on the listing with the breakdown and the buy-box `version` they used. A trigger bumps the version whenever a criterion changes; a save computed against an older version is ignored. Saving the buy box re-scores every open listing (synchronously, ADR-023); pages also re-score any never-scored or stale listing on open (self-healing, writers only).
+Alerts: an in-app alert when a **new or updated** listing (from an ingest) scores at or above the workspace threshold (default 70) — one per listing, ever. Buy-box edits re-score but never alert.
+**Consequences:** The breakdown shown is exactly what produced the stored score. Sorting/filtering by score is a plain index scan.
+
+## ADR-022 — Inbound email: Resend, the forwarding address, and no service-role key
+
+**Context:** Forwarded alerts must reach the right workspace with no user session. ADR-007 keeps production free of a service-role key.
+**Decision:**
+
+- Resend inbound. The `email.received` webhook is metadata only; the body comes from `GET https://api.resend.com/emails/receiving/{email_id}` with `RESEND_API_KEY` (shapes match the official `resend` SDK types).
+- `POST /api/inbound/email` verifies the Svix signature whenever `RESEND_WEBHOOK_SECRET` is set, and refuses every request when it isn't set on a production runtime (Vercel production **and previews**, which share the production database, plus `next start`). Requests over 256 KB are refused.
+- Each workspace gets a forwarding address `deals.<20 random base32 chars>@<INBOUND_EMAIL_DOMAIN>`. Only the SHA-256 of the token is stored; the full address is shown once to the admin who creates it; replacing it revokes the old one.
+- The webhook and the job call token-gated `SECURITY DEFINER` functions (`h4a_inbound_*`) with the publishable key. The token is the same capability as the address itself: it reaches only that workspace, only through those functions (emails, listings from that email, scores for listings that email touched). `anon` still has no table access (tested). 500 emails per workspace per hour.
+- Idempotent per Resend email id (retries don't duplicate). Unknown recipients and other event types get 200 so Resend doesn't retry them.
+
+**Consequences:** No new powerful secret in Vercel. Anyone who learns the address can submit listings — as with any email-in inbox — so they land as New/Needs review, never promoted, and the admin can rotate the address. The token travels in the Inngest event payload, so the Inngest account is as sensitive as the inbox (today Keanu's, moving to Sam — `docs/ACCOUNTS.md`). Exact setup steps: `docs/ACCOUNTS.md`.
+
+## ADR-023 — Inngest for forwarded email; user actions stay synchronous
+
+**Decision:** Forwarded emails run in the Inngest function `h4a-process-inbound-email` (fetch body → store sanitized → parse → dedupe → score → alert; 4 retries; one at a time per workspace). The webhook records the email first, then sends the event; when Inngest isn't configured (local dev without the dev server, e2e, CI) the same code runs inline. `/api/inngest` serves the functions (signed by `INNGEST_SIGNING_KEY` in production).
+**Synchronous by decision:** manual entry, CSV upload (200-row chunks), Paste an email, buy-box re-scoring, verify/dismiss/promote. The person is waiting for the result (the paste tool and CSV error report need it immediately), and these run under the user's own session so RLS and role checks apply — an Inngest function has no user session and we don't use a service-role key. Sizes are bounded (CSV ≤ 10,000 rows in chunks; re-scoring pages 1,000 listings and saves in batches of 500).
+**Consequences:** Revisit re-scoring in a background job if a workspace passes ~20,000 open listings.
+
+## ADR-024 — County records: interface now, data source in 2B
+
+**Context:** Verification needs owner name, APN, units, year built and last sale from official San Diego County data — free, documented and allowed by our rules (no scraping).
+**Findings:**
+
+1. SanGIS / County parcel layers (ArcGIS services, e.g. `gis-public.sandiegocounty.gov` Parcels, `webmaps.sandiego.gov` PARCELS_ALL) carry APN, situs address and, in the member version, owner data — but those layers state they are **not authorized for release to the general public** and are for SanGIS JPA members only. Year built / unit counts aren't confirmed in the public layers.
+2. The Assessor's online parcel lookup and the Recorder's grantor/grantee index are websites, not APIs — reading them by program would be scraping. Not allowed.
+3. The Assessor/Recorder offers official data products for purchase (e.g. assessment-roll extracts) — terms and fields to be confirmed with the County; a business decision for Sam.
+4. Licensed APIs (Phase 3 decision): ATTOM, PropertyRadar, RentCast, Regrid (parcels with owner names) — documented, paid, keys under Sam's account.
+
+**Decision:** Ship `CountyRecordsAdapter` (`lookup({apn, address}) → found | not_found | not_connected | error`, plus a field-by-field mismatch helper) with a `NotConnectedCountyAdapter`, shown as "County lookup: Not connected". Verification works by hand now: "Mark verified" / "Mark mismatch" require a note and where it was checked, saved with user and date.
+
+**For 2B (needs Sam):** pick one — (a) a licensed API from item 4 (fastest; also feeds Phase 3), (b) an Assessor roll purchase loaded as periodic CSV imports, or (c) SanGIS membership/data request if the County grants it. Each plugs into the same interface; listings then show the county value with its source and fetched-at date.
+
+## ADR-025 — CI runs the database and browser tests
+
+**Decision:** A second CI job starts the local Supabase stack (all migrations in order), runs `pnpm test:rls` (Phase 1 isolation + SQL suite, AZH suite, Deal Engine suite, inbound webhook end-to-end, demo seed check) and the Playwright e2e (desktop + 390px). It's separate from the fast job so lint/typecheck/unit/build still report first. Everything targets the throwaway local stack; the suites refuse non-local databases.

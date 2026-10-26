@@ -37,3 +37,41 @@ jobs:
         run: pnpm test
       - name: Build
         run: pnpm build
+
+  # Phase 2A: database + browser tests against a throwaway LOCAL Supabase stack
+  # (Docker on the runner). Separate job so the fast checks above report first.
+  # Never touches the hosted project: the suites refuse non-local databases.
+  db:
+    name: DB tests (RLS + SQL suites) and e2e — local Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Start local Supabase (applies every migration in order)
+        run: pnpm db:start
+      - name: RLS isolation + SQL suites (Phase 1, AZH, Deal Engine)
+        run: pnpm test:rls
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: E2E smoke (desktop + 390px)
+        run: pnpm e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+      - name: Stop Supabase
+        if: always()
+        run: pnpm db:stop --no-backup

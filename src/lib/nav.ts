@@ -60,9 +60,8 @@ const REAL_ESTATE_NAV: NavItem[] = [
     path: "deal-finder",
     icon: "dealFinder",
     group: "Find",
-    comingIn: 2,
   },
-  { key: "alerts", label: "Alerts", path: "alerts", icon: "alerts", group: "Find", comingIn: 2 },
+  { key: "alerts", label: "Alerts", path: "alerts", icon: "alerts", group: "Find" },
   {
     key: "pipeline",
     label: "Pipeline",
@@ -230,30 +229,6 @@ export function dealNoun(businessType: BusinessType, plural = false): string {
 }
 
 const COMING_SOON: Record<string, ComingSoonModule> = {
-  "deal-finder": {
-    key: "deal-finder",
-    title: "Deal Finder",
-    phase: 2,
-    summary:
-      "Every listing that reaches you — your saved-search alert emails, CSV exports and manual entries — filtered through your buy box, scored, and verified against San Diego County records.",
-    bullets: [
-      "Buy box: units (2–500), price, price/unit, submarkets, property types",
-      "Ingestion from alert emails you forward, CSV exports and manual entry — no scraping",
-      "County-record verification with source and fetched-at time on every number",
-    ],
-  },
-  alerts: {
-    key: "alerts",
-    title: "Alerts",
-    phase: 2,
-    summary:
-      "Instant email and SMS alerts to you the moment a verified listing matches your buy box.",
-    bullets: [
-      "Sent from your own accounts, to you only — nothing goes to contacts",
-      "Per-buy-box channels, quiet hours and daily digest",
-      "Every alert links back to its sources",
-    ],
-  },
   analyze: {
     key: "analyze",
     title: "Analyze",

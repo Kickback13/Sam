@@ -1586,6 +1586,648 @@ export type Database = {
           },
         ];
       };
+      h4a_alerts: {
+        Row: {
+          created_at: string;
+          email_error: string | null;
+          email_sent_at: string | null;
+          email_status: string;
+          id: string;
+          listing_id: string;
+          read_at: string | null;
+          read_by: string | null;
+          reason: string;
+          score: number;
+          threshold: number;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          email_error?: string | null;
+          email_sent_at?: string | null;
+          email_status?: string;
+          id?: string;
+          listing_id: string;
+          read_at?: string | null;
+          read_by?: string | null;
+          reason?: string;
+          score: number;
+          threshold: number;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          email_error?: string | null;
+          email_sent_at?: string | null;
+          email_status?: string;
+          id?: string;
+          listing_id?: string;
+          read_at?: string | null;
+          read_by?: string | null;
+          reason?: string;
+          score?: number;
+          threshold?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_alerts_read_by_fkey";
+            columns: ["read_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_alerts_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_alerts_workspace_id_listing_id_fkey";
+            columns: ["workspace_id", "listing_id"];
+            isOneToOne: true;
+            referencedRelation: "h4a_listings";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      h4a_buy_boxes: {
+        Row: {
+          alert_threshold: number;
+          cities: string[];
+          created_at: string;
+          max_price_per_unit: number | null;
+          notes: string | null;
+          price_max: number | null;
+          price_min: number | null;
+          property_types: string[];
+          submarkets: string[];
+          units_max: number | null;
+          units_min: number | null;
+          updated_at: string;
+          updated_by: string | null;
+          version: number;
+          workspace_id: string;
+          year_built_max: number | null;
+          year_built_min: number | null;
+          zips: string[];
+        };
+        ComputedFields: never;
+        Insert: {
+          alert_threshold?: number;
+          cities?: string[];
+          created_at?: string;
+          max_price_per_unit?: number | null;
+          notes?: string | null;
+          price_max?: number | null;
+          price_min?: number | null;
+          property_types?: string[];
+          submarkets?: string[];
+          units_max?: number | null;
+          units_min?: number | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          version?: number;
+          workspace_id: string;
+          year_built_max?: number | null;
+          year_built_min?: number | null;
+          zips?: string[];
+        };
+        Update: {
+          alert_threshold?: number;
+          cities?: string[];
+          created_at?: string;
+          max_price_per_unit?: number | null;
+          notes?: string | null;
+          price_max?: number | null;
+          price_min?: number | null;
+          property_types?: string[];
+          submarkets?: string[];
+          units_max?: number | null;
+          units_min?: number | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          version?: number;
+          workspace_id?: string;
+          year_built_max?: number | null;
+          year_built_min?: number | null;
+          zips?: string[];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_buy_boxes_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_buy_boxes_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      h4a_imports: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          created_count: number;
+          error_count: number;
+          errors: NonNullable<Json>;
+          filename: string | null;
+          id: string;
+          mapping: NonNullable<Json>;
+          status: string;
+          total_rows: number;
+          unchanged_count: number;
+          updated_at: string;
+          updated_count: number;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          created_count?: number;
+          error_count?: number;
+          errors?: NonNullable<Json>;
+          filename?: string | null;
+          id?: string;
+          mapping?: NonNullable<Json>;
+          status?: string;
+          total_rows?: number;
+          unchanged_count?: number;
+          updated_at?: string;
+          updated_count?: number;
+          workspace_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          created_count?: number;
+          error_count?: number;
+          errors?: NonNullable<Json>;
+          filename?: string | null;
+          id?: string;
+          mapping?: NonNullable<Json>;
+          status?: string;
+          total_rows?: number;
+          unchanged_count?: number;
+          updated_at?: string;
+          updated_count?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_imports_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_imports_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      h4a_inbound_addresses: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          token_hash: string;
+          token_hint: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          token_hash: string;
+          token_hint: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          token_hash?: string;
+          token_hint?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_inbound_addresses_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_inbound_addresses_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      h4a_inbound_emails: {
+        Row: {
+          attempts: number;
+          body_status: string;
+          channel: string;
+          confidence: string | null;
+          created_at: string;
+          created_by: string | null;
+          error: string | null;
+          from_address: string | null;
+          html_body: string | null;
+          id: string;
+          listing_count: number;
+          message_id: string | null;
+          parse_notes: NonNullable<Json>;
+          parse_status: string;
+          parser_key: string | null;
+          parser_label: string | null;
+          provider_email_id: string | null;
+          received_at: string;
+          subject: string | null;
+          text_body: string | null;
+          to_addresses: string[];
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempts?: number;
+          body_status?: string;
+          channel: string;
+          confidence?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          error?: string | null;
+          from_address?: string | null;
+          html_body?: string | null;
+          id?: string;
+          listing_count?: number;
+          message_id?: string | null;
+          parse_notes?: NonNullable<Json>;
+          parse_status?: string;
+          parser_key?: string | null;
+          parser_label?: string | null;
+          provider_email_id?: string | null;
+          received_at?: string;
+          subject?: string | null;
+          text_body?: string | null;
+          to_addresses?: string[];
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          attempts?: number;
+          body_status?: string;
+          channel?: string;
+          confidence?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          error?: string | null;
+          from_address?: string | null;
+          html_body?: string | null;
+          id?: string;
+          listing_count?: number;
+          message_id?: string | null;
+          parse_notes?: NonNullable<Json>;
+          parse_status?: string;
+          parser_key?: string | null;
+          parser_label?: string | null;
+          provider_email_id?: string | null;
+          received_at?: string;
+          subject?: string | null;
+          text_body?: string | null;
+          to_addresses?: string[];
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_inbound_emails_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_inbound_emails_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      h4a_listing_events: {
+        Row: {
+          actor_id: string | null;
+          changes: NonNullable<Json>;
+          created_at: string;
+          email_id: string | null;
+          id: string;
+          kind: string;
+          listing_id: string;
+          origin: string | null;
+          source_label: string | null;
+          summary: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_id?: string | null;
+          changes?: NonNullable<Json>;
+          created_at?: string;
+          email_id?: string | null;
+          id?: string;
+          kind: string;
+          listing_id: string;
+          origin?: string | null;
+          source_label?: string | null;
+          summary?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          changes?: NonNullable<Json>;
+          created_at?: string;
+          email_id?: string | null;
+          id?: string;
+          kind?: string;
+          listing_id?: string;
+          origin?: string | null;
+          source_label?: string | null;
+          summary?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_listing_events_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listing_events_workspace_id_email_id_fkey";
+            columns: ["workspace_id", "email_id"];
+            isOneToOne: false;
+            referencedRelation: "h4a_inbound_emails";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "h4a_listing_events_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listing_events_workspace_id_listing_id_fkey";
+            columns: ["workspace_id", "listing_id"];
+            isOneToOne: false;
+            referencedRelation: "h4a_listings";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      h4a_listings: {
+        Row: {
+          address: string;
+          apn: string | null;
+          apn_key: string | null;
+          broker_company: string | null;
+          broker_email: string | null;
+          broker_name: string | null;
+          broker_phone: string | null;
+          building_sqft: number | null;
+          cap_rate: number | null;
+          city: string | null;
+          created_at: string;
+          created_by: string | null;
+          deal_id: string | null;
+          dismissed_at: string | null;
+          dismissed_by: string | null;
+          dismissed_reason: string | null;
+          field_sources: NonNullable<Json>;
+          id: string;
+          last_received_at: string;
+          listing_url: string | null;
+          lot_sqft: number | null;
+          match_keys: string[];
+          origin: string;
+          parse_confidence: string | null;
+          price: number | null;
+          price_per_unit: number | null;
+          promoted_at: string | null;
+          promoted_by: string | null;
+          property_id: string | null;
+          property_type: string | null;
+          received_at: string;
+          review_reasons: string[];
+          score: number | null;
+          score_breakdown: NonNullable<Json>;
+          scored_at: string | null;
+          scored_buy_box_version: number | null;
+          search_text: string;
+          source_label: string;
+          state: string;
+          status: string;
+          street_key: string;
+          submarket: string | null;
+          units: number | null;
+          updated_at: string;
+          verification_note: string | null;
+          verification_source: string | null;
+          verification_status: string;
+          verified_at: string | null;
+          verified_by: string | null;
+          workspace_id: string;
+          year_built: number | null;
+          zip: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          address: string;
+          apn?: string | null;
+          apn_key?: string | null;
+          broker_company?: string | null;
+          broker_email?: string | null;
+          broker_name?: string | null;
+          broker_phone?: string | null;
+          building_sqft?: number | null;
+          cap_rate?: number | null;
+          city?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          dismissed_at?: string | null;
+          dismissed_by?: string | null;
+          dismissed_reason?: string | null;
+          field_sources?: NonNullable<Json>;
+          id?: string;
+          last_received_at?: string;
+          listing_url?: string | null;
+          lot_sqft?: number | null;
+          match_keys?: string[];
+          origin: string;
+          parse_confidence?: string | null;
+          price?: number | null;
+          price_per_unit?: never;
+          promoted_at?: string | null;
+          promoted_by?: string | null;
+          property_id?: string | null;
+          property_type?: string | null;
+          received_at?: string;
+          review_reasons?: string[];
+          score?: number | null;
+          score_breakdown?: NonNullable<Json>;
+          scored_at?: string | null;
+          scored_buy_box_version?: number | null;
+          search_text?: string;
+          source_label: string;
+          state?: string;
+          status?: string;
+          street_key: string;
+          submarket?: string | null;
+          units?: number | null;
+          updated_at?: string;
+          verification_note?: string | null;
+          verification_source?: string | null;
+          verification_status?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          workspace_id: string;
+          year_built?: number | null;
+          zip?: string | null;
+        };
+        Update: {
+          address?: string;
+          apn?: string | null;
+          apn_key?: string | null;
+          broker_company?: string | null;
+          broker_email?: string | null;
+          broker_name?: string | null;
+          broker_phone?: string | null;
+          building_sqft?: number | null;
+          cap_rate?: number | null;
+          city?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          deal_id?: string | null;
+          dismissed_at?: string | null;
+          dismissed_by?: string | null;
+          dismissed_reason?: string | null;
+          field_sources?: NonNullable<Json>;
+          id?: string;
+          last_received_at?: string;
+          listing_url?: string | null;
+          lot_sqft?: number | null;
+          match_keys?: string[];
+          origin?: string;
+          parse_confidence?: string | null;
+          price?: number | null;
+          price_per_unit?: never;
+          promoted_at?: string | null;
+          promoted_by?: string | null;
+          property_id?: string | null;
+          property_type?: string | null;
+          received_at?: string;
+          review_reasons?: string[];
+          score?: number | null;
+          score_breakdown?: NonNullable<Json>;
+          scored_at?: string | null;
+          scored_buy_box_version?: number | null;
+          search_text?: string;
+          source_label?: string;
+          state?: string;
+          status?: string;
+          street_key?: string;
+          submarket?: string | null;
+          units?: number | null;
+          updated_at?: string;
+          verification_note?: string | null;
+          verification_source?: string | null;
+          verification_status?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          workspace_id?: string;
+          year_built?: number | null;
+          zip?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_listings_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listings_dismissed_by_fkey";
+            columns: ["dismissed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listings_promoted_by_fkey";
+            columns: ["promoted_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listings_verified_by_fkey";
+            columns: ["verified_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listings_workspace_id_deal_id_fkey";
+            columns: ["workspace_id", "deal_id"];
+            isOneToOne: false;
+            referencedRelation: "deals";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "h4a_listings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_listings_workspace_id_property_id_fkey";
+            columns: ["workspace_id", "property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
       imports: {
         Row: {
           completed_at: string | null;
@@ -2346,6 +2988,67 @@ export type Database = {
           subtitle: string;
           title: string;
         }[];
+      };
+      h4a_create_email: { Args: { p_email: Json; p_workspace_id: string }; Returns: string };
+      h4a_inbound_ingest: {
+        Args: { p_email_id: string; p_items: Json; p_token: string };
+        Returns: Json;
+      };
+      h4a_inbound_receive: { Args: { p_email: Json; p_token: string }; Returns: Json };
+      h4a_inbound_save_scores: {
+        Args: { p_email_id: string; p_email_status?: string; p_scores: Json; p_token: string };
+        Returns: Json;
+      };
+      h4a_inbound_set_alert_email_status: {
+        Args: { p_alert_id: string; p_error?: string; p_status: string; p_token: string };
+        Returns: undefined;
+      };
+      h4a_inbound_update_email: {
+        Args: { p_email_id: string; p_patch: Json; p_token: string };
+        Returns: undefined;
+      };
+      h4a_ingest_listings: {
+        Args: { p_email_id?: string; p_items: Json; p_workspace_id: string };
+        Returns: Json;
+      };
+      h4a_mark_alerts_read: {
+        Args: { p_alert_ids?: string[]; p_workspace_id: string };
+        Returns: number;
+      };
+      h4a_promote_listing: {
+        Args: { p_listing_id: string; p_property_id?: string; p_workspace_id: string };
+        Returns: Json;
+      };
+      h4a_save_scores: {
+        Args: {
+          p_alertable?: string[];
+          p_email_status?: string;
+          p_scores: Json;
+          p_workspace_id: string;
+        };
+        Returns: Json;
+      };
+      h4a_set_alert_email_status: {
+        Args: { p_alert_id: string; p_error?: string; p_status: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      h4a_set_listing_status: {
+        Args: { p_action: string; p_listing_id: string; p_reason?: string; p_workspace_id: string };
+        Returns: string;
+      };
+      h4a_update_email: {
+        Args: { p_email_id: string; p_patch: Json; p_workspace_id: string };
+        Returns: undefined;
+      };
+      h4a_verify_listing: {
+        Args: {
+          p_listing_id: string;
+          p_note?: string;
+          p_source?: string;
+          p_status: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
       };
       pipeline_stage_totals: {
         Args: { p_pipeline_id: string };

@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/common/page-header";
 import { SettingsNav } from "@/components/settings/settings-nav";
 import { AZH_SETTINGS_TABS } from "@/features/azh/nav";
+import { H4A_SETTINGS_TABS } from "@/features/h4a/nav";
 import { ROLE_LABELS } from "@/lib/constants";
 import { getWorkspaceContext } from "@/server/workspace";
 
@@ -18,7 +19,9 @@ export default async function SettingsLayout({
       />
       <SettingsNav
         slug={slug}
-        extraTabs={workspace.businessType === "construction" ? AZH_SETTINGS_TABS : undefined}
+        extraTabs={
+          workspace.businessType === "construction" ? AZH_SETTINGS_TABS : H4A_SETTINGS_TABS
+        }
       />
       {children}
     </div>

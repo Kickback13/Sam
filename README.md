@@ -46,12 +46,12 @@ E2E and RLS tests create throwaway users **only** in the local stack — both re
 
 - Migrations live in `supabase/migrations/` (CLI-compatible, file names match the versions recorded on the hosted project).
 - Every domain table has `workspace_id` + RLS; helper functions live in the non-exposed `app_private` schema.
-- Hosted project: `jcrjzmflepnvvvneahvs` (ca-central-1, Pro org Kondense AI). Apply new migrations with `supabase db push` or the Supabase MCP `apply_migration` tool, then run the RLS suite (`node scripts/rls-hosted-sql.mjs` prints the hosted-safe variant).
+- Hosted project: `jcrjzmflepnvvvneahvs` (ca-central-1, Pro org Kondense AI). Apply new migrations with `supabase db push` or the Supabase MCP `apply_migration` tool, then run the RLS suites (`node scripts/rls-hosted-sql.mjs` prints the hosted-safe Phase 1 variant; `node scripts/rls-hosted-sql.mjs supabase/tests/h4a_rls.sql` the Deal Engine one).
 - Seeds: Housing4All + AZH Builders hold configuration only (pipelines, stages, brand). Fictional sample data lives only in the **Demo** workspace (`is_demo = true`).
 
 ## Deploy
 
-Vercel project `housing4all-platform` (team ERA Ventures) is Git-connected: PRs get preview deploys, merging to `main` deploys production. Production needs only the two public Supabase env vars. Functions run in `yul1` (Montréal, next to Supabase ca-central-1).
+Vercel project `housing4all-platform` (team ERA Ventures) is Git-connected: PRs get preview deploys, merging to `main` deploys production. Production needs only the two public Supabase env vars; forwarded alert emails (Deal Finder) additionally need the optional Resend/Inngest vars in `.env.example` — setup steps in `docs/ACCOUNTS.md`. Functions run in `yul1` (Montréal, next to Supabase ca-central-1).
 
 **Supabase Auth settings that must match the deployed URL** (Dashboard → Authentication → URL Configuration): Site URL = production URL; Redirect URLs include `https://<prod-domain>/**` and the preview pattern. Google sign-in needs the Google provider configured with Sam's OAuth client.
 
@@ -62,7 +62,8 @@ src/app/              routes — /login, /auth/*, /invite/[token], /w/[slug]/…
 src/components/       ui/ (shadcn primitives), shell/, people/, pipeline/, settings/, …
 src/lib/              brand, nav, normalize, csv/, validation/ (Zod), supabase/ clients, db/types.ts
 src/server/           server-only queries + server actions (all under the user's session → RLS)
-supabase/             config.toml, migrations/, tests/rls_isolation.sql
+src/features/h4a/     Deal Engine (Phase 2A): parsers, scoring, dedupe, inbound email, jobs, UI
+supabase/             config.toml, migrations/, tests/ (rls_isolation.sql, h4a_rls.sql, …)
 tests/                unit/ (CI), rls/ (local stack), fixtures/
 e2e/                  Playwright smoke + fixtures (GoHighLevel-format CSV)
 docs/                 roadmap, ADRs, accounts, phase plans
