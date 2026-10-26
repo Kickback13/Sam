@@ -14,7 +14,7 @@ Branch `h4a/deal-engine` · plan in `docs/phases/PHASE-2A-PLAN.md` · rules in `
 - [x] Hosted DB updated (2026-10-26): combined file `2026-10-h4a-phase-2a.sql` applied by a human in the SQL editor — live has 21 migrations incl. the 3 `h4a_deal_engine` ones (file was proven locally first on a copy of the 18-migration live state: applies once, guard stops a re-run, versions = filenames, `pnpm test:rls` 41/41, hosted-safe suites Phase 1 41/0, AZH 93/0, Phase 2A 73/0 with no leftovers)
 - [x] `origin/main` merged in again (no-op) → CI green on `65756d9` (fast + DB/e2e jobs) → squash-merged as `3db7cb1` ([#4](https://github.com/Kickback13/Sam/pull/4))
 - [x] Vercel production deploy `dpl_7NzriHTuVU2abbeUm7JKZEpPD5e3` **READY** in `yul1`, aliased to `housing4all-platform.vercel.app`; no runtime errors in the first hour
-- [ ] Live HTTP checks (`/login` loads; unsigned `POST /api/inbound/email` → 4xx) — **not run from the build sandbox** (its network policy blocks `*.vercel.app`); to be run by a human or from a session allowed to reach the host
+- [x] Live HTTP checks (2026-10-26): `GET /login` → **200** from `dpl_7NzriHTuVU2abbeUm7JKZEpPD5e3`; `GET /api/inbound/email` → **405**; unsigned `POST /api/inbound/email` → **503** `{"error":"Inbound email is not connected (RESEND_WEBHOOK_SECRET is not set)."}` (run by Michael from his Mac; the build sandbox can't reach `*.vercel.app`). Forwarded email stays Not connected until Sam's Resend inbound + DNS are set up.
 
 ## Shared files touched
 
