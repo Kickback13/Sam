@@ -7,6 +7,7 @@
 -- `authenticated` / `anon` roles + JWT claims (exactly how PostgREST runs).
 -- Safe to run on the hosted project after the migration is applied:
 --   node scripts/rls-hosted-sql.mjs supabase/tests/h4a_analysis_rls.sql
+-- (the hosted variant drops the @destructive blocks — the delete checks run locally).
 --
 -- Covers: workspace isolation both ways; writers (agent) create and edit;
 -- viewers read only; anon gets nothing; rows can't point at another
@@ -143,9 +144,11 @@ begin
     update public.h4a_underwriting set name = 'hijacked' where id = uw_a;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'B cannot edit A''s scenario', 'passed', n = 0, 'detail', n);
+    -- @destructive-begin
     delete from public.h4a_comps where id = comp_a;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'B cannot delete A''s comp', 'passed', n = 0, 'detail', n);
+    -- @destructive-end
     select count(*) into n from public.h4a_underwriting where id = uw_b;
     results := results || jsonb_build_object('test', 'B reads its own scenario', 'passed', n = 1, 'detail', n);
 
@@ -164,9 +167,11 @@ begin
     update public.h4a_underwriting set name = 'viewer edit' where id = uw_a;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'viewer cannot edit a scenario', 'passed', n = 0, 'detail', n);
+    -- @destructive-begin
     delete from public.h4a_comps where id = comp_a;
     get diagnostics n = row_count;
     results := results || jsonb_build_object('test', 'viewer cannot delete a comp', 'passed', n = 0, 'detail', n);
+    -- @destructive-end
 
     -- ---------- anon ----------
     perform set_config('role', 'anon', true);
@@ -182,11 +187,13 @@ begin
 
     -- ---------- back to the owner: cascade ----------
     perform set_config('role', 'postgres', true);
+    -- @destructive-begin
     delete from public.properties where id = prop_a;
     select count(*) into n from public.h4a_underwriting where property_id = prop_a;
     results := results || jsonb_build_object('test', 'deleting a property removes its scenarios', 'passed', n = 0, 'detail', n);
     select count(*) into n from public.h4a_comps where property_id = prop_a;
     results := results || jsonb_build_object('test', 'deleting a property removes its comps', 'passed', n = 0, 'detail', n);
+    -- @destructive-end
 
     -- ---------- discard all fixtures ----------
     raise exception using errcode = 'RLSOK', message = 'rolling back H4A analysis RLS fixtures';
