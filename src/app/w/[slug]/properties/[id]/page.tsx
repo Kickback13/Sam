@@ -1,4 +1,4 @@
-import { CircleDot, Pencil } from "lucide-react";
+import { Calculator, CircleDot, Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -71,22 +71,34 @@ export default async function PropertyPage({ params }: PageProps<"/w/[slug]/prop
           .filter(Boolean)
           .join(", ")}
         actions={
-          canWrite && (
-            <>
-              <DeleteButton
-                label="Property"
-                confirmText={`Delete ${title}?`}
-                action={deleteProperty.bind(null, { workspaceId: workspace.id, propertyId: p.id })}
-                redirectTo={`/w/${slug}/properties`}
-              />
-              <NewTaskDialog related={{ type: "property", id: p.id, name: title }} />
-              <Button asChild size="sm" variant="outline">
-                <Link href={`/w/${slug}/properties/${p.id}/edit`}>
-                  <Pencil aria-hidden /> Edit
+          <>
+            {workspace.businessType === "real_estate" && (
+              <Button asChild size="sm" data-testid="analyze-property">
+                <Link href={`/w/${slug}/properties/${p.id}/analysis`}>
+                  <Calculator aria-hidden /> Analyze deal
                 </Link>
               </Button>
-            </>
-          )
+            )}
+            {canWrite && (
+              <>
+                <DeleteButton
+                  label="Property"
+                  confirmText={`Delete ${title}?`}
+                  action={deleteProperty.bind(null, {
+                    workspaceId: workspace.id,
+                    propertyId: p.id,
+                  })}
+                  redirectTo={`/w/${slug}/properties`}
+                />
+                <NewTaskDialog related={{ type: "property", id: p.id, name: title }} />
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/w/${slug}/properties/${p.id}/edit`}>
+                    <Pencil aria-hidden /> Edit
+                  </Link>
+                </Button>
+              </>
+            )}
+          </>
         }
       />
       <div className="grid gap-5 lg:grid-cols-3">
