@@ -34,8 +34,8 @@ export default async function AzhSettingsPage({ params }: PageProps<"/w/[slug]/s
           cslb_license: settings.cslb_license ?? "",
           service_types: settings.service_types,
           intake_enabled: settings.intake_enabled,
-          san_diego_assignee: settings.san_diego_assignee ?? "",
-          fallbrook_assignee: settings.fallbrook_assignee ?? "",
+          san_diego_assignees: settings.san_diego_assignees,
+          fallbrook_assignees: settings.fallbrook_assignees,
         }}
         fallbrookZips={routes.filter((r) => r.office === "fallbrook").map((r) => r.zip)}
         formUrl={`${origin}/r/${slug}`}

@@ -74,3 +74,9 @@ Spam/abuse: honeypot field (server action silently drops), server-side Zod valid
 
 **Decision:** Settings → AZH → "Clean up unused uploads" (owners/admins only). `azh_unused_intake_photos()` runs as the caller, refuses non-admins, and lists `azh-intake` objects older than 24 hours that no request references (max 1,000 per run). The server action deletes them through the Storage API (so the files go, not just the rows) and prunes upload tickets older than 24 hours. No scheduled job, per the brief.
 **Consequences:** Orphans pile up until an admin presses the button; a scheduled run can call the same RPC + delete later (Inngest, Phase 2+).
+
+## AZH-015 — Several people per office get every new request
+
+**Context:** Sam wants both him and Norma to get every new AZH request; settings held one assignee per office.
+**Decision:** `azh_settings.san_diego_assignees` / `fallbrook_assignees` (`uuid[]`, default empty), backfilled from the old single columns, which are kept and kept in sync (first person in the list) by a trigger. The same trigger treats a write to only the old single column as a one-person list, so older code keeps working during the deploy window. It dedupes the lists (first occurrence wins), caps them at 20, and refuses anyone who isn't a member of the workspace (`23514`). Only admins can change settings (existing RLS). The intake creates one follow-up task per current member on the routed office's list (people removed from the workspace later are skipped), or one unassigned task when the list is empty, and sets the request's `assigned_to` to the first person. Everything else the intake does is unchanged (diffed). Settings → AZH shows a checkbox list per office and says in plain words who gets requests.
+**Consequences:** No duplicate tasks for the same person; the request has one clear owner; nothing changes for workspaces where nobody is picked.

@@ -98,6 +98,12 @@ export const estimateStatusSchema = z.enum(ESTIMATE_STATUS_VALUES);
 // ---------------------------------------------------------------------------
 // Settings
 // ---------------------------------------------------------------------------
+const assigneeList = z
+  .array(z.uuid("Invalid member"))
+  .max(20, "At most 20 people per office")
+  .default([])
+  .transform((ids) => [...new Set(ids)]);
+
 export const azhSettingsSchema = z.object({
   cslb_license: z
     .preprocess(
@@ -111,8 +117,9 @@ export const azhSettingsSchema = z.object({
     .transform((v) => v ?? null),
   service_types: labelList(40).refine((l) => l.length > 0, "Keep at least one service type"),
   intake_enabled: z.boolean(),
-  san_diego_assignee: optionalUuid,
-  fallbrook_assignee: optionalUuid,
+  /** Members who get a task for every new request, in order (the first owns the request). */
+  san_diego_assignees: assigneeList,
+  fallbrook_assignees: assigneeList,
 });
 export type AzhSettingsInput = z.infer<typeof azhSettingsSchema>;
 

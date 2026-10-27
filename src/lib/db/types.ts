@@ -903,8 +903,10 @@ export type Database = {
           created_at: string;
           cslb_license: string | null;
           fallbrook_assignee: string | null;
+          fallbrook_assignees: string[];
           intake_enabled: boolean;
           san_diego_assignee: string | null;
+          san_diego_assignees: string[];
           service_types: string[];
           updated_at: string;
           workspace_id: string;
@@ -914,8 +916,10 @@ export type Database = {
           created_at?: string;
           cslb_license?: string | null;
           fallbrook_assignee?: string | null;
+          fallbrook_assignees?: string[];
           intake_enabled?: boolean;
           san_diego_assignee?: string | null;
+          san_diego_assignees?: string[];
           service_types?: string[];
           updated_at?: string;
           workspace_id: string;
@@ -924,8 +928,10 @@ export type Database = {
           created_at?: string;
           cslb_license?: string | null;
           fallbrook_assignee?: string | null;
+          fallbrook_assignees?: string[];
           intake_enabled?: boolean;
           san_diego_assignee?: string | null;
+          san_diego_assignees?: string[];
           service_types?: string[];
           updated_at?: string;
           workspace_id?: string;
