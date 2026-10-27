@@ -9,7 +9,10 @@ import { assertSafeTarget, db } from "./env";
 describe("H4A property analysis SQL RLS suite", () => {
   it("passes every assertion and leaves nothing behind", async () => {
     assertSafeTarget();
-    const sql = readFileSync(path.join(process.cwd(), "supabase/tests/h4a_analysis_rls.sql"), "utf8");
+    const sql = readFileSync(
+      path.join(process.cwd(), "supabase/tests/h4a_analysis_rls.sql"),
+      "utf8",
+    );
     const c = await db();
     try {
       const results = await c.query(sql);

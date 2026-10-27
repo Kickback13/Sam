@@ -169,3 +169,29 @@ Alerts: an in-app alert when a **new or updated** listing (from an ingest) score
 ## ADR-025 — CI runs the database and browser tests
 
 **Decision:** A second CI job starts the local Supabase stack (all migrations in order), runs `pnpm test:rls` (Phase 1 isolation + SQL suite, AZH suite, Deal Engine suite, inbound webhook end-to-end, demo seed check) and the Playwright e2e (desktop + 390px). It's separate from the fast job so lint/typecheck/unit/build still report first. Everything targets the throwaway local stack; the suites refuse non-local databases.
+
+## ADR-026 — Property analysis: inputs stored, results computed; licensed data behind an adapter
+
+**Decision (3A):**
+
+- An underwriting scenario stores only its **inputs** and where each came from (`h4a_underwriting.inputs` / `input_sources`). Every result (NOI, cap rate, DSCR, cash-on-cash, break-even…) is computed by one pure module, `src/features/h4a/underwriting/math.ts`, used by the page, the PDF and the AI fact list — so the three can't disagree, and a formula fix applies to every saved scenario.
+- Nothing is assumed. Price comes from the promoted listing (never the last sale price), units and sq ft from the property, each with its original source. Rents, vacancy, expenses and the loan start blank; a result that needs a blank input shows "Needs input". Optional add-ons (other income, single expense lines, closing costs) count as $0 when blank and the formula says so.
+- Property tax is a **rate of the price** because California reassesses at sale (Prop 13); a rate under 1% raises a red flag.
+- Red flags are rules of thumb kept as constants (`FLAG_RULES`), worded as "check", not "wrong".
+- Comps are entered by hand (or later by the data service) and every comp requires a source label and an as-of date.
+
+**Ownership / mortgage / foreclosure / tax data:** `PropertyDataAdapter` with a `NotConnectedPropertyData` implementation, shown as "Not connected" on the analysis page. **Sam chooses the provider**; the account is created under his email and the key goes in Vercel env (never the database). Candidates, to compare on a current quote and the terms of use:
+
+| Provider      | What it's known for                                                                 | Questions for the quote                                  |
+| ------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| ATTOM         | National property, ownership, mortgage, foreclosure, tax and AVM data via REST API  | Price per call / plan, San Diego coverage, display terms |
+| RentCast      | Rent estimates and comps, property records, listings; self-serve API plans          | Owner/mortgage depth, rent-comp coverage in 92104 etc.   |
+| PropertyRadar | California-rooted owner, equity, mortgage and foreclosure data; API on higher plans | API plan price, export/display terms, contact data rules |
+
+Prices aren't written here because they change; get a current quote before choosing. Whichever is picked plugs into the adapter (and can also back `CountyRecordsAdapter`, ADR-024) without other changes.
+
+## ADR-027 — AI summary: fact list in, every sentence checked before it's shown
+
+**Decision:** The AI summary (Anthropic, model `claude-opus-5-5`, effort `low`, structured output) receives only a numbered **fact list** built from the saved scenario — each fact is an id, a label, the value exactly as the page shows it, and its source. No names, addresses or contact details are sent. The model returns sentences, each with the fact ids it used. Before anything is shown, `checkSummary()` drops any sentence that cites no fact or an unknown fact, or **states a number that isn't in one of the facts it cites**. If nothing survives, nothing is shown. Summaries aren't stored; each generation is written to `audit_log` (model, sentence count, dropped count).
+
+**Connection:** "Not connected" until `ANTHROPIC_API_KEY` (an API key on Sam's Anthropic account, logged in `docs/ACCOUNTS.md`) is set in Vercel. Requests use the server-side refusal fallback (`fallbacks: "default"`), so a safety-classifier decline is retried on a fallback model instead of failing; a final refusal shows a plain message. Cost is usage-based and only incurred when someone clicks "Summarize".
