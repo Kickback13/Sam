@@ -1739,6 +1739,110 @@ export type Database = {
           },
         ];
       };
+      h4a_comps: {
+        Row: {
+          address: string;
+          as_of: string;
+          building_sqft: number | null;
+          cap_rate: number | null;
+          city: string | null;
+          created_at: string;
+          created_by: string | null;
+          distance_miles: number | null;
+          id: string;
+          kind: string;
+          monthly_rent: number | null;
+          notes: string | null;
+          price: number | null;
+          price_per_unit: number | null;
+          property_id: string;
+          sale_date: string | null;
+          source_label: string;
+          source_url: string | null;
+          unit_type: string | null;
+          units: number | null;
+          updated_at: string;
+          workspace_id: string;
+          year_built: number | null;
+          zip: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          address: string;
+          as_of: string;
+          building_sqft?: number | null;
+          cap_rate?: number | null;
+          city?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          distance_miles?: number | null;
+          id?: string;
+          kind: string;
+          monthly_rent?: number | null;
+          notes?: string | null;
+          price?: number | null;
+          price_per_unit?: never;
+          property_id: string;
+          sale_date?: string | null;
+          source_label: string;
+          source_url?: string | null;
+          unit_type?: string | null;
+          units?: number | null;
+          updated_at?: string;
+          workspace_id: string;
+          year_built?: number | null;
+          zip?: string | null;
+        };
+        Update: {
+          address?: string;
+          as_of?: string;
+          building_sqft?: number | null;
+          cap_rate?: number | null;
+          city?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          distance_miles?: number | null;
+          id?: string;
+          kind?: string;
+          monthly_rent?: number | null;
+          notes?: string | null;
+          price?: number | null;
+          price_per_unit?: never;
+          property_id?: string;
+          sale_date?: string | null;
+          source_label?: string;
+          source_url?: string | null;
+          unit_type?: string | null;
+          units?: number | null;
+          updated_at?: string;
+          workspace_id?: string;
+          year_built?: number | null;
+          zip?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_comps_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_comps_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_comps_workspace_id_property_id_fkey";
+            columns: ["workspace_id", "property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
       h4a_imports: {
         Row: {
           completed_at: string | null;
@@ -2227,6 +2331,78 @@ export type Database = {
           },
           {
             foreignKeyName: "h4a_listings_workspace_id_property_id_fkey";
+            columns: ["workspace_id", "property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      h4a_underwriting: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          input_sources: NonNullable<Json>;
+          inputs: NonNullable<Json>;
+          name: string;
+          notes: string | null;
+          property_id: string;
+          updated_at: string;
+          updated_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          input_sources?: NonNullable<Json>;
+          inputs?: NonNullable<Json>;
+          name: string;
+          notes?: string | null;
+          property_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          input_sources?: NonNullable<Json>;
+          inputs?: NonNullable<Json>;
+          name?: string;
+          notes?: string | null;
+          property_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "h4a_underwriting_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_underwriting_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_underwriting_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "h4a_underwriting_workspace_id_property_id_fkey";
             columns: ["workspace_id", "property_id"];
             isOneToOne: false;
             referencedRelation: "properties";
