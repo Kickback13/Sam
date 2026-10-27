@@ -100,7 +100,6 @@ const REAL_ESTATE_NAV: NavItem[] = [
     path: "analyze",
     icon: "analyze",
     group: "Work",
-    comingIn: 3,
   },
   {
     key: "outreach",
@@ -229,18 +228,6 @@ export function dealNoun(businessType: BusinessType, plural = false): string {
 }
 
 const COMING_SOON: Record<string, ComingSoonModule> = {
-  analyze: {
-    key: "analyze",
-    title: "Analyze",
-    phase: 3,
-    summary:
-      "Underwriting in one screen: price/unit, rents, NOI, cap rate, DSCR and cash flow, with comps, red flags and an AI summary that cites every source.",
-    bullets: [
-      "Ownership, mortgage, foreclosure and tax data from a licensed data API",
-      "Comparable sales and rents",
-      "PDF export that matches the screen",
-    ],
-  },
   outreach: {
     key: "outreach",
     title: "Outreach",

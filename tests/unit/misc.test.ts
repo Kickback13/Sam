@@ -44,8 +44,10 @@ describe("nav per business type", () => {
   });
 
   it("future modules carry their phase and only resolve for the right business", () => {
-    expect(comingSoonModule("analyze", "real_estate")?.phase).toBe(3);
-    expect(comingSoonModule("analyze", "construction")).toBeNull();
+    expect(comingSoonModule("outreach", "real_estate")?.phase).toBe(4);
+    expect(comingSoonModule("outreach", "construction")).toBeNull();
+    // Analyze shipped in Phase 3A: a real page, no longer a placeholder.
+    expect(comingSoonModule("analyze", "real_estate")).toBeNull();
     // Deal Finder and Alerts shipped in Phase 2A: real pages, no longer placeholders.
     expect(comingSoonModule("deal-finder", "real_estate")).toBeNull();
     expect(comingSoonModule("alerts", "real_estate")).toBeNull();

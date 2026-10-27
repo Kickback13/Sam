@@ -147,6 +147,21 @@ test("Phase 3A: analyze → sources → live numbers → red flags → save → 
   await expect(page.getByTestId("property-data-card")).toContainText("Not connected");
 });
 
+test("Analyze lists the saved analysis with the same numbers and flags", async ({ page }) => {
+  await signIn(page);
+  await goto(page, BASE);
+  await page.getByRole("link", { name: "Analyze" }).first().click();
+  await page.waitForURL(/\/analyze$/);
+  const row = page.locator('[data-testid=analysis-row][data-address^="500 Analysis Test St"]');
+  await expect(row).toContainText("“Asking price”");
+  await expect(row.getByTestId("analysis-capRate")).toHaveText("7.27%");
+  await expect(row.getByTestId("analysis-dscr")).toHaveText("1.56×");
+  await expect(row).toContainText("1 to check"); // priced above the comps
+  await row.getByRole("link", { name: "500 Analysis Test St" }).click();
+  await page.waitForURL(/\/analysis\?scenario=/);
+  await expect(page.getByTestId("uw-value-noi")).toHaveText("$145,448");
+});
+
 test("analysis is real-estate only (404 in a construction workspace)", async ({ page }) => {
   await signIn(page);
   const res = await page.goto(

@@ -48,15 +48,18 @@ Plan: `docs/phases/PHASE-3A-PLAN.md` · ADR-026, ADR-027.
 - [x] RLS suite `supabase/tests/h4a_analysis_rls.sql` (25 checks) + vitest wrapper
 - [x] Analysis page `/w/[slug]/properties/[id]/analysis`: live results with formula + sources, red flags, scenarios, comps, phone key-numbers strip
 - [x] PDF export (same calculator), AI summary (Not connected; citation check), property data card (Not connected)
-- [x] E2E: full flow + 404 outside real estate + 390px
+- [x] Analyze page `/w/[slug]/analyze`: every analyzed property with key numbers and flags from its latest scenario
+- [x] E2E: full flow + Analyze list + 404 outside real estate + 390px
 - [ ] Combined live-DB SQL file built and proven locally → human applies → merge
 
 ### Shared files touched (Phase 3A)
 
-| File                                        | Change                                           | Why                         |
-| ------------------------------------------- | ------------------------------------------------ | --------------------------- |
-| `src/app/w/[slug]/properties/[id]/page.tsx` | "Analyze deal" button for real-estate workspaces | Entry point to the analysis |
-| `src/lib/db/types.ts`                       | Regenerated (`pnpm db:types`), additions only    | New tables                  |
-| `docs/DECISIONS.md`                         | ADR-026, ADR-027                                 | Track A decisions           |
+| File                                        | Change                                                       | Why                                    |
+| ------------------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| `src/app/w/[slug]/properties/[id]/page.tsx` | "Analyze deal" button for real-estate workspaces             | Entry point to the analysis            |
+| `src/lib/nav.ts`                            | Analyze no longer "Coming in P3" (placeholder entry removed) | `/w/[slug]/analyze` is a real page now |
+| `tests/unit/misc.test.ts`                   | Analyze is no longer a placeholder                           | Matches the nav change                 |
+| `src/lib/db/types.ts`                       | Regenerated (`pnpm db:types`), additions only                | New tables                             |
+| `docs/DECISIONS.md`                         | ADR-026, ADR-027                                             | Track A decisions                      |
 
 No AZH files changed. The 3A migrations depend only on Phase 1 + Phase 2A tables.

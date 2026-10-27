@@ -30,4 +30,10 @@ test("Deal analysis works at 390px: inputs, results, flags, comps — no sideway
   expect(overflowAfter, "horizontal overflow with a unit-mix row").toBeLessThanOrEqual(1);
   await expect(page.getByTestId("uw-flags")).toBeVisible();
   await expect(page.getByTestId("comps-panel")).toBeVisible();
+
+  await goto(page, `/w/${E2E_REALTY}/analyze`);
+  const listOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(listOverflow, "horizontal overflow on Analyze").toBeLessThanOrEqual(1);
 });

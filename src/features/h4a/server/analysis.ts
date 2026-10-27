@@ -127,3 +127,95 @@ export async function getAnalysisData(workspaceId: string, propertyId: string) {
 }
 
 export type AnalysisData = NonNullable<Awaited<ReturnType<typeof getAnalysisData>>>;
+
+export type AnalysisListRow = {
+  propertyId: string;
+  title: string;
+  address: string;
+  units: number | null;
+  scenarioId: string;
+  scenarioName: string;
+  scenarioCount: number;
+  updatedAt: string;
+  inputs: ReturnType<typeof parseStoredInputs>;
+  flagContext: {
+    saleCompMedianPricePerUnit: number | null;
+    saleCompCount: number;
+    verificationStatus: "unverified" | "verified" | "mismatch" | null;
+  };
+};
+
+/** Every property with a saved scenario, newest first, with what the flags need (RLS applies). */
+export async function listAnalyses(workspaceId: string): Promise<AnalysisListRow[]> {
+  const supabase = await createClient();
+  const { data: scenarios, error } = await supabase
+    .from("h4a_underwriting")
+    .select(
+      "id, name, inputs, updated_at, property_id, property:properties!h4a_underwriting_workspace_id_property_id_fkey(id, name, address, city, zip, units, deleted_at)",
+    )
+    .eq("workspace_id", workspaceId)
+    .order("updated_at", { ascending: false })
+    .limit(500);
+  if (error) throw error;
+
+  const latest = new Map<string, { row: NonNullable<typeof scenarios>[number]; count: number }>();
+  for (const s of scenarios ?? []) {
+    if (!s.property || s.property.deleted_at) continue;
+    const hit = latest.get(s.property_id);
+    if (hit) hit.count++;
+    else latest.set(s.property_id, { row: s, count: 1 });
+  }
+  const ids = [...latest.keys()];
+  if (!ids.length) return [];
+
+  const [comps, listings] = await Promise.all([
+    supabase
+      .from("h4a_comps")
+      .select("property_id, price_per_unit")
+      .eq("workspace_id", workspaceId)
+      .eq("kind", "sale")
+      .in("property_id", ids),
+    supabase
+      .from("h4a_listings")
+      .select("property_id, verification_status, promoted_at")
+      .eq("workspace_id", workspaceId)
+      .in("property_id", ids)
+      .order("promoted_at", { ascending: false, nullsFirst: false }),
+  ]);
+  const ppuByProperty = new Map<string, number[]>();
+  for (const c of comps.data ?? [])
+    if (c.price_per_unit !== null)
+      ppuByProperty.set(c.property_id, [
+        ...(ppuByProperty.get(c.property_id) ?? []),
+        c.price_per_unit,
+      ]);
+  const saleCount = new Map<string, number>();
+  for (const c of comps.data ?? [])
+    saleCount.set(c.property_id, (saleCount.get(c.property_id) ?? 0) + 1);
+  const verification = new Map<string, string>();
+  for (const l of listings.data ?? [])
+    if (l.property_id && !verification.has(l.property_id))
+      verification.set(l.property_id, l.verification_status);
+
+  return ids.map((id) => {
+    const { row, count } = latest.get(id)!;
+    const p = row.property!;
+    return {
+      propertyId: id,
+      title: p.name ?? p.address,
+      address: [p.address, p.city, p.zip].filter(Boolean).join(", "),
+      units: p.units,
+      scenarioId: row.id,
+      scenarioName: row.name,
+      scenarioCount: count,
+      updatedAt: row.updated_at,
+      inputs: parseStoredInputs(row.inputs),
+      flagContext: {
+        saleCompMedianPricePerUnit: median(ppuByProperty.get(id) ?? []),
+        saleCompCount: saleCount.get(id) ?? 0,
+        verificationStatus:
+          (verification.get(id) as "unverified" | "verified" | "mismatch" | undefined) ?? null,
+      },
+    };
+  });
+}
