@@ -6,7 +6,17 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
 
 export const LAST_WORKSPACE_COOKIE = "h4a_last_ws";
 
-const PUBLIC_PATHS = ["/login", "/auth", "/invite", "/r", "/api/inbound", "/api/inngest"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth",
+  "/invite",
+  "/r",
+  "/api/inbound",
+  "/api/inngest",
+  // One-click email unsubscribe (Phase 4): must work without signing in.
+  "/unsubscribe",
+  "/api/unsubscribe",
+];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

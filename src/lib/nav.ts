@@ -107,7 +107,6 @@ const REAL_ESTATE_NAV: NavItem[] = [
     path: "outreach",
     icon: "outreach",
     group: "Engage",
-    comingIn: 4,
   },
   {
     key: "calendar",
@@ -178,6 +177,7 @@ const CONSTRUCTION_NAV: NavItem[] = [
     group: "Work",
   },
   { key: "schedule", label: "Schedule", path: "schedule", icon: "calendar", group: "Work" },
+  { key: "outreach", label: "Outreach", path: "outreach", icon: "outreach", group: "Engage" },
   {
     key: "community",
     label: "Community",
@@ -228,14 +228,6 @@ export function dealNoun(businessType: BusinessType, plural = false): string {
 }
 
 const COMING_SOON: Record<string, ComingSoonModule> = {
-  outreach: {
-    key: "outreach",
-    title: "Outreach",
-    phase: 4,
-    summary:
-      "Sequences to owners, brokers and property managers — every send passes TCPA consent, STOP opt-out, quiet hours, CAN-SPAM and DNC checks first.",
-    bullets: ["Reply inbox", "Calendar booking", "Every touch logged on the contact timeline"],
-  },
   calendar: {
     key: "calendar",
     title: "Calendar",

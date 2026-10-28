@@ -9,6 +9,7 @@ import { ComplianceBadges } from "@/components/common/compliance-badges";
 import { PageHeader } from "@/components/common/page-header";
 import { DeleteContactButton } from "@/components/people/delete-contact-button";
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
+import { ContactReachability } from "@/features/outreach/components/contact-reachability";
 import { TaskList } from "@/components/tasks/task-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -210,9 +211,7 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
                     : "Subscribed"}
                 </Row>
               </dl>
-              <p className="text-xs text-muted-foreground">
-                No automated messages are sent in Phase 1.
-              </p>
+              <ContactReachability workspaceId={workspace.id} contactId={c.id} contact={c} />
             </CardContent>
           </Card>
 

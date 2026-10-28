@@ -2599,6 +2599,294 @@ export type Database = {
           },
         ];
       };
+      newsletter_sends: {
+        Row: {
+          blocked_reasons: string[];
+          contact_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          email: string;
+          error: string | null;
+          id: string;
+          newsletter_id: string;
+          provider_message_id: string | null;
+          sent_at: string | null;
+          status: string;
+          unsubscribe_token: string;
+          unsubscribed_at: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          blocked_reasons?: string[];
+          contact_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email: string;
+          error?: string | null;
+          id?: string;
+          newsletter_id: string;
+          provider_message_id?: string | null;
+          sent_at?: string | null;
+          status: string;
+          unsubscribe_token?: string;
+          unsubscribed_at?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          blocked_reasons?: string[];
+          contact_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string;
+          error?: string | null;
+          id?: string;
+          newsletter_id?: string;
+          provider_message_id?: string | null;
+          sent_at?: string | null;
+          status?: string;
+          unsubscribe_token?: string;
+          unsubscribed_at?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_sends_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletter_sends_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "newsletter_sends_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletter_sends_workspace_id_newsletter_id_fkey";
+            columns: ["workspace_id", "newsletter_id"];
+            isOneToOne: false;
+            referencedRelation: "newsletters";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      newsletters: {
+        Row: {
+          audience: NonNullable<Json>;
+          blocked_count: number;
+          body: string;
+          created_at: string;
+          created_by: string | null;
+          failed_count: number;
+          id: string;
+          preheader: string | null;
+          recipient_count: number;
+          sent_at: string | null;
+          sent_by: string | null;
+          sent_count: number;
+          status: string;
+          subject: string;
+          updated_at: string;
+          updated_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          audience?: NonNullable<Json>;
+          blocked_count?: number;
+          body?: string;
+          created_at?: string;
+          created_by?: string | null;
+          failed_count?: number;
+          id?: string;
+          preheader?: string | null;
+          recipient_count?: number;
+          sent_at?: string | null;
+          sent_by?: string | null;
+          sent_count?: number;
+          status?: string;
+          subject: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          audience?: NonNullable<Json>;
+          blocked_count?: number;
+          body?: string;
+          created_at?: string;
+          created_by?: string | null;
+          failed_count?: number;
+          id?: string;
+          preheader?: string | null;
+          recipient_count?: number;
+          sent_at?: string | null;
+          sent_by?: string | null;
+          sent_count?: number;
+          status?: string;
+          subject?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "newsletters_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletters_sent_by_fkey";
+            columns: ["sent_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletters_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "newsletters_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      outreach_settings: {
+        Row: {
+          created_at: string;
+          from_email: string | null;
+          mailing_address: string | null;
+          reply_to: string | null;
+          sender_name: string | null;
+          sms_send_from: number;
+          sms_send_until: number;
+          time_zone: string;
+          updated_at: string;
+          updated_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          from_email?: string | null;
+          mailing_address?: string | null;
+          reply_to?: string | null;
+          sender_name?: string | null;
+          sms_send_from?: number;
+          sms_send_until?: number;
+          time_zone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          from_email?: string | null;
+          mailing_address?: string | null;
+          reply_to?: string | null;
+          sender_name?: string | null;
+          sms_send_from?: number;
+          sms_send_until?: number;
+          time_zone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outreach_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      outreach_suppressions: {
+        Row: {
+          channel: string;
+          contact_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          note: string | null;
+          reason: string;
+          value: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          channel: string;
+          contact_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason: string;
+          value: string;
+          workspace_id: string;
+        };
+        Update: {
+          channel?: string;
+          contact_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          note?: string | null;
+          reason?: string;
+          value?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outreach_suppressions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_suppressions_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "outreach_suppressions_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pipeline_stages: {
         Row: {
           color: string;
@@ -3231,6 +3519,21 @@ export type Database = {
           p_workspace_id: string;
         };
         Returns: undefined;
+      };
+      outreach_unsubscribe: {
+        Args: { p_token: string };
+        Returns: {
+          email_hint: string;
+          workspace_name: string;
+        }[];
+      };
+      outreach_unsubscribe_info: {
+        Args: { p_token: string };
+        Returns: {
+          email_hint: string;
+          unsubscribed: boolean;
+          workspace_name: string;
+        }[];
       };
       pipeline_stage_totals: {
         Args: { p_pipeline_id: string };

@@ -28,7 +28,8 @@ export const INTEGRATIONS: IntegrationInfo[] = [
   {
     provider: "resend",
     name: "Resend",
-    purpose: "Alert emails to you and parsing of the saved-search alert emails you forward in.",
+    purpose:
+      "Parsing the saved-search alert emails you forward in, alert emails to you, and newsletters (Outreach) once a sending domain is verified.",
     phase: 2,
   },
   {
