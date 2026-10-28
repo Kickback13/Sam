@@ -6,6 +6,7 @@ import { defineConfig, devices } from "@playwright/test";
  * Supabase CLI's well-known local default — not a secret.
  */
 const PORT = Number(process.env.E2E_PORT ?? 3100);
+const GHL_MOCK_PORT = Number(process.env.E2E_GHL_MOCK_PORT ?? 3199);
 const LOCAL_SUPABASE_URL = process.env.E2E_SUPABASE_URL ?? "http://127.0.0.1:54321";
 const LOCAL_PUBLISHABLE_KEY =
   process.env.E2E_SUPABASE_PUBLISHABLE_KEY ?? "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
@@ -50,6 +51,8 @@ export default defineConfig({
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: LOCAL_PUBLISHABLE_KEY,
       ENABLE_TEST_PASSWORD_LOGIN: "true",
       NEXT_TELEMETRY_DISABLED: "1",
+      // GoHighLevel import e2e talks to a local mock (e2e/ghl-mock.ts), never to GHL.
+      GHL_API_BASE: `http://127.0.0.1:${GHL_MOCK_PORT}`,
     },
   },
 });

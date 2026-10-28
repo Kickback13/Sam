@@ -16,7 +16,7 @@ export const INTEGRATIONS: IntegrationInfo[] = [
     provider: "gohighlevel",
     name: "GoHighLevel",
     purpose:
-      "Two-way sync of contacts, opportunities and conversations, plus the LC Phone texting number.",
+      "One-time import of contacts and opportunities before GHL is cancelled (read-only; token kept in Supabase Vault).",
     phase: 5,
   },
   {

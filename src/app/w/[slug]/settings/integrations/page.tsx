@@ -1,5 +1,6 @@
 import { PlugZap } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,6 +76,17 @@ export default async function IntegrationsPage({
                     </>
                   )}
                 </dl>
+                {i.provider === "gohighlevel" && isAdmin && (
+                  <Link
+                    href={`/w/${slug}/settings/integrations/gohighlevel`}
+                    className="inline-block text-sm font-semibold underline"
+                    data-testid="ghl-setup-link"
+                  >
+                    {row?.status === "connected"
+                      ? "Import from GoHighLevel →"
+                      : "Connect and import →"}
+                  </Link>
+                )}
               </CardContent>
             </Card>
           );

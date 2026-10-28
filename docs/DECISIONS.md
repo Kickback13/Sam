@@ -210,3 +210,16 @@ Prices aren't written here because they change; get a current quote before choos
 - **Unsubscribe:** a random per-recipient token. `GET /unsubscribe/{token}` only shows the page (link scanners pre-fetch links); the button and RFC 8058 one-click `POST /api/unsubscribe/{token}` call a SECURITY DEFINER function that adds the address to the do-not-send list, opts the contact out, logs it once, and reveals only the workspace name and a masked email.
 - **Sending is off by default:** needs `OUTREACH_EMAIL=on` and `RESEND_API_KEY`, and is refused on Vercel previews regardless (they share the production database). Until then the UI shows "Not connected" and the Send button explains why. 4A sends in one server action in batches of 100, capped at 5,000 contacts; a background job (Inngest) replaces that if lists grow.
 - Texting has no provider yet (GHL LC Phone vs Twilio is decided with Phase 5); the gates are built and shown on each contact.
+
+## ADR-029 — GoHighLevel: one-time read-only import, token in Vault, contacts through the CSV engine
+
+**Context:** Sam is leaving GoHighLevel (Housing4All in ~2 months, AZH in 3–4). Two-way sync would be built for a system about to be switched off.
+
+**Decision (5A):**
+
+- **Import, don't sync.** A re-runnable, read-only import per workspace: contacts, then opportunities. Nothing is written to GHL.
+- **Token:** a sub-account _Private Integration_ token with `contacts.readonly` + `opportunities.readonly`, created by Sam and pasted into Settings → Integrations → GoHighLevel by an owner/admin. It is tested against GHL before saving and stored only in **Supabase Vault** (`vault.secrets`, encrypted), never in a column. `integrations.config` keeps just the location id/label. SECURITY DEFINER functions let owners/admins store, read (server-side, for the import) and delete it; nobody else, including other workspaces' admins and anon. Trade-off: an admin's session can read the token back through `ghl_connection()` — acceptable because only owners/admins (who pasted it) can, and keeping it out of the browser otherwise.
+- **Contacts reuse the CSV import engine.** Each GHL page is turned into rows shaped like GHL's own CSV export and passed to `importChunk`, so API and CSV imports share validation, dedupe (GHL id / email / phone), merge rules (fill blanks, union tags, compliance flags only tighten) and the import report.
+- **Compliance:** GHL all-channel DND → DNC; Email DND → email opt-out; SMS DND (or all-channel) → the do-not-send list. **SMS consent is never inferred** — GHL has no consent record — so every imported contact starts at "No SMS consent".
+- **Opportunities → deals** through a stage-mapping screen (same-name stage by default, else the first open stage; "Don't import" per stage). Won → the pipeline's won stage, lost/abandoned → lost. `ghl_links (workspace, object, ghl_id) → local_id` makes re-runs skip already-imported opportunities; `deals` is not altered.
+- **API shapes** come from GHL's official SDK (`@gohighlevel/api-client` 3.1.1) because the docs host isn't reachable from the build environment: `GET /contacts/` (startAfterId/startAfter paging), `GET /opportunities/pipelines`, `GET /opportunities/search`, header `Version: 2021-07-28`. Rate limits (429) are waited out client-side. `GHL_API_BASE` (tests only, ignored on Vercel) points e2e at a local mock.
