@@ -75,7 +75,7 @@ Plan: `docs/phases/PHASE-4A-PLAN.md` · ADR-028. Used by both workspaces (Housin
 - [x] Outreach pages (newsletters, editor with live preview + audience check, do-not-send list), Settings → Outreach, public unsubscribe
 - [x] Contact page "Can we reach them right now?" + "texted STOP" button
 - [x] E2E: flow + contact gates/STOP + unsubscribe without login + 390px
-- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [x] Combined live-DB SQL file built and proven locally → human applies (40/40 verify) → merged (#11)
 
 ### Shared files touched (Phase 4A)
 
@@ -92,3 +92,27 @@ Plan: `docs/phases/PHASE-4A-PLAN.md` · ADR-028. Used by both workspaces (Housin
 
 No AZH files changed. The demo seed adds sender details + one draft newsletter to `demo-azh` (data only).
 The 4A migrations depend only on Phase 1 tables (contacts, activities, audit_log, workspaces).
+
+## Phase 5A — one-time GoHighLevel import (branch `h4a/ghl-import`)
+
+Plan: `docs/phases/PHASE-5A-PLAN.md` · ADR-029. Both workspaces (AZH first — its GHL is active; Housing4All when Sam reactivates it).
+
+- [x] GHL client (read-only) + mapping, unit-tested incl. a round trip through the CSV transform
+- [x] Migration `20261028090000_h4a_ghl_import` (`ghl_links`, Vault token functions) — additive
+- [x] RLS suite `supabase/tests/h4a_ghl_rls.sql` (21 checks) + vitest wrapper
+- [x] Settings → Integrations → GoHighLevel: connect (tested, stored in Vault), contact import (CSV engine), opportunity import with stage map, disconnect
+- [x] E2E against a local GHL mock + admin-only + 390px
+- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [ ] Real run on AZH's GHL (Michael/Sam paste the token after merge)
+
+### Shared files touched (Phase 5A)
+
+| File                                              | Change                                                       | Why                                     |
+| ------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------- |
+| `src/app/w/[slug]/settings/integrations/page.tsx` | "Connect and import →" link on the GoHighLevel card (admins) | Entry point (Track A owns Integrations) |
+| `src/lib/integrations.ts`                         | GoHighLevel purpose: one-time import                         | Matches the plan                        |
+| `playwright.config.ts`                            | `GHL_API_BASE` → local mock for e2e                          | E2E never calls GHL                     |
+| `src/lib/db/types.ts`                             | Regenerated, additions only                                  | New table + functions                   |
+| `docs/DECISIONS.md`, `docs/ACCOUNTS.md`           | ADR-029; GHL token steps                                     | Decisions / Sam's setup                 |
+
+No AZH files changed; reuses `src/server/actions/imports.ts` without modifying it.

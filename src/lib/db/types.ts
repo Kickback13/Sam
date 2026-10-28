@@ -1592,6 +1592,52 @@ export type Database = {
           },
         ];
       };
+      ghl_links: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          ghl_id: string;
+          id: string;
+          local_id: string;
+          object: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          ghl_id: string;
+          id?: string;
+          local_id: string;
+          object: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          ghl_id?: string;
+          id?: string;
+          local_id?: string;
+          object?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ghl_links_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ghl_links_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       h4a_alerts: {
         Row: {
           created_at: string;
@@ -3448,6 +3494,24 @@ export type Database = {
           workspace_name: string;
           workspace_slug: string;
         }[];
+      };
+      ghl_connection: {
+        Args: { p_workspace_id: string };
+        Returns: {
+          location_id: string;
+          token: string;
+        }[];
+      };
+      ghl_disconnect: { Args: { p_workspace_id: string }; Returns: undefined };
+      ghl_record_error: { Args: { p_message: string; p_workspace_id: string }; Returns: undefined };
+      ghl_save_connection: {
+        Args: {
+          p_location_id: string;
+          p_location_name: string;
+          p_token: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
       };
       global_search: {
         Args: { p_limit?: number; p_query: string; p_workspace_id: string };
