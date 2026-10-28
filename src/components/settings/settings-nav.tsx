@@ -10,6 +10,7 @@ const TABS = [
   { path: "/members", label: "Members & invites" },
   { path: "/pipelines", label: "Pipelines" },
   { path: "/integrations", label: "Integrations" },
+  { path: "/outreach", label: "Outreach" },
 ];
 
 export function SettingsNav({

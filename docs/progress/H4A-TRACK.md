@@ -50,7 +50,7 @@ Plan: `docs/phases/PHASE-3A-PLAN.md` · ADR-026, ADR-027.
 - [x] PDF export (same calculator), AI summary (Not connected; citation check), property data card (Not connected)
 - [x] Analyze page `/w/[slug]/analyze`: every analyzed property with key numbers and flags from its latest scenario
 - [x] E2E: full flow + Analyze list + 404 outside real estate + 390px
-- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [x] Combined live-DB SQL file built and proven locally → human applies (21/21 verify) → merged (#9)
 
 ### Shared files touched (Phase 3A)
 
@@ -63,3 +63,32 @@ Plan: `docs/phases/PHASE-3A-PLAN.md` · ADR-026, ADR-027.
 | `docs/DECISIONS.md`                         | ADR-026, ADR-027                                             | Track A decisions                      |
 
 No AZH files changed. The 3A migrations depend only on Phase 1 + Phase 2A tables.
+
+## Phase 4A — outreach foundation: compliance gates + newsletters (branch `h4a/outreach`)
+
+Plan: `docs/phases/PHASE-4A-PLAN.md` · ADR-028. Used by both workspaces (Housing4All and AZH newsletters).
+
+- [x] Compliance gates (email + SMS) and inbound STOP/START/HELP keywords — pure, unit-tested
+- [x] Newsletter renderer (escaped, CAN-SPAM footer always added) + Resend batch adapter (Not connected; one-click unsubscribe headers)
+- [x] Migrations: `20261028060000_h4a_outreach` (settings, do-not-send list, newsletters, send log, unsubscribe functions, RLS), `20261028060100_h4a_seed_outreach_demo` (Demo workspaces only) — additive
+- [x] RLS suite `supabase/tests/h4a_outreach_rls.sql` (44 checks; 40 on hosted) + vitest wrapper
+- [x] Outreach pages (newsletters, editor with live preview + audience check, do-not-send list), Settings → Outreach, public unsubscribe
+- [x] Contact page "Can we reach them right now?" + "texted STOP" button
+- [x] E2E: flow + contact gates/STOP + unsubscribe without login + 390px
+- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+
+### Shared files touched (Phase 4A)
+
+| File                                                    | Change                                                                  | Why                                      |
+| ------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------- |
+| `src/lib/nav.ts`                                        | Outreach is a real page (placeholder removed); added to the AZH nav too | Newsletters for both businesses          |
+| `tests/unit/misc.test.ts`                               | Outreach no longer a placeholder; AZH nav has it                        | Matches the nav change                   |
+| `src/components/settings/settings-nav.tsx`              | "Outreach" tab                                                          | Sender details + texting hours           |
+| `src/app/w/[slug]/people/[id]/page.tsx`                 | Compliance card: Phase 1 note → `<ContactReachability>` (one line)      | Live gate results + record a STOP        |
+| `src/lib/supabase/proxy.ts`                             | `/unsubscribe`, `/api/unsubscribe` are public                           | Unsubscribe must work without signing in |
+| `src/lib/integrations.ts`                               | Resend purpose mentions newsletters                                     | Accurate Integrations page               |
+| `src/lib/db/types.ts`                                   | Regenerated (`pnpm db:types`), additions only                           | New tables + functions                   |
+| `docs/DECISIONS.md`, `docs/ACCOUNTS.md`, `.env.example` | ADR-028; Resend sending steps; `OUTREACH_EMAIL`                         | Track A decisions / Sam's setup steps    |
+
+No AZH files changed. The demo seed adds sender details + one draft newsletter to `demo-azh` (data only).
+The 4A migrations depend only on Phase 1 tables (contacts, activities, audit_log, workspaces).
