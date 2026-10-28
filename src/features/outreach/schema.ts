@@ -55,12 +55,14 @@ export const audienceSchema = z.object({
   tags: tagList,
   /** Contacts with ANY of these roles (empty = no role filter). */
   roles: z.array(z.enum(CONTACT_ROLE_VALUES)).max(CONTACT_ROLE_VALUES.length).default([]),
+  /** Only contacts who are active Housing4All Network members (Phase 6). */
+  network: z.boolean().default(false),
 });
 export type Audience = z.output<typeof audienceSchema>;
 
 export function parseAudience(raw: unknown): Audience {
   const r = audienceSchema.safeParse(raw ?? {});
-  return r.success ? r.data : { tags: [], roles: [] };
+  return r.success ? r.data : { tags: [], roles: [], network: false };
 }
 
 export const newsletterSchema = z.object({

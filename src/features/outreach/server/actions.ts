@@ -201,7 +201,7 @@ export async function copyNewsletter(input: {
       preheader: source.preheader,
       body: source.body,
       // Tags differ between workspaces; roles carry over.
-      audience: toJson({ tags: [], roles: source.audience.roles }),
+      audience: toJson({ tags: [], roles: source.audience.roles, network: false }),
     })
     .select("id")
     .single();

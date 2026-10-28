@@ -18,8 +18,15 @@ const PUBLIC_PATHS = [
   "/api/unsubscribe",
 ];
 
+// Network (Phase 6): the invite page and the install files (manifest, icons) open without a login;
+// the rest of /n/<slug> requires one.
+const PUBLIC_NETWORK = /^\/n\/[a-z0-9-]+\/(join\/[0-9a-f]+|manifest\.webmanifest|icon\/\d+)$/;
+
 function isPublic(pathname: string) {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return (
+    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`)) ||
+    PUBLIC_NETWORK.test(pathname)
+  );
 }
 
 /**

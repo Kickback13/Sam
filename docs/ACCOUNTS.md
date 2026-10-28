@@ -88,3 +88,12 @@ Per workspace (AZH now; Housing4All once its GHL is reactivated):
 5. When GHL is about to be cancelled, run both again (repeats only add what's new), then **Disconnect** and delete the integration in GHL.
 
 Never send the token by email or chat; paste it straight into the app.
+
+## Housing4All Network (Phase 6A): what's needed for real members
+
+Members sign in with an emailed magic link or Google. Supabase's built-in email sends only to the project's team, so before inviting outside members, Sam needs **one** of:
+
+1. **Resend SMTP in Supabase Auth (recommended):** in Sam's Resend account verify a sending domain (e.g. `send.thehousing4all.com`), create an SMTP key, then Supabase → Authentication → SMTP Settings → enable custom SMTP with Resend's host/port/user and that key, sender e.g. `Housing4All <login@send.thehousing4all.com>`. (Same Resend account as newsletters.)
+2. **Google sign-in:** create the OAuth client in Sam's Google Cloud project and paste it into Supabase → Authentication → Providers → Google (members with Gmail/Google accounts can then sign in without email).
+
+Invite links themselves are copied and sent by the team (text or email) until the app sends invite emails through Resend.

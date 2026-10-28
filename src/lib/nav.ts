@@ -122,7 +122,6 @@ const REAL_ESTATE_NAV: NavItem[] = [
     path: "network",
     icon: "network",
     group: "Engage",
-    comingIn: 6,
   },
   {
     key: "receptionist",
@@ -237,18 +236,6 @@ const COMING_SOON: Record<string, ComingSoonModule> = {
       "Two-way Google Calendar sync",
       "Meetings logged as activities",
       "Booking pages per workspace",
-    ],
-  },
-  network: {
-    key: "network",
-    title: "Housing4All Network",
-    phase: 6,
-    summary:
-      "A community app for your investors and partners: feed, deal posts, member directory, events and broadcasts.",
-    bullets: [
-      "Installable on phones (PWA)",
-      "Members sync to your CRM",
-      "Broadcasts respect opt-outs",
     ],
   },
   receptionist: {
