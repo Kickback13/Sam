@@ -29,16 +29,44 @@ const c = (over: Partial<AudienceContact> = {}): AudienceContact => ({
 
 describe("matchesAudience", () => {
   it("empty audience matches everyone; tags and roles are any-of, case-insensitive tags", () => {
-    expect(matchesAudience({ tags: [], roles: [] }, { tags: [], roles: [] })).toBe(true);
+    expect(matchesAudience({ tags: [], roles: [] }, { tags: [], roles: [], network: false })).toBe(
+      true,
+    );
     expect(
-      matchesAudience({ tags: ["Investor"], roles: [] }, { tags: ["investor"], roles: [] }),
+      matchesAudience(
+        { tags: ["Investor"], roles: [] },
+        { tags: ["investor"], roles: [], network: false },
+      ),
     ).toBe(true);
     expect(
-      matchesAudience({ tags: ["hot"], roles: ["broker"] }, { tags: ["hot"], roles: ["owner"] }),
+      matchesAudience(
+        { tags: ["hot"], roles: ["broker"] },
+        { tags: ["hot"], roles: ["owner"], network: false },
+      ),
     ).toBe(false);
     expect(
-      matchesAudience({ tags: [], roles: ["broker"] }, { tags: [], roles: ["owner", "broker"] }),
+      matchesAudience(
+        { tags: [], roles: ["broker"] },
+        { tags: [], roles: ["owner", "broker"], network: false },
+      ),
     ).toBe(true);
+  });
+});
+
+describe("Network-only audience", () => {
+  it("keeps only contacts linked to an active Network member", () => {
+    const a = parseAudience({ network: true });
+    expect(matchesAudience({ tags: [], roles: [], networkMember: true }, a)).toBe(true);
+    expect(matchesAudience({ tags: [], roles: [], networkMember: false }, a)).toBe(false);
+    expect(matchesAudience({ tags: [], roles: [] }, a)).toBe(false);
+    const plan = planNewsletter(
+      [c({ networkMember: true }), c(), c({ networkMember: true, emailOptOut: true })],
+      a,
+      settings,
+      none,
+    );
+    expect(plan.matched).toBe(2);
+    expect(plan.sendable).toHaveLength(1); // the opted-out member is still blocked
   });
 });
 
@@ -91,8 +119,8 @@ describe("planNewsletter", () => {
 
 describe("parseAudience", () => {
   it("falls back to everyone on bad data and normalizes tags", () => {
-    expect(parseAudience(null)).toEqual({ tags: [], roles: [] });
-    expect(parseAudience({ roles: ["nope"] })).toEqual({ tags: [], roles: [] });
+    expect(parseAudience(null)).toEqual({ tags: [], roles: [], network: false });
+    expect(parseAudience({ roles: ["nope"] })).toEqual({ tags: [], roles: [], network: false });
     expect(parseAudience({ tags: ["Hot", "hot", " Investor "] }).tags).toEqual(["hot", "investor"]);
   });
 });
