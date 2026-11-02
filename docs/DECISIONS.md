@@ -235,3 +235,14 @@ Prices aren't written here because they change; get a current quote before choos
 - **Privacy:** the directory shows only members who opt in, and only the contact details they choose to publish (`public_email`, `public_phone`); the CRM keeps the real ones. Deal-post numbers are labelled as the poster's own, never as verified data.
 - **Broadcasts reuse Outreach:** a newsletter audience flag "Only Network members" (contacts linked to active members), so the Phase 4A compliance gates apply unchanged.
 - **PWA:** manifest, icons (rendered with `next/og` in the workspace brand) and the service worker are public; the worker is network-first and caches nothing private.
+
+## ADR-031 — AI receptionist: Twilio rings people first, ElevenLabs answers the rest, the CRM gets every call
+
+**Decision (7A):**
+
+- **Twilio owns the phone number and the ringing; ElevenLabs only talks.** Twilio's voice webhook rings the default route for `ring_seconds` during business hours, then hands unanswered (or after-hours) calls to the ElevenLabs agent over SIP (`RECEPTIONIST_AI_SIP_URI`). If that address isn't set or can't be reached, the caller gets a bilingual voicemail — a call is never dropped.
+- **Webhooks are doubly authenticated:** a per-workspace token in the URL (only its SHA-256 is stored; checked inside `receptionist_record_call` / `receptionist_config`, which run as anon and can touch only that workspace) **and** the provider's signature (Twilio `X-Twilio-Signature` HMAC-SHA1; ElevenLabs `t=…,v0=…` HMAC-SHA256, 30-minute window). Unsigned requests are refused on any production runtime. No service-role key.
+- **One row per call, filled in as events arrive** (Twilio outcome, ElevenLabs transcript/summary, keyed by Twilio's call SID when the AI answered). Outcomes only move forward, so a late "missed" never overwrites "answered".
+- **Routing after the call** is by keywords in what the caller said (accent-insensitive, whole words, per language), falling back to the default route. The route decides who gets the follow-up task — kept simple and testable rather than letting the AI pick a person.
+- **CRM:** callers are matched by normalized phone; unknown numbers become contacts (tag `receptionist`, source "AI receptionist", name from the agent's data collection when given). Each call is one `call` activity on the timeline (updated as details arrive). Missed calls, voicemails and AI-taken calls create one "Call back …" task due in 4 hours for the route's person (only if they're still a member).
+- **Recording consent (California, all-party):** default greetings disclose recording; the agent's first message must too.

@@ -16,6 +16,8 @@ const PUBLIC_PATHS = [
   // One-click email unsubscribe (Phase 4): must work without signing in.
   "/unsubscribe",
   "/api/unsubscribe",
+  // AI receptionist webhooks (Phase 7): token + provider signature, no login.
+  "/api/receptionist",
 ];
 
 // Network (Phase 6): the invite page and the install files (manifest, icons) open without a login;

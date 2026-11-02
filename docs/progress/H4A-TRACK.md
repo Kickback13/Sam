@@ -127,7 +127,7 @@ Plan: `docs/phases/PHASE-6A-PLAN.md` · ADR-030.
 - [x] Team page `/w/[slug]/network`: invites, members + segments, posts moderation, events
 - [x] Newsletter audience "Only Network members" (Outreach)
 - [x] E2E: full team → member → team flow, install files, 390px
-- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [x] Combined live-DB SQL file built and proven locally → human applies (43/43 verify) → merged (#13)
 - [ ] Sam: Resend SMTP in Supabase Auth (or Google sign-in) so outside members can receive sign-in emails
 
 ### Shared files touched (Phase 6A)
@@ -142,3 +142,27 @@ Plan: `docs/phases/PHASE-6A-PLAN.md` · ADR-030.
 | `docs/DECISIONS.md`, `docs/ACCOUNTS.md`     | ADR-030; SMTP note                                | Decisions / Sam's setup        |
 
 No AZH files changed. The 6A migration depends only on Phase 1 tables.
+
+## Phase 7A — AI receptionist (branch `h4a/receptionist`)
+
+Plan: `docs/phases/PHASE-7A-PLAN.md` · ADR-031.
+
+- [x] Routing rules, Twilio signature + TwiML, ElevenLabs webhook mapping — pure, unit-tested
+- [x] Migration `20261102010000_h4a_receptionist` (settings, routes, tokens, calls, webhook functions) — additive
+- [x] RLS suite `supabase/tests/h4a_receptionist_rls.sql` (24 checks)
+- [x] Webhooks (signed only in production), call log + Setup page, "Test routing"
+- [x] E2E with signed fake Twilio/ElevenLabs requests + 390px
+- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [ ] Sam: Twilio number + ElevenLabs agent (docs/ACCOUNTS.md)
+
+### Shared files touched (Phase 7A)
+
+| File                                                    | Change                                                    | Why                      |
+| ------------------------------------------------------- | --------------------------------------------------------- | ------------------------ |
+| `src/lib/nav.ts`, `tests/unit/misc.test.ts`             | Receptionist is a real page (placeholder removed)         | `/w/[slug]/receptionist` |
+| `src/lib/supabase/proxy.ts`                             | `/api/receptionist` is public (token + signature checked) | Provider webhooks        |
+| `playwright.config.ts`                                  | test-only Twilio/ElevenLabs secrets                       | E2E signs fake webhooks  |
+| `src/lib/db/types.ts`                                   | Regenerated, additions only                               | New tables + functions   |
+| `docs/DECISIONS.md`, `docs/ACCOUNTS.md`, `.env.example` | ADR-031; setup steps; env names                           | Decisions / Sam's setup  |
+
+No AZH files changed. The 7A migration depends only on Phase 1 tables.

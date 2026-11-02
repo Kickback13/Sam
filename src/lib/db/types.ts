@@ -3628,6 +3628,269 @@ export type Database = {
           },
         ];
       };
+      receptionist_calls: {
+        Row: {
+          activity_id: string | null;
+          caller_name: string | null;
+          contact_id: string | null;
+          created_at: string;
+          duration_secs: number | null;
+          ended_at: string | null;
+          from_number: string | null;
+          id: string;
+          language: string | null;
+          outcome: string;
+          provider: string;
+          provider_call_id: string;
+          route_id: string | null;
+          route_name: string | null;
+          started_at: string;
+          summary: string | null;
+          summary_source: string | null;
+          task_id: string | null;
+          to_number: string | null;
+          transcript: NonNullable<Json>;
+          updated_at: string;
+          voicemail_url: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          activity_id?: string | null;
+          caller_name?: string | null;
+          contact_id?: string | null;
+          created_at?: string;
+          duration_secs?: number | null;
+          ended_at?: string | null;
+          from_number?: string | null;
+          id?: string;
+          language?: string | null;
+          outcome?: string;
+          provider: string;
+          provider_call_id: string;
+          route_id?: string | null;
+          route_name?: string | null;
+          started_at?: string;
+          summary?: string | null;
+          summary_source?: string | null;
+          task_id?: string | null;
+          to_number?: string | null;
+          transcript?: NonNullable<Json>;
+          updated_at?: string;
+          voicemail_url?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          activity_id?: string | null;
+          caller_name?: string | null;
+          contact_id?: string | null;
+          created_at?: string;
+          duration_secs?: number | null;
+          ended_at?: string | null;
+          from_number?: string | null;
+          id?: string;
+          language?: string | null;
+          outcome?: string;
+          provider?: string;
+          provider_call_id?: string;
+          route_id?: string | null;
+          route_name?: string | null;
+          started_at?: string;
+          summary?: string | null;
+          summary_source?: string | null;
+          task_id?: string | null;
+          to_number?: string | null;
+          transcript?: NonNullable<Json>;
+          updated_at?: string;
+          voicemail_url?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "receptionist_calls_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "receptionist_calls_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "receptionist_calls_workspace_id_route_id_fkey";
+            columns: ["workspace_id", "route_id"];
+            isOneToOne: false;
+            referencedRelation: "receptionist_routes";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      receptionist_routes: {
+        Row: {
+          active: boolean;
+          assignee_user_id: string | null;
+          created_at: string;
+          description: string | null;
+          forward_to: string | null;
+          id: string;
+          is_default: boolean;
+          keywords: string[];
+          languages: string[];
+          name: string;
+          position: number;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          assignee_user_id?: string | null;
+          created_at?: string;
+          description?: string | null;
+          forward_to?: string | null;
+          id?: string;
+          is_default?: boolean;
+          keywords?: string[];
+          languages?: string[];
+          name: string;
+          position?: number;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          active?: boolean;
+          assignee_user_id?: string | null;
+          created_at?: string;
+          description?: string | null;
+          forward_to?: string | null;
+          id?: string;
+          is_default?: boolean;
+          keywords?: string[];
+          languages?: string[];
+          name?: string;
+          position?: number;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "receptionist_routes_assignee_user_id_fkey";
+            columns: ["assignee_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "receptionist_routes_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      receptionist_settings: {
+        Row: {
+          created_at: string;
+          enabled: boolean;
+          greeting_en: string | null;
+          greeting_es: string | null;
+          hours: NonNullable<Json>;
+          ring_seconds: number;
+          time_zone: string;
+          updated_at: string;
+          updated_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          enabled?: boolean;
+          greeting_en?: string | null;
+          greeting_es?: string | null;
+          hours?: NonNullable<Json>;
+          ring_seconds?: number;
+          time_zone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          enabled?: boolean;
+          greeting_en?: string | null;
+          greeting_es?: string | null;
+          hours?: NonNullable<Json>;
+          ring_seconds?: number;
+          time_zone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "receptionist_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "receptionist_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      receptionist_tokens: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          revoked_at: string | null;
+          token_hash: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          revoked_at?: string | null;
+          token_hash: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          revoked_at?: string | null;
+          token_hash?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "receptionist_tokens_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "receptionist_tokens_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           assigned_to: string | null;
@@ -4068,6 +4331,9 @@ export type Database = {
           total_value: number;
         }[];
       };
+      receptionist_config: { Args: { p_token: string }; Returns: Json };
+      receptionist_create_token: { Args: { p_workspace_id: string }; Returns: string };
+      receptionist_record_call: { Args: { p_call: Json; p_token: string }; Returns: string };
       reorder_stages: {
         Args: { p_pipeline_id: string; p_stage_ids: string[] };
         Returns: undefined;
