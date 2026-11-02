@@ -2645,6 +2645,424 @@ export type Database = {
           },
         ];
       };
+      network_comments: {
+        Row: {
+          author_member_id: string | null;
+          author_user_id: string | null;
+          body: string;
+          created_at: string;
+          hidden_at: string | null;
+          id: string;
+          post_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          author_member_id?: string | null;
+          author_user_id?: string | null;
+          body: string;
+          created_at?: string;
+          hidden_at?: string | null;
+          id?: string;
+          post_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          author_member_id?: string | null;
+          author_user_id?: string | null;
+          body?: string;
+          created_at?: string;
+          hidden_at?: string | null;
+          id?: string;
+          post_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_comments_author_user_id_fkey";
+            columns: ["author_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_comments_workspace_id_author_member_id_fkey";
+            columns: ["workspace_id", "author_member_id"];
+            isOneToOne: false;
+            referencedRelation: "network_members";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "network_comments_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_comments_workspace_id_post_id_fkey";
+            columns: ["workspace_id", "post_id"];
+            isOneToOne: false;
+            referencedRelation: "network_posts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      network_events: {
+        Row: {
+          canceled_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string;
+          ends_at: string | null;
+          id: string;
+          location: string | null;
+          starts_at: string;
+          title: string;
+          updated_at: string;
+          url: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          canceled_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          ends_at?: string | null;
+          id?: string;
+          location?: string | null;
+          starts_at: string;
+          title: string;
+          updated_at?: string;
+          url?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          canceled_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string;
+          ends_at?: string | null;
+          id?: string;
+          location?: string | null;
+          starts_at?: string;
+          title?: string;
+          updated_at?: string;
+          url?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_events_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_events_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      network_invites: {
+        Row: {
+          accepted_at: string | null;
+          accepted_by: string | null;
+          created_at: string;
+          email: string | null;
+          expires_at: string;
+          id: string;
+          invited_by: string | null;
+          member_type: string;
+          name: string | null;
+          revoked_at: string | null;
+          token: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          created_at?: string;
+          email?: string | null;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string | null;
+          member_type?: string;
+          name?: string | null;
+          revoked_at?: string | null;
+          token?: string;
+          workspace_id: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          accepted_by?: string | null;
+          created_at?: string;
+          email?: string | null;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string | null;
+          member_type?: string;
+          name?: string | null;
+          revoked_at?: string | null;
+          token?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_invites_accepted_by_fkey";
+            columns: ["accepted_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_invites_invited_by_fkey";
+            columns: ["invited_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_invites_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      network_members: {
+        Row: {
+          bio: string | null;
+          city: string | null;
+          contact_id: string | null;
+          created_at: string;
+          display_name: string;
+          headline: string | null;
+          id: string;
+          joined_at: string;
+          member_type: string;
+          public_email: string | null;
+          public_phone: string | null;
+          show_in_directory: boolean;
+          status: string;
+          tags: string[];
+          updated_at: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          bio?: string | null;
+          city?: string | null;
+          contact_id?: string | null;
+          created_at?: string;
+          display_name: string;
+          headline?: string | null;
+          id?: string;
+          joined_at?: string;
+          member_type?: string;
+          public_email?: string | null;
+          public_phone?: string | null;
+          show_in_directory?: boolean;
+          status?: string;
+          tags?: string[];
+          updated_at?: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          bio?: string | null;
+          city?: string | null;
+          contact_id?: string | null;
+          created_at?: string;
+          display_name?: string;
+          headline?: string | null;
+          id?: string;
+          joined_at?: string;
+          member_type?: string;
+          public_email?: string | null;
+          public_phone?: string | null;
+          show_in_directory?: boolean;
+          status?: string;
+          tags?: string[];
+          updated_at?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_members_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_members_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "network_members_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      network_posts: {
+        Row: {
+          author_member_id: string | null;
+          author_user_id: string | null;
+          body: string;
+          city: string | null;
+          created_at: string;
+          hidden_at: string | null;
+          hidden_by: string | null;
+          id: string;
+          kind: string;
+          link: string | null;
+          pinned: boolean;
+          price: number | null;
+          property_type: string | null;
+          title: string;
+          units: number | null;
+          updated_at: string;
+          workspace_id: string;
+          zip: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          author_member_id?: string | null;
+          author_user_id?: string | null;
+          body?: string;
+          city?: string | null;
+          created_at?: string;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          id?: string;
+          kind?: string;
+          link?: string | null;
+          pinned?: boolean;
+          price?: number | null;
+          property_type?: string | null;
+          title: string;
+          units?: number | null;
+          updated_at?: string;
+          workspace_id: string;
+          zip?: string | null;
+        };
+        Update: {
+          author_member_id?: string | null;
+          author_user_id?: string | null;
+          body?: string;
+          city?: string | null;
+          created_at?: string;
+          hidden_at?: string | null;
+          hidden_by?: string | null;
+          id?: string;
+          kind?: string;
+          link?: string | null;
+          pinned?: boolean;
+          price?: number | null;
+          property_type?: string | null;
+          title?: string;
+          units?: number | null;
+          updated_at?: string;
+          workspace_id?: string;
+          zip?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_posts_author_user_id_fkey";
+            columns: ["author_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_posts_hidden_by_fkey";
+            columns: ["hidden_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_posts_workspace_id_author_member_id_fkey";
+            columns: ["workspace_id", "author_member_id"];
+            isOneToOne: false;
+            referencedRelation: "network_members";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "network_posts_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      network_rsvps: {
+        Row: {
+          created_at: string;
+          event_id: string;
+          status: string;
+          updated_at: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          event_id: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          event_id?: string;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_rsvps_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_rsvps_workspace_id_event_id_fkey";
+            columns: ["workspace_id", "event_id"];
+            isOneToOne: false;
+            referencedRelation: "network_events";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "network_rsvps_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       newsletter_sends: {
         Row: {
           blocked_reasons: string[];
@@ -3367,6 +3785,7 @@ export type Database = {
     };
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string };
+      accept_network_invite: { Args: { p_display_name: string; p_token: string }; Returns: string };
       accept_pending_invites: { Args: Record<PropertyKey, never>; Returns: number };
       azh_duplicate_estimate: {
         Args: { p_estimate_id: string };
@@ -3495,6 +3914,17 @@ export type Database = {
           workspace_slug: string;
         }[];
       };
+      get_network_invite: {
+        Args: { p_token: string };
+        Returns: {
+          email_hint: string;
+          invited_name: string;
+          is_email_bound: boolean;
+          status: string;
+          workspace_name: string;
+          workspace_slug: string;
+        }[];
+      };
       ghl_connection: {
         Args: { p_workspace_id: string };
         Returns: {
@@ -3583,6 +4013,32 @@ export type Database = {
           p_workspace_id: string;
         };
         Returns: undefined;
+      };
+      my_networks: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          name: string;
+          slug: string;
+        }[];
+      };
+      network_brand: {
+        Args: { p_slug: string };
+        Returns: {
+          brand: Json;
+          workspace_name: string;
+        }[];
+      };
+      network_context: {
+        Args: { p_slug: string };
+        Returns: {
+          brand: Json;
+          can_moderate: boolean;
+          display_name: string;
+          is_staff: boolean;
+          member_id: string;
+          workspace_id: string;
+          workspace_name: string;
+        }[];
       };
       outreach_unsubscribe: {
         Args: { p_token: string };

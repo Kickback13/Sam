@@ -35,7 +35,14 @@ export type AudienceCheck = {
   blockedSample: { contactId: string; name: string; email: string | null; reasons: BlockCode[] }[];
 };
 
-type Draft = { subject: string; preheader: string; body: string; tags: string; roles: string[] };
+type Draft = {
+  subject: string;
+  preheader: string;
+  body: string;
+  tags: string;
+  roles: string[];
+  network: boolean;
+};
 
 export function NewsletterEditor({
   newsletter,
@@ -67,6 +74,7 @@ export function NewsletterEditor({
     body: newsletter.body,
     tags: newsletter.audience.tags.join(", "),
     roles: newsletter.audience.roles,
+    network: newsletter.audience.network,
   };
   const [d, setD] = useState<Draft>(initial);
   const [saved, setSaved] = useState<Draft>(initial);
@@ -100,6 +108,7 @@ export function NewsletterEditor({
         .map((t) => t.trim())
         .filter(Boolean),
       roles: d.roles,
+      network: d.network,
     },
   });
 
@@ -198,6 +207,19 @@ export function NewsletterEditor({
               Leave both empty to include every contact. Otherwise contacts need any of the tags{" "}
               <em>and</em> any of the roles.
             </p>
+            {ws.businessType === "real_estate" && (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="size-4 accent-black"
+                  checked={d.network}
+                  disabled={readOnly}
+                  onChange={(e) => setD((s) => ({ ...s, network: e.target.checked }))}
+                  data-testid="audience-network"
+                />
+                Only Housing4All Network members
+              </label>
+            )}
             <Field
               id="nl-tags"
               label="Tags"

@@ -223,3 +223,15 @@ Prices aren't written here because they change; get a current quote before choos
 - **Compliance:** GHL all-channel DND → DNC; Email DND → email opt-out; SMS DND (or all-channel) → the do-not-send list. **SMS consent is never inferred** — GHL has no consent record — so every imported contact starts at "No SMS consent".
 - **Opportunities → deals** through a stage-mapping screen (same-name stage by default, else the first open stage; "Don't import" per stage). Won → the pipeline's won stage, lost/abandoned → lost. `ghl_links (workspace, object, ghl_id) → local_id` makes re-runs skip already-imported opportunities; `deals` is not altered.
 - **API shapes** come from GHL's official SDK (`@gohighlevel/api-client` 3.1.1) because the docs host isn't reachable from the build environment: `GET /contacts/` (startAfterId/startAfter paging), `GET /opportunities/pipelines`, `GET /opportunities/search`, header `Version: 2021-07-28`. Rate limits (429) are waited out client-side. `GHL_API_BASE` (tests only, ignored on Vercel) points e2e at a local mock.
+
+## ADR-030 — Housing4All Network: members are a separate population, not workspace members
+
+**Decision (6A):**
+
+- Network members get their own Supabase login but are stored in `network_members`, **never** in `workspace_members`. Every CRM table's RLS is keyed on `member_workspace_ids()`, so a member sees no contacts, deals, properties, activities, tasks or companies by construction — no CRM policy had to change. Network tables use a separate helper, `app_private.network_workspace_ids()` (active members only), plus the existing staff helpers.
+- The member app lives at `/n/<slug>` with its own shell (no CRM navigation). `network_context(slug)` returns only what it needs (name, brand, my member row) because members can't read `workspaces`. Staff can open the same app to see what members see.
+- **Authorship and moderation are enforced in the database:** triggers set `author_user_id` / `author_member_id` (a member posts as themselves, staff as the business) and stop members from pinning, hiding, reassigning or changing their own type/segments/status. Triggers skip trusted code running as the table owner (the join function).
+- **Joining** (`accept_network_invite`, SECURITY DEFINER): checks the invite (expiry, revoked, used, email-bound) and the user's confirmed email, links the CRM contact with that email or creates one (tag `network`, source "Housing4All Network"), logs a timeline activity and an audit entry. Invite tokens are random hex like workspace invites.
+- **Privacy:** the directory shows only members who opt in, and only the contact details they choose to publish (`public_email`, `public_phone`); the CRM keeps the real ones. Deal-post numbers are labelled as the poster's own, never as verified data.
+- **Broadcasts reuse Outreach:** a newsletter audience flag "Only Network members" (contacts linked to active members), so the Phase 4A compliance gates apply unchanged.
+- **PWA:** manifest, icons (rendered with `next/og` in the workspace brand) and the service worker are public; the worker is network-first and caches nothing private.

@@ -32,6 +32,10 @@ export default async function Home() {
     redirect(`/w/${target.slug}/today`);
   }
 
+  // Housing4All Network members (no workspace access) go to their community app.
+  const { data: networks } = await supabase.rpc("my_networks");
+  if (networks?.[0]) redirect(`/n/${networks[0].slug}`);
+
   return (
     <AuthFrame title="No workspace yet" subtitle={`Signed in as ${user.email ?? user.name}`}>
       <div className="space-y-4 text-sm text-muted-foreground">

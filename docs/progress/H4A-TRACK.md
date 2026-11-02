@@ -102,7 +102,7 @@ Plan: `docs/phases/PHASE-5A-PLAN.md` · ADR-029. Both workspaces (AZH first — 
 - [x] RLS suite `supabase/tests/h4a_ghl_rls.sql` (21 checks) + vitest wrapper
 - [x] Settings → Integrations → GoHighLevel: connect (tested, stored in Vault), contact import (CSV engine), opportunity import with stage map, disconnect
 - [x] E2E against a local GHL mock + admin-only + 390px
-- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [x] Combined live-DB SQL file built and proven locally → human applies (21/21 verify) → merged (#12)
 - [ ] Real run on AZH's GHL (Michael/Sam paste the token after merge)
 
 ### Shared files touched (Phase 5A)
@@ -116,3 +116,29 @@ Plan: `docs/phases/PHASE-5A-PLAN.md` · ADR-029. Both workspaces (AZH first — 
 | `docs/DECISIONS.md`, `docs/ACCOUNTS.md`           | ADR-029; GHL token steps                                     | Decisions / Sam's setup                 |
 
 No AZH files changed; reuses `src/server/actions/imports.ts` without modifying it.
+
+## Phase 6A — Housing4All Network (branch `h4a/network`)
+
+Plan: `docs/phases/PHASE-6A-PLAN.md` · ADR-030.
+
+- [x] Migration `20261029010000_h4a_network` (6 tables, RLS, guards, join/context/brand functions) — additive
+- [x] RLS suite `supabase/tests/h4a_network_rls.sql` (43 checks: members see no CRM, moderation, joining, anon)
+- [x] Member app `/n/[slug]`: feed, deals, post + comments, events + RSVP, directory, profile; join page; PWA (manifest, icons, service worker, install hint)
+- [x] Team page `/w/[slug]/network`: invites, members + segments, posts moderation, events
+- [x] Newsletter audience "Only Network members" (Outreach)
+- [x] E2E: full team → member → team flow, install files, 390px
+- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [ ] Sam: Resend SMTP in Supabase Auth (or Google sign-in) so outside members can receive sign-in emails
+
+### Shared files touched (Phase 6A)
+
+| File                                        | Change                                            | Why                            |
+| ------------------------------------------- | ------------------------------------------------- | ------------------------------ |
+| `src/lib/nav.ts`, `tests/unit/misc.test.ts` | Network is a real page (placeholder removed)      | `/w/[slug]/network`            |
+| `src/app/page.tsx`                          | members without a workspace go to their Network   | Landing                        |
+| `src/lib/supabase/proxy.ts`                 | `/n/<slug>/join/…`, manifest and icons are public | Invite + install without login |
+| `e2e/fixtures/constants.ts`                 | an e2e user with no workspace (network member)    | Member-side e2e                |
+| `src/lib/db/types.ts`                       | Regenerated, additions only                       | New tables + functions         |
+| `docs/DECISIONS.md`, `docs/ACCOUNTS.md`     | ADR-030; SMTP note                                | Decisions / Sam's setup        |
+
+No AZH files changed. The 6A migration depends only on Phase 1 tables.

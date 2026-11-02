@@ -18,6 +18,8 @@ export type AudienceContact = GateContact & {
   name: string;
   tags: string[];
   roles: string[];
+  /** An active Housing4All Network member is linked to this contact. */
+  networkMember?: boolean;
 };
 
 export type PlannedRecipient = {
@@ -39,7 +41,11 @@ export type NewsletterPlan = {
   duplicates: number;
 };
 
-export function matchesAudience(c: Pick<AudienceContact, "tags" | "roles">, a: Audience): boolean {
+export function matchesAudience(
+  c: Pick<AudienceContact, "tags" | "roles" | "networkMember">,
+  a: Audience,
+): boolean {
+  if (a.network && !c.networkMember) return false;
   const tags = c.tags.map((t) => t.toLowerCase());
   const tagOk = a.tags.length === 0 || a.tags.some((t) => tags.includes(t));
   const roleOk = a.roles.length === 0 || a.roles.some((r) => c.roles.includes(r));

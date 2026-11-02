@@ -93,4 +93,11 @@ export const E2E_USERS = [
     name: "Oscar Outsider",
     memberships: [{ slug: "e2e-builders", role: "agent" }],
   },
+  {
+    // Housing4All Network member (Phase 6): a login with NO workspace access.
+    id: "e2e00000-0000-4000-a000-000000000003",
+    email: "e2e-member@example.test",
+    name: "Nina Member",
+    memberships: [],
+  },
 ] as const;

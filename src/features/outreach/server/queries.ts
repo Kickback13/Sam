@@ -145,6 +145,16 @@ export async function loadAudienceContacts(
 ): Promise<AudienceContact[]> {
   const db = supabase ?? (await createClient());
   const out: AudienceContact[] = [];
+  // Contacts linked to active Network members (for the "Only Network members" audience).
+  const { data: net, error: netErr } = await db
+    .from("network_members")
+    .select("contact_id")
+    .eq("workspace_id", workspaceId)
+    .eq("status", "active")
+    .not("contact_id", "is", null)
+    .limit(10_000);
+  if (netErr) throw netErr;
+  const networkContacts = new Set((net ?? []).map((m) => m.contact_id));
   for (let from = 0; from <= MAX_AUDIENCE; from += 1000) {
     const { data, error } = await db
       .from("contacts")
@@ -162,6 +172,7 @@ export async function loadAudienceContacts(
         name: r.full_name ?? "(no name)",
         tags: r.tags,
         roles: r.roles,
+        networkMember: networkContacts.has(r.id),
       });
     if (!data || data.length < 1000) break;
   }

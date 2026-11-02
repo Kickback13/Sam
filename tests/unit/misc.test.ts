@@ -48,6 +48,8 @@ describe("nav per business type", () => {
     expect(comingSoonModule("outreach", "real_estate")).toBeNull();
     expect(comingSoonModule("outreach", "construction")).toBeNull();
     expect(navFor("construction").map((i) => i.key)).toContain("outreach");
+    // The Housing4All Network shipped in Phase 6A.
+    expect(comingSoonModule("network", "real_estate")).toBeNull();
     // Analyze shipped in Phase 3A: a real page, no longer a placeholder.
     expect(comingSoonModule("analyze", "real_estate")).toBeNull();
     // Deal Finder and Alerts shipped in Phase 2A: real pages, no longer placeholders.
