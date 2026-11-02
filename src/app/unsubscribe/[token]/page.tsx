@@ -1,8 +1,10 @@
 import { CheckCircle2, MailX } from "lucide-react";
 import type { Metadata } from "next";
 
+import { BrandFontPreloads } from "@/components/brand-font-preloads";
 import { Button } from "@/components/ui/button";
 import { getUnsubscribeInfo } from "@/features/outreach/server/unsubscribe";
+import { DEFAULT_BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Unsubscribe", robots: { index: false } };
 
@@ -17,6 +19,7 @@ export default async function UnsubscribePage({
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
+      <BrandFontPreloads brand={DEFAULT_BRAND} />
       <div className="space-y-4 rounded-xl border bg-card p-6" data-testid="unsubscribe-card">
         {!info ? (
           <>

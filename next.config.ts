@@ -34,6 +34,11 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Self-hosted fonts (src/app/azh-fonts.css): file names carry a version, so cache them forever.
+        source: "/fonts/:file*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         // AZH request form iframe: may be embedded on AZH's website (AZH-012).
         source: "/r/:slug/embed/:path*",
         headers: [
