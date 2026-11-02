@@ -53,6 +53,9 @@ export default defineConfig({
       NEXT_TELEMETRY_DISABLED: "1",
       // GoHighLevel import e2e talks to a local mock (e2e/ghl-mock.ts), never to GHL.
       GHL_API_BASE: `http://127.0.0.1:${GHL_MOCK_PORT}`,
+      // AI receptionist e2e: the test signs fake Twilio/ElevenLabs webhooks with these (test-only values).
+      TWILIO_AUTH_TOKEN: "e2e-twilio-auth-token",
+      ELEVENLABS_WEBHOOK_SECRET: "e2e-elevenlabs-secret",
     },
   },
 });

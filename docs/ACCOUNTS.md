@@ -97,3 +97,11 @@ Members sign in with an emailed magic link or Google. Supabase's built-in email 
 2. **Google sign-in:** create the OAuth client in Sam's Google Cloud project and paste it into Supabase → Authentication → Providers → Google (members with Gmail/Google accounts can then sign in without email).
 
 Invite links themselves are copied and sent by the team (text or email) until the app sends invite emails through Resend.
+
+## AI receptionist (Phase 7A): what Sam sets up
+
+1. **Twilio** (account under Sam): buy a local San Diego number (or port Sam's). In the number's **Voice configuration**: "A call comes in" → Webhook, `POST`, the _Twilio · A call comes in_ link from **Receptionist → Setup → Connection links**; "Call status changes" → the _status_ link. Put the account's **Auth Token** in Vercel as `TWILIO_AUTH_TOKEN` (Production only) and the number as `TWILIO_CALLER_ID`.
+2. **ElevenLabs** (account under Sam): create a Conversational AI agent with English and Spanish, a first message that says the call may be recorded, and a data-collection field `caller_name`. Enable its SIP/phone connection and put the SIP address in Vercel as `RECEPTIONIST_AI_SIP_URI`. Add a **post-call webhook** with the _ElevenLabs · Post-call webhook_ link and put its signing secret in Vercel as `ELEVENLABS_WEBHOOK_SECRET`.
+3. In the app: **Receptionist → Setup** — turn it on, set hours, ring time, routes (who's rung first, keywords, who gets follow-ups), then call the number to test.
+
+Costs are usage-based on both (per-minute voice + AI minutes); check current pricing on each site before choosing a plan.

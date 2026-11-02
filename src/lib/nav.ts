@@ -129,7 +129,6 @@ const REAL_ESTATE_NAV: NavItem[] = [
     path: "receptionist",
     icon: "receptionist",
     group: "Engage",
-    comingIn: 7,
   },
   { key: "settings", label: "Settings", path: "settings", icon: "settings", group: "Admin" },
 ];
@@ -236,18 +235,6 @@ const COMING_SOON: Record<string, ComingSoonModule> = {
       "Two-way Google Calendar sync",
       "Meetings logged as activities",
       "Booking pages per workspace",
-    ],
-  },
-  receptionist: {
-    key: "receptionist",
-    title: "AI Receptionist",
-    phase: 7,
-    summary:
-      "Answers after 3 rings in English or Spanish, routes callers to you, Vianney or property management, and logs transcripts here.",
-    bullets: [
-      "ElevenLabs voice + Twilio numbers",
-      "Call summaries on the contact timeline",
-      "Routing rules per office",
     ],
   },
   requests: {
