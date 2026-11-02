@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AppShell } from "@/components/shell/app-shell";
 import type { SwitcherWorkspace } from "@/components/shell/workspace-switcher";
+import { BrandFontPreloads } from "@/components/brand-font-preloads";
 import { brandStyleBlock } from "@/lib/brand";
 import { getMembers, getWorkspaceCounts } from "@/server/queries/members";
 import { getWorkspaceContext, type WorkspaceSummary } from "@/server/workspace";
@@ -41,6 +42,7 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
     <>
       {/* Validated brand tokens → CSS variables: the whole app re-skins per workspace. */}
       <style data-testid="brand-vars">{brandStyleBlock(ctx.workspace.brand)}</style>
+      <BrandFontPreloads brand={ctx.workspace.brand} />
       <AppShell
         ws={{
           id: ctx.workspace.id,

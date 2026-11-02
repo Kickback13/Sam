@@ -1,5 +1,8 @@
 import { Building2, HardHat } from "lucide-react";
 
+import { BrandFontPreloads } from "@/components/brand-font-preloads";
+import { DEFAULT_BRAND } from "@/lib/brand";
+
 export function AuthFrame({
   title,
   subtitle,
@@ -11,6 +14,7 @@ export function AuthFrame({
 }) {
   return (
     <main className="grid min-h-dvh lg:grid-cols-[1fr_minmax(420px,520px)]">
+      <BrandFontPreloads brand={DEFAULT_BRAND} />
       <section
         aria-hidden
         className="relative hidden flex-col justify-between overflow-hidden bg-sidebar p-10 text-sidebar-foreground lg:flex"
