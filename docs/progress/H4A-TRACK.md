@@ -152,7 +152,7 @@ Plan: `docs/phases/PHASE-7A-PLAN.md` · ADR-031.
 - [x] RLS suite `supabase/tests/h4a_receptionist_rls.sql` (24 checks)
 - [x] Webhooks (signed only in production), call log + Setup page, "Test routing"
 - [x] E2E with signed fake Twilio/ElevenLabs requests + 390px
-- [ ] Combined live-DB SQL file built and proven locally → human applies → merge
+- [x] Combined live-DB SQL file built and proven locally → human applied (24/0) → merged (#14)
 - [ ] Sam: Twilio number + ElevenLabs agent (docs/ACCOUNTS.md)
 
 ### Shared files touched (Phase 7A)
@@ -166,3 +166,43 @@ Plan: `docs/phases/PHASE-7A-PLAN.md` · ADR-031.
 | `docs/DECISIONS.md`, `docs/ACCOUNTS.md`, `.env.example` | ADR-031; setup steps; env names                           | Decisions / Sam's setup  |
 
 No AZH files changed. The 7A migration depends only on Phase 1 tables.
+
+## Fix — per-workspace font loading (branch `h4a/brand-fonts`)
+
+AZH pages on phones were slow to first paint: next/font preloaded Housing4All's two fonts on every page,
+and AZH's fonts (`preload: false`) were only found after the stylesheet. Brand fonts are now self-hosted
+(`public/fonts`, Google's own subset files, OFL) and each page preloads only its brand's fonts.
+
+Lighthouse mobile (local, simulated): AZH Today 81 → 88–90 (FCP 1.8 s → 1.3 s), AZH Projects 86 → 95
+(LCP 2.9 s → 2.1–2.4 s); Housing4All pages unchanged (88–94, run-to-run noise).
+
+### Shared files touched
+
+| File                                                                                                                                             | Change                                                | Why                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- | ------------------------------------- |
+| `src/app/layout.tsx`, `src/app/fonts.css` (new)                                                                                                  | next/font removed; `@font-face` for the 4 brand fonts | One loading path for every brand font |
+| `src/lib/brand.ts`, `tests/unit/brand.test.ts`                                                                                                   | `FONTS[*].preload`, `brandFontPreloads()`             | Which files a brand preloads          |
+| `src/components/brand-font-preloads.tsx` (new)                                                                                                   | `<link rel="preload">` per brand font                 | Hints must be in the HTML head        |
+| `src/app/w/[slug]/layout.tsx`, `src/app/n/[slug]/(app)/layout.tsx`, `src/components/auth/auth-frame.tsx`, `src/app/unsubscribe/[token]/page.tsx` | one `<BrandFontPreloads>` line each                   | Preload the page's brand fonts        |
+| `src/proxy.ts`, `next.config.ts`                                                                                                                 | `/fonts/*` skips the session proxy; cached immutably  | Fonts were redirected to /login       |
+
+No AZH files changed. The public AZH request form (`/r/**`, Track B) loads its fonts on demand as before;
+adding the one-line preload there is a Track B follow-up. No migrations.
+
+## Phase 9A — security review + handover package (branch `h4a/handover`)
+
+- [x] Security review `docs/SECURITY.md` (DB, app, dependencies, gaps, dashboard checklist)
+- [x] Automated invariants `tests/rls/security-invariants.test.ts` (RLS + policies everywhere, workspace_id, no anon table grants, definer search_path, reviewed anon function allow-list, app_private not in the API, private buckets) — proven to fail on a probe table
+- [x] `systeminformation` pinned to a patched release (pnpm override); other 2 advisories unreachable (documented)
+- [x] `docs/RUNBOOK.md` (ship, migrations, backups/restore, access, key rotation, incidents, monthly check)
+- [x] `docs/HANDOVER.md` (ordered account-transfer checklist) · `docs/TRAINING.md` (screen-by-screen guide)
+- [ ] Sam/Keanu: work through HANDOVER.md and SECURITY.md §5
+
+### Shared files touched (Phase 9A)
+
+| File                                    | Change                                      | Why                        |
+| --------------------------------------- | ------------------------------------------- | -------------------------- |
+| `pnpm-workspace.yaml`, `pnpm-lock.yaml` | `overrides: systeminformation >=5.33.16 <6` | High advisory (transitive) |
+| `CLAUDE.md`                             | Pointer to the four new docs                | Read-first list            |
+
+No AZH files changed. No migrations.

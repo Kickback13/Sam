@@ -1,12 +1,35 @@
 import { z } from "zod";
 
-/** Fonts are whitelisted: each maps to a next/font CSS variable loaded in the root layout. */
-export const FONTS = {
-  "plus-jakarta-sans": { label: "Plus Jakarta Sans", cssVar: "--font-plus-jakarta" },
-  "source-sans-3": { label: "Source Sans 3", cssVar: "--font-source-sans" },
-  "big-shoulders-display": { label: "Big Shoulders Display", cssVar: "--font-big-shoulders" },
-  barlow: { label: "Barlow", cssVar: "--font-barlow" },
-} as const;
+/**
+ * Fonts are whitelisted: each maps to a CSS variable defined in src/app/fonts.css (self-hosted).
+ * `preload` lists the files a page fetches up front when its brand uses that font (Latin subset
+ * only: the other subsets download on demand if a page ever shows those characters).
+ */
+export const FONTS: Record<
+  "plus-jakarta-sans" | "source-sans-3" | "big-shoulders-display" | "barlow",
+  { label: string; cssVar: string; preload: readonly string[] }
+> = {
+  "plus-jakarta-sans": {
+    label: "Plus Jakarta Sans",
+    cssVar: "--font-plus-jakarta",
+    preload: ["/fonts/plus-jakarta-sans-latin.v1.woff2"],
+  },
+  "source-sans-3": {
+    label: "Source Sans 3",
+    cssVar: "--font-source-sans",
+    preload: ["/fonts/source-sans-3-latin.v1.woff2"],
+  },
+  "big-shoulders-display": {
+    label: "Big Shoulders Display",
+    cssVar: "--font-big-shoulders",
+    preload: ["/fonts/big-shoulders-latin.v1.woff2"],
+  },
+  barlow: {
+    label: "Barlow",
+    cssVar: "--font-barlow",
+    preload: ["/fonts/barlow-400-latin.v1.woff2", "/fonts/barlow-600-latin.v1.woff2"],
+  },
+};
 export type FontKey = keyof typeof FONTS;
 const FONT_KEYS = Object.keys(FONTS) as [FontKey, ...FontKey[]];
 
@@ -66,6 +89,12 @@ export function brandCssVars(brand: Brand): Record<string, string> {
     "--brand-font-display": `var(${FONTS[brand.displayFont].cssVar})`,
     "--brand-font-body": `var(${FONTS[brand.bodyFont].cssVar})`,
   };
+}
+
+/** Self-hosted font files to preload for a brand (display font first: it paints the headings). */
+export function brandFontPreloads(brand: Brand): string[] {
+  const urls = [brand.displayFont, brand.bodyFont].flatMap((f) => FONTS[f].preload);
+  return [...new Set(urls)];
 }
 
 export function brandStyleBlock(brand: Brand): string {

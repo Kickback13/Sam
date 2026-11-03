@@ -2,7 +2,7 @@
 
 @AGENTS.md
 
-Read this first in every session. The 9-phase roadmap is in `docs/ROADMAP.md`, architecture decisions in `docs/DECISIONS.md`, accounts in `docs/ACCOUNTS.md`, and the per-phase plans in `docs/phases/`.
+Read this first in every session. The 9-phase roadmap is in `docs/ROADMAP.md`, architecture decisions in `docs/DECISIONS.md`, accounts in `docs/ACCOUNTS.md`, and the per-phase plans in `docs/phases/`. Operations: `docs/RUNBOOK.md`; security review: `docs/SECURITY.md`; handover: `docs/HANDOVER.md`; user guide: `docs/TRAINING.md`.
 
 Two tracks build in parallel (Housing4All `h4a/*`, AZH `azh/track`): follow `docs/COLLABORATION.md`.
 

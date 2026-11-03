@@ -5,6 +5,7 @@ import Link from "next/link";
 import { NetworkNav } from "@/features/network/components/network-nav";
 import { NetworkPwa } from "@/features/network/components/pwa";
 import { getNetworkContext } from "@/features/network/server/queries";
+import { BrandFontPreloads } from "@/components/brand-font-preloads";
 import { brandStyleBlock } from "@/lib/brand";
 
 export async function generateMetadata({ params }: LayoutProps<"/n/[slug]">): Promise<Metadata> {
@@ -32,6 +33,7 @@ export default async function NetworkLayout({ children, params }: LayoutProps<"/
   return (
     <>
       <style data-testid="brand-vars">{brandStyleBlock(ctx.brand)}</style>
+      <BrandFontPreloads brand={ctx.brand} />
       <div className="min-h-dvh bg-background pb-20 md:pb-8">
         <header className="bg-brand-primary text-white">
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
