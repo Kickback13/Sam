@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, Loader2, Paperclip, Plus, Trash2, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -47,7 +46,6 @@ export function BudgetPanel({
   receiptUrls: Record<string, string>;
 }) {
   const ws = useWorkspace();
-  const router = useRouter();
   const [pending, start] = useTransition();
   const summary = budgetVsActual(budget.lines, budget.costs);
   const approved = approvedChangeOrderTotal(budget.orders);
@@ -57,6 +55,9 @@ export function BudgetPanel({
     ...new Set([...budget.lines.map((l) => l.category), ...budget.costs.map((c) => c.category)]),
   ];
 
+  // Every budget action calls revalidatePath, so its response already carries the fresh
+  // page (one round trip, actions run in order). An extra router.refresh() here raced
+  // with the next action and could paint an older payload last (e.g. hide a new row).
   function run(fn: () => Promise<Result>, msg: string, after?: () => void) {
     start(async () => {
       const r = await fn();
@@ -66,7 +67,6 @@ export function BudgetPanel({
       }
       toast.success(msg);
       after?.();
-      router.refresh();
     });
   }
 
