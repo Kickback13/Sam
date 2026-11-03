@@ -11,6 +11,7 @@ export type IconName =
   | "companies"
   | "properties"
   | "analyze"
+  | "prospects"
   | "outreach"
   | "calendar"
   | "network"
@@ -62,6 +63,13 @@ const REAL_ESTATE_NAV: NavItem[] = [
     group: "Find",
   },
   { key: "alerts", label: "Alerts", path: "alerts", icon: "alerts", group: "Find" },
+  {
+    key: "prospects",
+    label: "Prospects",
+    path: "prospects",
+    icon: "prospects",
+    group: "Find",
+  },
   {
     key: "pipeline",
     label: "Pipeline",

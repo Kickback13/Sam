@@ -13,6 +13,7 @@ describe("nav per business type", () => {
       "today",
       "deal-finder",
       "alerts",
+      "prospects",
       "pipeline",
       "people",
       "properties",

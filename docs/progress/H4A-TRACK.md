@@ -227,3 +227,20 @@ Plan: `docs/phases/PHASE-5B-PLAN.md` · ADR-032.
 | `docs/DECISIONS.md`, `docs/ACCOUNTS.md` | ADR-032; setup step                               | Decision / Sam's setup  |
 
 No AZH files changed (the GHL feature serves both workspaces from `src/features/ghl`). The 5B migration depends only on 5A.
+
+## Phase 4B — Prospects: broker ranking + long-hold owners (branch `h4a/people-lists`)
+
+Plan: `docs/phases/PHASE-4B-PLAN.md` · ADR-033. **No migration.**
+
+- [x] Ranking + years-held logic — pure, unit-tested
+- [x] `/w/[slug]/prospects` (Brokers, Long-hold owners), Add to People, menu item
+- [x] E2E (ranking, sort, add to People, owners with source + filters, 390 px, real-estate only)
+
+### Shared files touched (Phase 4B)
+
+| File                                                                          | Change                       | Why                 |
+| ----------------------------------------------------------------------------- | ---------------------------- | ------------------- |
+| `src/lib/nav.ts`, `src/components/shell/icons.tsx`, `tests/unit/misc.test.ts` | "Prospects" menu item + icon | New page            |
+| `docs/DECISIONS.md`, `docs/TRAINING.md`                                       | ADR-033; user guide section  | Decision / training |
+
+No AZH files changed.
