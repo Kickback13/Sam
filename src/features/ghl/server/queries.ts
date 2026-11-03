@@ -74,7 +74,7 @@ export async function listGhlImports(workspaceId: string) {
     .from("imports")
     .select("id, status, created_count, updated_count, skipped_count, error_count, created_at")
     .eq("workspace_id", workspaceId)
-    .eq("filename", "GoHighLevel (API import)")
+    .in("filename", ["GoHighLevel (API import)", "GoHighLevel (automatic import)"])
     .order("created_at", { ascending: false })
     .limit(5);
   if (error) throw error;
@@ -120,4 +120,40 @@ export async function defaultPipelineId(workspaceId: string): Promise<string | n
     .eq("is_default", true)
     .maybeSingle();
   return data?.id ?? null;
+}
+
+export type GhlAutoImportState = {
+  enabled: boolean;
+  intervalMinutes: number;
+  hasStageMap: boolean;
+  lastStartedAt: string | null;
+  lastFinishedAt: string | null;
+  lastStatus: "running" | "ok" | "error" | null;
+  lastSummary: unknown;
+  lastError: string | null;
+  running: boolean;
+};
+
+/** Automatic import settings + last run (Phase 5B). */
+export async function getGhlAutoImport(workspaceId: string): Promise<GhlAutoImportState> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("ghl_sync_settings")
+    .select(
+      "enabled, interval_minutes, stage_map, last_started_at, last_finished_at, last_status, last_summary, last_error, lock_until",
+    )
+    .eq("workspace_id", workspaceId)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    enabled: data?.enabled ?? false,
+    intervalMinutes: data?.interval_minutes ?? 360,
+    hasStageMap: Object.keys((data?.stage_map ?? {}) as object).length > 0,
+    lastStartedAt: data?.last_started_at ?? null,
+    lastFinishedAt: data?.last_finished_at ?? null,
+    lastStatus: (data?.last_status as GhlAutoImportState["lastStatus"]) ?? null,
+    lastSummary: data?.last_summary ?? null,
+    lastError: data?.last_error ?? null,
+    running: Boolean(data?.lock_until && new Date(data.lock_until) > new Date()),
+  };
 }

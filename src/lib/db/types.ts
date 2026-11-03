@@ -1638,6 +1638,100 @@ export type Database = {
           },
         ];
       };
+      ghl_sync_settings: {
+        Row: {
+          enabled: boolean;
+          enabled_by: string | null;
+          interval_minutes: number;
+          last_error: string | null;
+          last_finished_at: string | null;
+          last_started_at: string | null;
+          last_status: string | null;
+          last_summary: Json | null;
+          lock_until: string | null;
+          stage_map: NonNullable<Json>;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          enabled?: boolean;
+          enabled_by?: string | null;
+          interval_minutes?: number;
+          last_error?: string | null;
+          last_finished_at?: string | null;
+          last_started_at?: string | null;
+          last_status?: string | null;
+          last_summary?: Json | null;
+          lock_until?: string | null;
+          stage_map?: NonNullable<Json>;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          enabled?: boolean;
+          enabled_by?: string | null;
+          interval_minutes?: number;
+          last_error?: string | null;
+          last_finished_at?: string | null;
+          last_started_at?: string | null;
+          last_status?: string | null;
+          last_summary?: Json | null;
+          lock_until?: string | null;
+          stage_map?: NonNullable<Json>;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ghl_sync_settings_enabled_by_fkey";
+            columns: ["enabled_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ghl_sync_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ghl_sync_state: {
+        Row: {
+          fingerprint: string;
+          ghl_id: string;
+          object: string;
+          synced_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          fingerprint: string;
+          ghl_id: string;
+          object: string;
+          synced_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          fingerprint?: string;
+          ghl_id?: string;
+          object?: string;
+          synced_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ghl_sync_state_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       h4a_alerts: {
         Row: {
           created_at: string;
@@ -4204,6 +4298,11 @@ export type Database = {
           p_token: string;
           p_workspace_id: string;
         };
+        Returns: undefined;
+      };
+      ghl_sync_claim: { Args: { p_force?: boolean; p_workspace_id: string }; Returns: boolean };
+      ghl_sync_finish: {
+        Args: { p_error: string; p_ok: boolean; p_summary: Json; p_workspace_id: string };
         Returns: undefined;
       };
       global_search: {

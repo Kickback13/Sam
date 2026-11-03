@@ -246,3 +246,15 @@ Prices aren't written here because they change; get a current quote before choos
 - **Routing after the call** is by keywords in what the caller said (accent-insensitive, whole words, per language), falling back to the default route. The route decides who gets the follow-up task — kept simple and testable rather than letting the AI pick a person.
 - **CRM:** callers are matched by normalized phone; unknown numbers become contacts (tag `receptionist`, source "AI receptionist", name from the agent's data collection when given). Each call is one `call` activity on the timeline (updated as details arrive). Missed calls, voicemails and AI-taken calls create one "Call back …" task due in 4 hours for the route's person (only if they're still a member).
 - **Recording consent (California, all-party):** default greetings disclose recording; the agent's first message must too.
+
+## ADR-032 — Automatic GoHighLevel import: one-way, change-detected, runs under an admin's session
+
+**Context (5B):** Sam keeps GoHighLevel for a few more months (Housing4All ~2, AZH 3–4) before cancelling it (ADR-029). Re-running the one-time import by hand means new GHL leads and deal moves are missed in between. Two-way sync was rejected again on 2026-11-02: GHL is being switched off and the platform is the system of record.
+
+**Decision:**
+
+- **One way, read-only.** Same Private Integration token and scopes as 5A (`contacts.readonly`, `opportunities.readonly`); nothing is ever written to GHL.
+- **Only what GHL changed.** Each run reads GHL and compares every contact/opportunity with the fingerprint stored at the last run (`ghl_sync_state`, a SHA-256 of exactly the fields the import reads). Unchanged records are not touched, so edits made in the app are not overwritten every few hours by an unchanged GHL copy. Changed contacts go through the same CSV import engine (merge rules, dedupe, compliance flags only tighten, SMS DND → do-not-send list). A new opportunity becomes a deal; a linked deal moves only when GHL moved or changed it. Deals created by the one-time import get a baseline on the first run (no surprise moves).
+- **No service-role key and no new secrets.** Runs execute under a signed-in owner/admin's session, so RLS covers every write: **Import now** on the GoHighLevel page, and a background run that the app shell starts (Next.js `after()` in a server action) when an owner/admin has the app open and a run is due (hourly / 6-hourly / daily). A database lock (`ghl_sync_claim`, 10-minute expiry) prevents overlapping runs; `ghl_sync_finish` records the result and writes `audit_log`. Trade-off: if nobody with admin rights opens the app, nothing imports until someone does — acceptable because the data is only needed when someone is working. A true cron (Vercel Cron + a server key) can be added later without changing the import logic.
+- **Stage map:** the map chosen in the last manual opportunity import is saved and reused; before that, stages match by name (else the pipeline's first open stage).
+- **Time budget:** a run stops starting new pages after 2 minutes and the next run continues (unchanged records are skipped quickly).

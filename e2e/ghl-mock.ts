@@ -61,7 +61,9 @@ const pipelines = [
   },
 ];
 
-const opportunities = [
+export type GhlMockState = { contacts: Contact[]; opportunities: Record<string, unknown>[] };
+
+const OPPORTUNITIES = [
   {
     id: "go_1",
     name: "Kitchen remodel",
@@ -90,8 +92,13 @@ const opportunities = [
   },
 ];
 
-export function startGhlMock(): Promise<Server> {
-  const contacts = mockContacts();
+/** Fresh mock data. Tests may edit the returned arrays between requests (auto-import e2e). */
+export function createGhlMockState(): GhlMockState {
+  return { contacts: mockContacts(), opportunities: OPPORTUNITIES.map((o) => ({ ...o })) };
+}
+
+export function startGhlMock(state: GhlMockState = createGhlMockState()): Promise<Server> {
+  const { contacts, opportunities } = state;
   const server = createServer((req, res) => {
     const url = new URL(req.url ?? "/", `http://127.0.0.1:${GHL_MOCK_PORT}`);
     const json = (status: number, body: unknown) => {

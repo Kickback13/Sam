@@ -24,14 +24,19 @@ accounts). Plain steps, no secrets. The accounts themselves are listed in `docs/
 
 ## 2. Database changes (migrations)
 
-The live database is changed only by a person, in the Supabase SQL Editor. Never from a developer's machine or an automated tool.
+Every live change goes through one combined SQL file that was proven on the local stack first. Since 2026-11-03 (Keanu's decision) it can be applied in either of two ways:
+
+- **A person** pastes it into the Supabase SQL Editor.
+- **A Claude Code session with the Supabase connector** runs it with `execute_sql` on project `jcrjzmflepnvvvneahvs` (housing4all-platform) **only**. The session says beforehand which update it is applying, runs the verify file on live right after, and reports the numbers.
+
+Never apply a migration with a plain `apply_migration` call, which records a different version number, and never touch the other projects in the organization.
 
 1. Add a new file `supabase/migrations/<UTC timestamp>_<h4a|azh>_<topic>.sql`.
    - Never edit an old migration.
    - Additive only: never drop or rename a table, column, policy or function.
    - Every new table needs `workspace_id`, RLS, policies and a test.
 2. Run `pnpm db:reset` locally, then `pnpm db:types` (regenerates `src/lib/db/types.ts`; never hand-edit it), then the tests.
-3. Build one combined SQL file for the human to run:
+3. Build one combined SQL file:
    - `begin`;
    - a guard that refuses if the migration is already recorded;
    - the migration, verbatim;
@@ -45,7 +50,7 @@ The live database is changed only by a person, in the Supabase SQL Editor. Never
    - run the combined file again and confirm the guard refuses.
 
 4. Make the verify file with `node scripts/rls-hosted-sql.mjs`. It wraps the feature's RLS suite so it creates and then removes its own test data.
-5. The person applying it:
+5. Whoever applies it (a person, or Claude via `execute_sql`):
    - opens Supabase → SQL Editor → New query;
    - pastes the combined file and runs it (it should print the "update applied" notice);
    - then pastes and runs the verify file. It must show **failed 0, leftover_workspaces 0, leftover_users 0**.

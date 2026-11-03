@@ -69,7 +69,7 @@ These are all in `docs/HANDOVER.md` (account transfers) and `docs/ACCOUNTS.md` (
 
 ## 5. House rules this track followed (keep them)
 
-- **Live DB:** never connect to the live DB from an agent. Build the combined SQL and verify files, prove them locally, and a human runs them in the SQL Editor. Never merge a PR that needs a migration until the verify passes.
+- **Live DB:** build the combined SQL and verify files and prove them locally. Then either a human runs them in the SQL Editor, or (since 2026-11-03, Keanu's call) Claude applies them to housing4all-platform only, via the Supabase connector, and runs the verify on live (`docs/RUNBOOK.md` §2). Never merge a PR that needs a migration until the verify passes.
 - **Previews:** Vercel previews use the **production** database. Don't submit forms on a preview.
 - **Migrations:** new files only, additive, named `<UTC timestamp>_<h4a|azh>_<topic>.sql`. The latest is `20261103010000`. Every new table gets `workspace_id`, RLS and an SQL test suite.
 - **Generated types:** `src/lib/db/types.ts` is generated (`pnpm db:types`); never hand-edit it.

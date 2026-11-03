@@ -206,3 +206,24 @@ adding the one-line preload there is a Track B follow-up. No migrations.
 | `CLAUDE.md`                             | Pointer to the four new docs                | Read-first list            |
 
 No AZH files changed. No migrations.
+
+## Phase 5B — automatic GoHighLevel import, one-way (branch `h4a/ghl-auto-import`)
+
+Plan: `docs/phases/PHASE-5B-PLAN.md` · ADR-032.
+
+- [x] Migration `20261103010000_h4a_ghl_auto_import` (`ghl_sync_settings`, `ghl_sync_state`, claim/finish functions) — additive
+- [x] Change detection + opportunity planning — pure, unit-tested
+- [x] Runner, Import now, background run (`after()`), Automatic import card
+- [x] RLS suite `supabase/tests/h4a_ghl_sync_rls.sql` (26 checks)
+- [x] E2E against the GHL mock (first run, no-change, GHL change vs local edit, background run, 390 px)
+- [x] Combined live-DB SQL file built and proven locally → applied to live by Claude via the Supabase connector (Keanu approved, 2026-11-03) → verify on live 26/0, no leftovers → merge
+
+### Shared files touched (Phase 5B)
+
+| File                                    | Change                                            | Why                     |
+| --------------------------------------- | ------------------------------------------------- | ----------------------- |
+| `src/app/w/[slug]/layout.tsx`           | one line: `<GhlAutoImportKick>` for owners/admins | Background run when due |
+| `src/lib/db/types.ts`                   | Regenerated, additions only                       | New tables + functions  |
+| `docs/DECISIONS.md`, `docs/ACCOUNTS.md` | ADR-032; setup step                               | Decision / Sam's setup  |
+
+No AZH files changed (the GHL feature serves both workspaces from `src/features/ghl`). The 5B migration depends only on 5A.
