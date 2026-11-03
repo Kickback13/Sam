@@ -97,14 +97,18 @@ test("Phase 7A setup: connection links, settings, routes, routing test", async (
   await expectToast(page, "Route saved");
 
   // The first route stays the default, however quickly the second one is added.
-  const routes = await sql<{ name: string; is_default: boolean }>(
-    `select name, is_default from public.receptionist_routes where workspace_id = ${WS} order by position`,
-    [E2E_REALTY],
-  );
-  expect(routes).toEqual([
-    { name: "Sam", is_default: true },
-    { name: "Property management", is_default: false },
-  ]);
+  // (Poll: the first save's "Route saved" toast can still be on screen when the second is clicked.)
+  await expect
+    .poll(() =>
+      sql<{ name: string; is_default: boolean }>(
+        `select name, is_default from public.receptionist_routes where workspace_id = ${WS} order by position`,
+        [E2E_REALTY],
+      ),
+    )
+    .toEqual([
+      { name: "Sam", is_default: true },
+      { name: "Property management", is_default: false },
+    ]);
 
   await page.getByLabel("What the caller says").fill("Hola, soy inquilino y tengo una fuga");
   await expect(page.getByTestId("routing-result")).toContainText("Spanish");
