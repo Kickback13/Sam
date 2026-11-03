@@ -1,6 +1,7 @@
 import "server-only";
 
 import { toJson } from "@/lib/db/json";
+import type { Database } from "@/lib/db/types";
 import { normalizePhone } from "@/lib/normalize";
 import type { ActionContext } from "@/server/action-context";
 import { friendlyDbError } from "@/server/errors";
@@ -119,15 +120,37 @@ export async function createDealFromPlan(
   return { ok: true, dealId: deal.id };
 }
 
+/**
+ * Write settings columns on the workspace's ghl_sync_settings row, creating it first if needed.
+ * (Not an upsert: admins may update only the settings columns, never workspace_id.)
+ */
+export async function writeSyncSettings(
+  ctx: ActionContext,
+  workspaceId: string,
+  patch: Omit<
+    Database["public"]["Tables"]["ghl_sync_settings"]["Update"],
+    | "workspace_id"
+    | "last_started_at"
+    | "last_finished_at"
+    | "last_status"
+    | "last_summary"
+    | "last_error"
+    | "lock_until"
+  >,
+) {
+  const created = await ctx.supabase
+    .from("ghl_sync_settings")
+    .upsert({ workspace_id: workspaceId }, { onConflict: "workspace_id", ignoreDuplicates: true });
+  if (created.error) return created.error;
+  const { error } = await ctx.supabase
+    .from("ghl_sync_settings")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("workspace_id", workspaceId);
+  return error;
+}
+
 /** Remember the stage map an admin chose, for the automatic import. Best effort. */
 export async function saveStageMap(ctx: ActionContext, workspaceId: string, stageMap: StageMap) {
-  const { error } = await ctx.supabase.from("ghl_sync_settings").upsert(
-    {
-      workspace_id: workspaceId,
-      stage_map: toJson(stageMap),
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "workspace_id" },
-  );
+  const error = await writeSyncSettings(ctx, workspaceId, { stage_map: toJson(stageMap) });
   if (error) console.error("GHL stage map save failed", { code: error.code });
 }

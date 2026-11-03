@@ -10,6 +10,7 @@ import { friendlyDbError } from "@/server/errors";
 
 import { describeSummary, isSyncDue, type SyncSummary } from "../sync";
 import { runGhlAutoImport } from "./auto-import";
+import { writeSyncSettings } from "./shared";
 
 const settingsSchema = z.object({
   workspaceId: z.uuid(),
@@ -26,16 +27,11 @@ export async function saveGhlAutoImport(
   const ctx = await actionContext();
   if (!ctx) return NOT_SIGNED_IN;
   const { workspaceId, enabled, intervalMinutes } = parsed.data;
-  const { error } = await ctx.supabase.from("ghl_sync_settings").upsert(
-    {
-      workspace_id: workspaceId,
-      enabled,
-      interval_minutes: intervalMinutes,
-      enabled_by: enabled ? ctx.user.id : null,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "workspace_id" },
-  );
+  const error = await writeSyncSettings(ctx, workspaceId, {
+    enabled,
+    interval_minutes: intervalMinutes,
+    enabled_by: enabled ? ctx.user.id : null,
+  });
   if (error)
     return {
       ok: false,
