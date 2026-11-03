@@ -188,3 +188,21 @@ Lighthouse mobile (local, simulated): AZH Today 81 → 88–90 (FCP 1.8 s → 1.
 
 No AZH files changed. The public AZH request form (`/r/**`, Track B) loads its fonts on demand as before;
 adding the one-line preload there is a Track B follow-up. No migrations.
+
+## Phase 9A — security review + handover package (branch `h4a/handover`)
+
+- [x] Security review `docs/SECURITY.md` (DB, app, dependencies, gaps, dashboard checklist)
+- [x] Automated invariants `tests/rls/security-invariants.test.ts` (RLS + policies everywhere, workspace_id, no anon table grants, definer search_path, reviewed anon function allow-list, app_private not in the API, private buckets) — proven to fail on a probe table
+- [x] `systeminformation` pinned to a patched release (pnpm override); other 2 advisories unreachable (documented)
+- [x] `docs/RUNBOOK.md` (ship, migrations, backups/restore, access, key rotation, incidents, monthly check)
+- [x] `docs/HANDOVER.md` (ordered account-transfer checklist) · `docs/TRAINING.md` (screen-by-screen guide)
+- [ ] Sam/Keanu: work through HANDOVER.md and SECURITY.md §5
+
+### Shared files touched (Phase 9A)
+
+| File                                    | Change                                      | Why                        |
+| --------------------------------------- | ------------------------------------------- | -------------------------- |
+| `pnpm-workspace.yaml`, `pnpm-lock.yaml` | `overrides: systeminformation >=5.33.16 <6` | High advisory (transitive) |
+| `CLAUDE.md`                             | Pointer to the four new docs                | Read-first list            |
+
+No AZH files changed. No migrations.
