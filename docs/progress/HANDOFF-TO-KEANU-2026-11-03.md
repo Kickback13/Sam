@@ -6,16 +6,18 @@ Read first: `CLAUDE.md`, `docs/COLLABORATION.md`, `docs/RUNBOOK.md` (especially 
 
 ## 1. Open pull requests: what to do with each
 
-| PR | What | State | Your action |
-| --- | --- | --- | --- |
-| [#17](https://github.com/Kickback13/Sam/pull/17) `h4a/handover` | Phase 9A: security review, automated security checks (CI), runbook, handover and training guides, this file, Phase 5B SQL files | CI green, **no migrations** | Review and merge. |
-| [#18](https://github.com/Kickback13/Sam/pull/18) `h4a/ghl-auto-import` | Phase 5B: automatic one-way GoHighLevel import | Adds migration `20261103010000_h4a_ghl_auto_import`. CI was running at handoff. | **First** apply the live DB update (below), then merge when CI is green. |
-| [#16](https://github.com/Kickback13/Sam/pull/16) `azh/budget-refresh-race` (draft) | AZH budget screen: removes an extra `router.refresh()` that raced with the next action (3 lines) | Green; AZH lane, so it needs **your** review | Review, mark ready, merge. |
+| PR                                                                                 | What                                                                                                                            | State                                                                           | Your action                                                              |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [#17](https://github.com/Kickback13/Sam/pull/17) `h4a/handover`                    | Phase 9A: security review, automated security checks (CI), runbook, handover and training guides, this file, Phase 5B SQL files | CI green, **no migrations**                                                     | Review and merge.                                                        |
+| [#18](https://github.com/Kickback13/Sam/pull/18) `h4a/ghl-auto-import`             | Phase 5B: automatic one-way GoHighLevel import                                                                                  | Adds migration `20261103010000_h4a_ghl_auto_import`. CI was running at handoff. | **First** apply the live DB update (below), then merge when CI is green. |
+| [#16](https://github.com/Kickback13/Sam/pull/16) `azh/budget-refresh-race` (draft) | AZH budget screen: removes an extra `router.refresh()` that raced with the next action (3 lines)                                | Green; AZH lane, so it needs **your** review                                    | Review, mark ready, merge.                                               |
 
 **Merge order:** #17, then the #18 DB update and #18, then #16 (any order works; they don't touch the same files). After merging #17, the security test in `tests/rls/security-invariants.test.ts` also checks #18's functions. They are revoked from `anon`, so it stays green.
 
 ### Applying the Phase 5B live database update (needed before merging #18)
+
 Both files are in `docs/db-updates/` (on #17's branch; also attached to the chat with Michael).
+
 1. Supabase → project `jcrjzmflepnvvvneahvs` → **SQL Editor → New query** → paste all of `2026-11-h4a-phase-5b.sql` → Run. It should print **"Housing4All Phase 5B database update applied"**. If it says "already applied", it was done before.
 2. New query → paste all of `2026-11-h4a-phase-5b-verify.sql` → Run. It must show **passed 26, failed 0, leftover_workspaces 0, leftover_users 0**.
 3. Merge #18.
@@ -34,6 +36,7 @@ I proved these locally: migrations go from 29 to 30, verify shows 26/0, and a re
 ## 3. What only people can do (nothing for an AI to build)
 
 These are all in `docs/HANDOVER.md` (account transfers) and `docs/ACCOUNTS.md` (per-service steps):
+
 1. Invite Sam's personal Gmail as **Owner** in both workspaces (Settings → Members & invites).
 2. Sam's data:
    - Housing4All buy box (30+ units, San Diego ZIPs, 1995+);
@@ -82,4 +85,4 @@ These are all in `docs/HANDOVER.md` (account transfers) and `docs/ACCOUNTS.md` (
 - **Expected numbers at handoff (#18 branch):**
   - unit 387;
   - RLS 47 (13 files);
-  - e2e 45 (desktop + 390 px).
+  - e2e 46 (desktop + 390 px).
