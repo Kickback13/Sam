@@ -258,3 +258,11 @@ Prices aren't written here because they change; get a current quote before choos
 - **No service-role key and no new secrets.** Runs execute under a signed-in owner/admin's session, so RLS covers every write: **Import now** on the GoHighLevel page, and a background run that the app shell starts (Next.js `after()` in a server action) when an owner/admin has the app open and a run is due (hourly / 6-hourly / daily). A database lock (`ghl_sync_claim`, 10-minute expiry) prevents overlapping runs; `ghl_sync_finish` records the result and writes `audit_log`. Trade-off: if nobody with admin rights opens the app, nothing imports until someone does — acceptable because the data is only needed when someone is working. A true cron (Vercel Cron + a server key) can be added later without changing the import logic.
 - **Stage map:** the map chosen in the last manual opportunity import is saved and reused; before that, stages match by name (else the pipeline's first open stage).
 - **Time budget:** a run stops starting new pages after 2 minutes and the next run continues (unchanged records are skipped quickly).
+
+## ADR-033 — Prospect lists are computed from existing data, not stored
+
+**Context (4B):** Sam wants to know which brokers send the best deals and which owners have held a long time. Both answers already exist in the workspace: every listing carries its broker's details, and every property its last sale date (with source).
+
+**Decision:** compute both lists on request under the user's session (RLS), with no new tables. Brokers are grouped by normalized email, else phone, else name + company, and ranked by listings, buy-box matches (score ≥ 70, the alert threshold), volume, pipeline and closed deals. Long-hold owners are properties with a last sale date at least N years ago (default 15), showing the date's source and the owner's compliance flags. A broker can be added to People as a contact with role Broker through the normal duplicate-checked contact action. Nothing is sent from these pages.
+
+**Consequences:** always current, no sync to maintain, no live database change. Reads up to 10,000 recent listings and 2,000 properties per page view, which is plenty for one brokerage; a materialized view can replace it if volumes grow.

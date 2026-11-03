@@ -17,6 +17,7 @@ import {
   Settings,
   SquareKanban,
   Users,
+  Trophy,
   UsersRound,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ export const NAV_ICONS: Record<IconName, LucideIcon> = {
   companies: Building2,
   properties: Building,
   analyze: Calculator,
+  prospects: Trophy,
   outreach: Send,
   calendar: Calendar,
   network: Network,

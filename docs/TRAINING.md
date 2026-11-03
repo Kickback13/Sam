@@ -51,6 +51,23 @@ Duplicates are merged automatically.
 
 Matches that fit your buy box, newest first. Email alerts to Sam stay off until email sending is connected.
 
+### Prospects
+
+Who to call next, built from data already in the workspace. Nothing is sent from here.
+
+- **Brokers:** every broker who has sent you listings, ranked by:
+  - listings;
+  - buy-box matches (score 70+);
+  - volume;
+  - deals in your pipeline;
+  - closed deals.
+
+  Switch the order with the buttons at the top. **Add to People** makes the broker a contact (role Broker); if they're already a contact, the row links to them.
+
+- **Long-hold owners:** properties whose last sale was at least 15 years ago (change it with the filters, along with minimum units and ZIP).
+  - Each row shows the years held, the sale date's source, and the owner, with do-not-call or unsubscribed warnings.
+  - Properties with no sale date yet are counted at the top: add the date on the property to include them.
+
 ### Pipeline
 
 Deals move through **New Deal → Qualified → Contacted → Interested → Underwriting → Offer → Closed** (or Lost).
