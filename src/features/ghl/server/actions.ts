@@ -2,58 +2,29 @@
 
 import { z } from "zod";
 
-import { normalizePhone } from "@/lib/normalize";
 import type { ActionResult } from "@/lib/validation/common";
-import {
-  actionContext,
-  NOT_SIGNED_IN,
-  revalidateWorkspace,
-  type ActionContext,
-} from "@/server/action-context";
+import { actionContext, NOT_SIGNED_IN, revalidateWorkspace } from "@/server/action-context";
 import { finishImport, importChunk, startImport } from "@/server/actions/imports";
 import { writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
 
-import { GhlClient, GhlError, ghlBaseUrl, type GhlCursor } from "../client";
-import { GHL_COLUMN_MAPPING, ghlContactToRow, planOpportunity, smsBlockedPhones } from "../map";
+import { GhlClient, ghlBaseUrl, type GhlCursor } from "../client";
+import { GHL_COLUMN_MAPPING, ghlContactToRow, planOpportunity } from "../map";
 import { loadLocalStages } from "./queries";
+import {
+  createDealFromPlan,
+  ghlClient,
+  ghlFailure,
+  NOT_CONNECTED,
+  recordError,
+  saveStageMap,
+  suppressSmsDnd,
+  type StepError,
+} from "./shared";
 
 const cursorSchema = z
   .object({ startAfterId: z.string().min(1).max(100), startAfter: z.number() })
   .nullable();
-
-type StepError = { ok: false; error: string; retryAfterSeconds?: number };
-
-function ghlFailure(err: unknown): StepError {
-  if (err instanceof GhlError)
-    return {
-      ok: false,
-      error: err.message,
-      ...(err.retryAfterSeconds ? { retryAfterSeconds: err.retryAfterSeconds } : {}),
-    };
-  console.error("GHL import failed", err instanceof Error ? err.message : err);
-  return { ok: false, error: "Something went wrong talking to GoHighLevel." };
-}
-
-/** The workspace's GHL client, built from the Vault token (owners/admins only — enforced in SQL). */
-async function ghlClient(ctx: ActionContext, workspaceId: string): Promise<GhlClient | null> {
-  const { data, error } = await ctx.supabase.rpc("ghl_connection", { p_workspace_id: workspaceId });
-  if (error || !data?.[0]?.token || !data[0].location_id) return null;
-  return new GhlClient(data[0].token, data[0].location_id, fetch, ghlBaseUrl());
-}
-
-const NOT_CONNECTED = {
-  ok: false as const,
-  error: "GoHighLevel isn't connected for this workspace (or you're not an owner/admin).",
-};
-
-async function recordError(ctx: ActionContext, workspaceId: string, err: unknown) {
-  if (err instanceof GhlError && (err.kind === "auth" || err.kind === "scope"))
-    await ctx.supabase.rpc("ghl_record_error", {
-      p_workspace_id: workspaceId,
-      p_message: err.message,
-    });
-}
 
 // ---------------------------------------------------------------------------
 // Connect / disconnect
@@ -231,31 +202,7 @@ export async function importGhlContactsPage(
   step.errors = chunk.data.errors.filter((e) => !e.message.startsWith("Skipped:")).length;
 
   // Texting turned off in GHL → the do-not-send list (survives later edits and re-imports).
-  const blocked = [
-    ...new Set(
-      page.items
-        .flatMap(smsBlockedPhones)
-        .map((p) => normalizePhone(p))
-        .filter((p): p is string => p !== null && /^\+[0-9]{8,15}$/.test(p)),
-    ),
-  ];
-  if (blocked.length) {
-    const { data, error } = await ctx.supabase
-      .from("outreach_suppressions")
-      .upsert(
-        blocked.map((value) => ({
-          workspace_id: workspaceId,
-          channel: "sms",
-          value,
-          reason: "manual",
-          note: "Texting was off (DND) in GoHighLevel",
-        })),
-        { onConflict: "workspace_id,channel,value", ignoreDuplicates: true },
-      )
-      .select("id");
-    if (error) console.error("GHL SMS DND suppressions failed", { code: error.code });
-    else step.smsBlocked = data?.length ?? 0;
-  }
+  step.smsBlocked = await suppressSmsDnd(ctx, workspaceId, page.items);
   return { ok: true, data: step };
 }
 
@@ -296,6 +243,8 @@ export async function importGhlOpportunitiesPage(
   const { workspaceId, cursor, stageMap } = parsed.data;
   const client = await ghlClient(ctx, workspaceId);
   if (!client) return NOT_CONNECTED;
+  // The automatic import (Phase 5B) reuses the stage map chosen here.
+  if (cursor === null) await saveStageMap(ctx, workspaceId, stageMap);
 
   let page;
   try {
@@ -364,36 +313,15 @@ export async function importGhlOpportunitiesPage(
         step.skipped.push({ id: o.id, name: o.name ?? null, reason: plan.reason });
         continue;
       }
-      const { data: deal, error } = await ctx.supabase
-        .from("deals")
-        .insert({
-          workspace_id: workspaceId,
-          pipeline_id: plan.pipelineId,
-          stage_id: plan.stageId,
-          title: plan.title,
-          value: plan.value,
-          source: plan.source,
-          primary_contact_id: plan.contactGhlId
-            ? (contactByGhl.get(plan.contactGhlId) ?? null)
-            : null,
-          position,
-          notes: `Imported from GoHighLevel (opportunity ${o.id}).`,
-          created_by: ctx.user.id,
-        })
-        .select("id")
-        .single();
-      if (error || !deal) {
-        step.skipped.push({ id: o.id, name: o.name ?? null, reason: friendlyDbError(error) });
+      const made = await createDealFromPlan(ctx, workspaceId, o.id, plan, {
+        contactId: plan.contactGhlId ? (contactByGhl.get(plan.contactGhlId) ?? null) : null,
+        position,
+      });
+      if (!made.ok) {
+        step.skipped.push({ id: o.id, name: o.name ?? null, reason: made.error });
         continue;
       }
       position += 1000;
-      const { error: linkError } = await ctx.supabase.from("ghl_links").insert({
-        workspace_id: workspaceId,
-        object: "opportunity",
-        ghl_id: o.id,
-        local_id: deal.id,
-      });
-      if (linkError) console.error("ghl_links insert failed", { code: linkError.code });
       step.created += 1;
     }
   } catch (err) {

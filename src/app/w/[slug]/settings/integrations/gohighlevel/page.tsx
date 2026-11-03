@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import { GhlAutoImportCard } from "@/features/ghl/components/ghl-auto-import";
 import { GhlConnectForm, GhlDisconnectButton } from "@/features/ghl/components/ghl-connect-form";
 import { GhlContactImport, GhlOpportunityImport } from "@/features/ghl/components/ghl-import-panel";
 import {
   countGhlLinkedDeals,
   defaultPipelineId,
   fetchGhlPipelines,
+  getGhlAutoImport,
   getGhlConnection,
   listGhlImports,
   loadLocalStages,
@@ -45,12 +47,13 @@ export default async function GhlPage({
       </div>
     );
 
-  const [imports, stages, pipelineId, linked, ghl] = await Promise.all([
+  const [imports, stages, pipelineId, linked, ghl, auto] = await Promise.all([
     listGhlImports(workspace.id),
     loadLocalStages(workspace.id),
     defaultPipelineId(workspace.id),
     countGhlLinkedDeals(workspace.id),
     connected ? fetchGhlPipelines(workspace.id) : Promise.resolve(null),
+    getGhlAutoImport(workspace.id),
   ]);
 
   return (
@@ -64,9 +67,9 @@ export default async function GhlPage({
           </Badge>
         </h2>
         <p className="text-sm text-muted-foreground">
-          A one-time move of this workspace&apos;s GoHighLevel contacts and opportunities.
-          Read-only: nothing is changed or sent in GoHighLevel. Run it again any time before GHL is
-          cancelled — repeats merge instead of duplicating.
+          Brings this workspace&apos;s GoHighLevel contacts and opportunities here — once, or
+          automatically until GHL is cancelled. Read-only: nothing is changed or sent in
+          GoHighLevel. Repeats merge instead of duplicating.
         </p>
       </div>
 
@@ -88,6 +91,7 @@ export default async function GhlPage({
 
       {connected && (
         <>
+          <GhlAutoImportCard state={auto} />
           <GhlContactImport />
           {ghl && !ghl.ok ? (
             <p
