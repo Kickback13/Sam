@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ProfileForm } from "@/features/network/components/member-forms";
 import { memberTypeLabel } from "@/features/network/schema";
 import { getMyProfile, getNetworkContext } from "@/features/network/server/queries";
+import { communityTerms } from "@/features/network/terms";
 import { signOut } from "@/server/actions/auth";
 
 export const metadata: Metadata = { title: "My profile" };
@@ -21,6 +22,7 @@ export default async function MePage({ params }: PageProps<"/n/[slug]/me">) {
       <p className="text-sm text-muted-foreground">Member type: {memberTypeLabel(p.member_type)}</p>
       <ProfileForm
         workspaceId={ctx.workspaceId}
+        headlineHelp={communityTerms(ctx.kind).headlineHelp}
         initial={{
           display_name: p.display_name,
           headline: p.headline ?? "",

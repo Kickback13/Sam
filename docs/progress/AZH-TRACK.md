@@ -45,6 +45,15 @@ Plans:
 - [x] Several people per office get every new request — migration `20261026220000_azh_office_assignees.sql` (arrays + backfill, members-only validation, old single columns kept in sync, intake creates one task per assignee / one unassigned task when empty, request owner = first assignee), Settings → AZH checkbox list per office with a plain-words summary (AZH-015). Tested: AZH SQL suite **100/0** (+7: agent can't change, members only, dedupe + single-column sync, legacy single write, N tasks, empty → 1 unassigned, owner), unit (list validation), `e2e/azh-assignees.spec.ts` (2 assignees → form → each sees one task). Full suite: unit 229, RLS 41, e2e 24/24.
 - [ ] Human applies `2026-10-azh-office-assignees.sql` to the live DB → merge → deploy → Keanu invites Sam and Norma and picks them in Settings → AZH.
 
+## AZH Community (Phase 8, 2026-11-04, branch `azh/community`)
+
+- [x] Migration `20261104010000_azh_community` (Network engine opened to construction; AZH member types; join → CRM role; `network_business_type`) — additive (two check constraints widened)
+- [x] Team page `/w/[slug]/community`, member app `/n/[slug]` in AZH words (Community, Projects), install manifest, Outreach "Only Community members"
+- [x] RLS suite `supabase/tests/azh_community_rls.sql` (15) + Phase 6A suite unchanged (43)
+- [x] E2E `e2e/azh-community.spec.ts` (menu → invite GC → project post → join → contact role gc → Projects tab → 390 px)
+- [x] Live DB: applied with the verify (see PR)
+- Shared files: `src/lib/nav.ts` + `tests/unit/misc.test.ts` (Community no longer "coming"), `src/features/network/**` (terms, shared team page), `src/app/w/[slug]/network/page.tsx` (now renders the shared page), `src/features/outreach/components/newsletter-editor.tsx` (audience label), `tests/rls/security-invariants.test.ts` (allow-list + `network_business_type`), `src/lib/db/types.ts` (regenerated).
+
 ## Done
 
 ## Blockers

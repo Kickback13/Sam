@@ -143,9 +143,11 @@ export type ProfileInitial = {
 export function ProfileForm({
   workspaceId,
   initial,
+  headlineHelp = "e.g. “Value-add investor, 20–80 units”.",
 }: {
   workspaceId: string;
   initial: ProfileInitial;
+  headlineHelp?: string;
 }) {
   const router = useRouter();
   const hydrated = useHydrated();
@@ -185,7 +187,7 @@ export function ProfileForm({
           onChange={text("display_name")}
         />
       </Field>
-      <Field id="pf-headline" label="Headline" help="e.g. “Value-add investor, 20–80 units”.">
+      <Field id="pf-headline" label="Headline" help={headlineHelp}>
         <Input id="pf-headline" value={v.headline} maxLength={160} onChange={text("headline")} />
       </Field>
       <Field id="pf-city" label="City">

@@ -4390,6 +4390,7 @@ export type Database = {
           workspace_name: string;
         }[];
       };
+      network_business_type: { Args: { p_slug: string }; Returns: string };
       network_context: {
         Args: { p_slug: string };
         Returns: {

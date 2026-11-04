@@ -31,6 +31,7 @@ export default async function PostPage({ params }: PageProps<"/n/[slug]/posts/[i
         workspaceId={ctx.workspaceId}
         canModerate={ctx.canModerate}
         isMine={post.authorUserId === ctx.userId}
+        kind={ctx.kind}
         linkToPost={false}
       />
       <section aria-labelledby="comments-h" className="space-y-3">

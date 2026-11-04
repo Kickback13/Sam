@@ -7,6 +7,8 @@ import { parseBrand, type Brand } from "@/lib/brand";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/server/auth";
 
+import type { CommunityKind } from "../terms";
+
 export type NetworkContext = {
   slug: string;
   workspaceId: string;
@@ -17,6 +19,8 @@ export type NetworkContext = {
   memberId: string | null;
   displayName: string | null;
   userId: string;
+  /** Housing4All Network or AZH Community (labels only). */
+  kind: CommunityKind;
 };
 
 /** The member app's context: an active member, or the workspace's own staff (preview). */
@@ -24,7 +28,10 @@ export const getNetworkContext = cache(async (slug: string): Promise<NetworkCont
   const user = await getSessionUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/n/${slug}`)}`);
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("network_context", { p_slug: slug });
+  const [{ data, error }, kindRes] = await Promise.all([
+    supabase.rpc("network_context", { p_slug: slug }),
+    supabase.rpc("network_business_type", { p_slug: slug }),
+  ]);
   if (error) throw error;
   const row = data?.[0];
   if (!row) notFound();
@@ -38,6 +45,7 @@ export const getNetworkContext = cache(async (slug: string): Promise<NetworkCont
     memberId: row.member_id,
     displayName: row.display_name,
     userId: user.id,
+    kind: kindRes.data === "construction" ? "construction" : "real_estate",
   };
 });
 

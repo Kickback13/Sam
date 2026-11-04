@@ -6,20 +6,30 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
+import { communityTerms, type CommunityKind } from "../terms";
+
 /** Bottom tab bar on phones, a row of tabs on wider screens. */
-export function NetworkNav({ slug, showMe }: { slug: string; showMe: boolean }) {
+export function NetworkNav({
+  slug,
+  showMe,
+  kind = "real_estate",
+}: {
+  slug: string;
+  showMe: boolean;
+  kind?: CommunityKind;
+}) {
   const pathname = usePathname();
   const base = `/n/${slug}`;
   const items = [
     { href: base, label: "Feed", icon: Newspaper, exact: true },
-    { href: `${base}/deals`, label: "Deals", icon: Building2 },
+    { href: `${base}/deals`, label: communityTerms(kind).dealsLabel, icon: Building2 },
     { href: `${base}/events`, label: "Events", icon: CalendarDays },
     { href: `${base}/members`, label: "Members", icon: Users },
     ...(showMe ? [{ href: `${base}/me`, label: "Me", icon: UserRound }] : []),
   ];
   return (
     <nav
-      aria-label="Network"
+      aria-label={communityTerms(kind).suffix}
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-background pb-[env(safe-area-inset-bottom)] md:static md:border-0 md:bg-transparent md:pb-0"
     >
       <ul className="mx-auto flex max-w-2xl md:gap-1 md:border-b">
