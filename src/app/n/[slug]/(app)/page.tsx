@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { PostCard } from "@/features/network/components/post-card";
 import { PostComposer } from "@/features/network/components/post-composer";
 import { getNetworkContext, listPosts } from "@/features/network/server/queries";
+import { communityTerms } from "@/features/network/terms";
 
 export const metadata: Metadata = { title: "Feed" };
 
@@ -21,13 +22,14 @@ export default async function FeedPage({ params }: PageProps<"/n/[slug]">) {
           workspaceId={ctx.workspaceId}
           allowPin={ctx.canModerate}
           postingAs={ctx.memberId ? (ctx.displayName ?? "you") : `${ctx.name} team`}
+          kind={ctx.kind}
         />
       )}
       {posts.length === 0 ? (
         <EmptyState
           icon={Newspaper}
           title="Nothing here yet"
-          description="Posts and deals from the community show up here."
+          description={communityTerms(ctx.kind).feedEmpty}
         />
       ) : (
         <div className="space-y-3" data-testid="feed">
@@ -39,6 +41,7 @@ export default async function FeedPage({ params }: PageProps<"/n/[slug]">) {
               workspaceId={ctx.workspaceId}
               canModerate={ctx.canModerate}
               isMine={p.authorUserId === ctx.userId}
+              kind={ctx.kind}
             />
           ))}
         </div>

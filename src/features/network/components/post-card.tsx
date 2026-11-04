@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/format";
 
 import type { FeedPost } from "../server/queries";
+import { communityTerms, type CommunityKind } from "../terms";
 import { PostActions } from "./post-actions";
 
 /** One feed item. Deal numbers are shown as the poster's own claim, with who and when. */
@@ -15,6 +16,7 @@ export function PostCard({
   isMine,
   linkToPost = true,
   manageHref,
+  kind = "real_estate",
 }: {
   post: FeedPost;
   slug: string;
@@ -23,6 +25,7 @@ export function PostCard({
   isMine: boolean;
   linkToPost?: boolean;
   manageHref?: string;
+  kind?: CommunityKind;
 }) {
   const href = manageHref ?? `/n/${slug}/posts/${post.id}`;
   const facts = [
@@ -50,7 +53,7 @@ export function PostCard({
             )}
             {post.kind === "deal" && (
               <span className="inline-flex items-center gap-1 rounded bg-brand-accent px-1.5 py-0.5 font-semibold text-black">
-                <Building2 className="size-3" aria-hidden /> Deal
+                <Building2 className="size-3" aria-hidden /> {communityTerms(kind).dealLabel}
               </span>
             )}
             {post.hidden && (

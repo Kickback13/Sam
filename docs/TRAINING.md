@@ -182,6 +182,19 @@ Projects move through **Lead → Estimate → Bid Sent → Won → In Progress �
   - **change orders**: approved ones add to the contract value.
 - **Files:** photos and documents.
 
+### Community
+
+AZH's private community app: the same one Housing4All calls the Network, in AZH words.
+
+- **Invite people:** Community → Members & invites. Pick their type (homeowner, general contractor, subcontractor, investor, partner) and create a link. When they join, they become a contact with the matching role.
+- **Run it:**
+  - posts, including **projects** (type of work, budget, city);
+  - events;
+  - pin or hide posts;
+  - sort members into segments.
+- **Privacy:** members only ever see the community, never your contacts, projects or estimates.
+- **Phones:** they can install it like an app.
+
 ### Schedule
 
 The week view of estimate visits for both offices. Booking a visit that overlaps another one for the same estimator shows a warning.

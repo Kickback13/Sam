@@ -32,6 +32,7 @@ const ANON_DEFINER_ALLOWED = [
   "h4a_inbound_update_email",
   "my_networks", // returns only the signed-in member's networks
   "network_brand", // public network branding (PWA manifest/icon)
+  "network_business_type", // which business a community belongs to (labels only)
   "network_context", // returns nothing without a member session
   "outreach_unsubscribe", // unsubscribe link (random token)
   "outreach_unsubscribe_info",

@@ -58,7 +58,8 @@ describe("nav per business type", () => {
     // Deal Finder and Alerts shipped in Phase 2A: real pages, no longer placeholders.
     expect(comingSoonModule("deal-finder", "real_estate")).toBeNull();
     expect(comingSoonModule("alerts", "real_estate")).toBeNull();
-    expect(comingSoonModule("community", "construction")?.phase).toBe(8);
+    // AZH Community shipped in Phase 8 (the Network engine): a real page.
+    expect(comingSoonModule("community", "construction")).toBeNull();
     // Requests shipped in the AZH track: a real page, no longer a placeholder.
     expect(comingSoonModule("requests", "construction")).toBeNull();
     expect(comingSoonModule("people", "real_estate")).toBeNull();

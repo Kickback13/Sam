@@ -13,6 +13,7 @@ import { useHydrated } from "@/lib/use-hydrated";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import { createPost } from "../server/actions";
+import { communityTerms, type CommunityKind } from "../terms";
 
 const EMPTY = {
   title: "",
@@ -30,12 +31,15 @@ export function PostComposer({
   allowPin = false,
   defaultKind = "update",
   postingAs,
+  kind: community = "real_estate",
 }: {
   workspaceId: string;
   allowPin?: boolean;
   defaultKind?: "update" | "deal";
   postingAs: string;
+  kind?: CommunityKind;
 }) {
+  const terms = communityTerms(community);
   const router = useRouter();
   const hydrated = useHydrated();
   const [pending, start] = useTransition();
@@ -85,7 +89,7 @@ export function PostComposer({
               onClick={() => setKind(k)}
               className={`min-h-9 rounded px-3 text-sm font-semibold ${kind === k ? "bg-brand-ink text-white" : "text-muted-foreground"}`}
             >
-              {k === "update" ? "Update" : "Share a deal"}
+              {k === "update" ? "Update" : terms.shareLabel}
             </button>
           ))}
         </div>
@@ -102,7 +106,7 @@ export function PostComposer({
       </Field>
       {kind === "deal" && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Field id="pc-type" label="Type" help="e.g. multifamily">
+          <Field id="pc-type" label={terms.typeLabel} help={terms.typeHelp}>
             <Input
               id="pc-type"
               value={v.property_type}
@@ -110,16 +114,18 @@ export function PostComposer({
               onChange={set("property_type")}
             />
           </Field>
-          <Field id="pc-units" label="Units" error={err("units")}>
-            <Input
-              id="pc-units"
-              inputMode="numeric"
-              value={v.units}
-              onChange={set("units")}
-              aria-invalid={Boolean(err("units"))}
-            />
-          </Field>
-          <Field id="pc-price" label="Price ($)" error={err("price")}>
+          {terms.showUnits && (
+            <Field id="pc-units" label="Units" error={err("units")}>
+              <Input
+                id="pc-units"
+                inputMode="numeric"
+                value={v.units}
+                onChange={set("units")}
+                aria-invalid={Boolean(err("units"))}
+              />
+            </Field>
+          )}
+          <Field id="pc-price" label={terms.priceLabel} error={err("price")}>
             <Input
               id="pc-price"
               inputMode="decimal"

@@ -9,6 +9,9 @@ export const MEMBER_TYPES = [
   { value: "property_manager", label: "Property manager" },
   { value: "partner", label: "Partner" },
   { value: "other", label: "Other" },
+  { value: "homeowner", label: "Homeowner" },
+  { value: "gc", label: "General contractor" },
+  { value: "subcontractor", label: "Subcontractor" },
 ] as const;
 export type MemberType = (typeof MEMBER_TYPES)[number]["value"];
 const MEMBER_TYPE_VALUES = MEMBER_TYPES.map((t) => t.value) as [MemberType, ...MemberType[]];

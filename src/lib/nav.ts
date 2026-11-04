@@ -190,7 +190,6 @@ const CONSTRUCTION_NAV: NavItem[] = [
     path: "community",
     icon: "community",
     group: "Engage",
-    comingIn: 8,
   },
   {
     key: "messages",
@@ -256,14 +255,6 @@ const COMING_SOON: Record<string, ComingSoonModule> = {
       "Office routing by ZIP code",
       "Estimate booking",
     ],
-  },
-  community: {
-    key: "community",
-    title: "AZH Community",
-    phase: 8,
-    summary:
-      "A community for investors and GCs who build with AZH, built on the Housing4All Network engine.",
-    bullets: ["Feed and project posts", "Member directory", "Events and broadcasts"],
   },
   messages: {
     key: "messages",

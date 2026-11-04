@@ -15,6 +15,7 @@ import { useHydrated } from "@/lib/use-hydrated";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import { MEMBER_TYPES } from "../schema";
+import { communityTerms } from "../terms";
 import {
   cancelEvent,
   createEvent,
@@ -38,10 +39,15 @@ async function copy(text: string) {
 
 export function InviteForm() {
   const ws = useWorkspace();
+  const terms = communityTerms(ws.businessType);
   const router = useRouter();
   const hydrated = useHydrated();
   const [pending, start] = useTransition();
-  const [v, setV] = useState({ email: "", name: "", member_type: "investor" });
+  const [v, setV] = useState({
+    email: "",
+    name: "",
+    member_type: terms.defaultMemberType as string,
+  });
   const [link, setLink] = useState<string | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   if (!ws.canWrite) return null;
@@ -96,7 +102,7 @@ export function InviteForm() {
             value={v.member_type}
             onChange={(e) => setV((s) => ({ ...s, member_type: e.target.value }))}
           >
-            {MEMBER_TYPES.map((t) => (
+            {MEMBER_TYPES.filter((t) => terms.memberTypes.includes(t.value)).map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
               </option>
@@ -193,7 +199,7 @@ export function MemberAdminControls({
       else {
         toast.success(
           next.status === "removed"
-            ? "Removed from the Network"
+            ? `Removed from the ${communityTerms(ws.businessType).suffix}`
             : next.status === "active"
               ? "Restored"
               : "Saved",
@@ -210,7 +216,10 @@ export function MemberAdminControls({
           onChange={(e) => setType(e.target.value)}
           className="min-w-36"
         >
-          {MEMBER_TYPES.map((t) => (
+          {MEMBER_TYPES.filter(
+            (t) =>
+              communityTerms(ws.businessType).memberTypes.includes(t.value) || t.value === type,
+          ).map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
             </option>

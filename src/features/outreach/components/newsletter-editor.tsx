@@ -207,7 +207,7 @@ export function NewsletterEditor({
               Leave both empty to include every contact. Otherwise contacts need any of the tags{" "}
               <em>and</em> any of the roles.
             </p>
-            {ws.businessType === "real_estate" && (
+            {(ws.businessType === "real_estate" || ws.businessType === "construction") && (
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -217,7 +217,9 @@ export function NewsletterEditor({
                   onChange={(e) => setD((s) => ({ ...s, network: e.target.checked }))}
                   data-testid="audience-network"
                 />
-                Only Housing4All Network members
+                {ws.businessType === "construction"
+                  ? `Only ${ws.name} Community members`
+                  : "Only Housing4All Network members"}
               </label>
             )}
             <Field
