@@ -30,6 +30,44 @@ export type FooterInfo = {
 
 export type RenderedEmail = { subject: string; html: string; text: string };
 
+export type EmailLanguage = "en" | "es";
+
+/** The footer's fixed words, in each language (CAN-SPAM: always present, can't be removed). */
+const FOOTER_TEXT: Record<EmailLanguage, { unsubscribe: string; oneClick: string }> = {
+  en: { unsubscribe: "Unsubscribe", oneClick: "one click, no login." },
+  es: { unsubscribe: "Cancelar suscripción", oneClick: "un clic, sin iniciar sesión." },
+};
+
+/** A newsletter with an optional Spanish version (ADR-045). */
+export type BilingualNewsletter = NewsletterContent & {
+  subjectEs?: string | null;
+  preheaderEs?: string | null;
+  bodyEs?: string | null;
+};
+
+export function hasSpanishVersion(n: BilingualNewsletter): boolean {
+  return Boolean(n.subjectEs?.trim() && n.bodyEs?.trim());
+}
+
+/**
+ * The version a recipient gets: Spanish when their language is Spanish and the issue has a
+ * Spanish version; English otherwise.
+ */
+export function newsletterVersion(
+  n: BilingualNewsletter,
+  contactLanguage: string | null | undefined,
+): { language: EmailLanguage; content: NewsletterContent } {
+  if (contactLanguage === "es" && hasSpanishVersion(n))
+    return {
+      language: "es",
+      content: { subject: n.subjectEs!, preheader: n.preheaderEs ?? null, body: n.bodyEs! },
+    };
+  return {
+    language: "en",
+    content: { subject: n.subject, preheader: n.preheader ?? null, body: n.body },
+  };
+}
+
 export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -144,14 +182,19 @@ function blocksToText(blocks: Block[]): string {
 
 export const UNSUBSCRIBE_PLACEHOLDER = "#unsubscribe-link-added-when-sent";
 
-export function renderNewsletter(content: NewsletterContent, footer: FooterInfo): RenderedEmail {
+export function renderNewsletter(
+  content: NewsletterContent,
+  footer: FooterInfo,
+  language: EmailLanguage = "en",
+): RenderedEmail {
+  const words = FOOTER_TEXT[language];
   const blocks = parseBody(content.body);
   const unsub = footer.unsubscribeUrl ?? UNSUBSCRIBE_PLACEHOLDER;
   const pre = content.preheader?.trim();
   const address = escapeHtml(footer.mailingAddress).replace(/\n/g, "<br>");
 
   const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(content.subject)}</title></head>
+<html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(content.subject)}</title></head>
 <body style="margin:0;padding:0;background:#f4f4f5">
 ${pre ? `<div style="display:none;max-height:0;overflow:hidden">${escapeHtml(pre)}</div>` : ""}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f4f5"><tr><td align="center" style="padding:24px 12px">
@@ -161,7 +204,7 @@ ${blocksToHtml(blocks)}
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px"><tr><td style="padding:16px 24px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#444444">
 <p style="margin:0 0 8px"><strong>${escapeHtml(footer.senderName)}</strong><br>${address}</p>
 <p style="margin:0 0 8px">${escapeHtml(footer.reason)}</p>
-<p style="margin:0"><a href="${escapeHtml(unsub)}" style="color:#007B82">Unsubscribe</a> — one click, no login.</p>
+<p style="margin:0"><a href="${escapeHtml(unsub)}" style="color:#007B82">${words.unsubscribe}</a> — ${words.oneClick}</p>
 </td></tr></table>
 </td></tr></table>
 </body></html>`;
@@ -174,13 +217,15 @@ ${blocksToHtml(blocks)}
     footer.mailingAddress,
     "",
     footer.reason,
-    `Unsubscribe: ${unsub}`,
+    `${words.unsubscribe}: ${unsub}`,
   ].join("\n");
 
   return { subject: content.subject.trim(), html, text };
 }
 
 /** "You're receiving this because you're a contact of {workspace}." */
-export function defaultReason(workspaceName: string): string {
-  return `You're receiving this because you're a contact of ${workspaceName}.`;
+export function defaultReason(workspaceName: string, language: EmailLanguage = "en"): string {
+  return language === "es"
+    ? `Recibe este mensaje porque es un contacto de ${workspaceName}.`
+    : `You're receiving this because you're a contact of ${workspaceName}.`;
 }

@@ -114,6 +114,8 @@ Newsletters:
 
 Every email gets an unsubscribe link and the mailing address from Settings → Outreach. Sending is **Not connected** until Resend is set up.
 
+**Spanish version.** Click **Add Spanish version** under the message and write a Spanish subject and message (the preview text is optional). Contacts whose language is **Spanish** get that version, with the footer and unsubscribe link in Spanish. Everyone else gets English. The audience check says how many prefer Spanish, and the preview has an **English / Español** switch. With no Spanish version, everyone gets English.
+
 ### Texts
 
 Every contact page (Housing4All and AZH) has a **Texts** card: the conversation, and a box to send one text.

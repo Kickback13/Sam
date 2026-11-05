@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Eye, Loader2, Save, Send, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Copy, Eye, Languages, Loader2, Save, Send, ShieldAlert, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -18,7 +18,7 @@ import { useHydrated } from "@/lib/use-hydrated";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import { BLOCK_LABELS, type BlockCode } from "../compliance";
-import { defaultReason, renderNewsletter } from "../render";
+import { defaultReason, newsletterVersion, renderNewsletter, type EmailLanguage } from "../render";
 import type { Audience } from "../schema";
 import {
   copyNewsletter,
@@ -31,6 +31,8 @@ export type AudienceCheck = {
   matched: number;
   sendable: number;
   duplicates: number;
+  /** Sendable contacts whose language is Spanish. */
+  spanishSendable: number;
   byCode: Partial<Record<BlockCode, number>>;
   blockedSample: { contactId: string; name: string; email: string | null; reasons: BlockCode[] }[];
 };
@@ -39,6 +41,9 @@ type Draft = {
   subject: string;
   preheader: string;
   body: string;
+  subjectEs: string;
+  preheaderEs: string;
+  bodyEs: string;
   tags: string;
   roles: string[];
   network: boolean;
@@ -56,6 +61,9 @@ export function NewsletterEditor({
     subject: string;
     preheader: string | null;
     body: string;
+    subjectEs: string | null;
+    preheaderEs: string | null;
+    bodyEs: string | null;
     audience: Audience;
   };
   footer: { senderName: string | null; mailingAddress: string | null; workspaceName: string };
@@ -72,6 +80,9 @@ export function NewsletterEditor({
     subject: newsletter.subject,
     preheader: newsletter.preheader ?? "",
     body: newsletter.body,
+    subjectEs: newsletter.subjectEs ?? "",
+    preheaderEs: newsletter.preheaderEs ?? "",
+    bodyEs: newsletter.bodyEs ?? "",
     tags: newsletter.audience.tags.join(", "),
     roles: newsletter.audience.roles,
     network: newsletter.audience.network,
@@ -81,27 +92,34 @@ export function NewsletterEditor({
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [copyTo, setCopyTo] = useState(copyTargets[0]?.id ?? "");
+  const [showEs, setShowEs] = useState(Boolean(newsletter.bodyEs));
+  const [previewLang, setPreviewLang] = useState<EmailLanguage>("en");
+  const hasEs = Boolean(d.subjectEs.trim() && d.bodyEs.trim());
+  const shownLang: EmailLanguage = previewLang === "es" && hasEs ? "es" : "en";
   const dirty = JSON.stringify(d) !== JSON.stringify(saved);
   const err = (k: string) => errors[k]?.[0];
 
-  const preview = useMemo(
-    () =>
-      renderNewsletter(
-        { subject: d.subject, preheader: d.preheader, body: d.body },
-        {
-          senderName: footer.senderName ?? "[Sender name — Settings → Outreach]",
-          mailingAddress: footer.mailingAddress ?? "[Mailing address — Settings → Outreach]",
-          reason: defaultReason(footer.workspaceName),
-          unsubscribeUrl: null,
-        },
-      ),
-    [d.subject, d.preheader, d.body, footer],
-  );
+  const preview = useMemo(() => {
+    const v = newsletterVersion(d, shownLang);
+    return renderNewsletter(
+      v.content,
+      {
+        senderName: footer.senderName ?? "[Sender name — Settings → Outreach]",
+        mailingAddress: footer.mailingAddress ?? "[Mailing address — Settings → Outreach]",
+        reason: defaultReason(footer.workspaceName, v.language),
+        unsubscribeUrl: null,
+      },
+      v.language,
+    );
+  }, [d, shownLang, footer]);
 
   const values = () => ({
     subject: d.subject,
     preheader: d.preheader,
     body: d.body,
+    subjectEs: d.subjectEs,
+    preheaderEs: d.preheaderEs,
+    bodyEs: d.bodyEs,
     audience: {
       tags: d.tags
         .split(",")
@@ -201,6 +219,64 @@ export function NewsletterEditor({
               className="font-mono text-sm"
             />
           </Field>
+          {showEs ? (
+            <fieldset
+              className="space-y-3 rounded-md border border-dashed p-3"
+              lang="es"
+              data-testid="newsletter-es"
+            >
+              <legend className="px-1 text-sm font-bold">
+                Español (Spanish version, optional)
+              </legend>
+              <p className="text-xs text-muted-foreground" lang="en">
+                Contacts whose language is Spanish get this version, with the footer and unsubscribe
+                link in Spanish. Everyone else gets the English one. Leave it empty to send English
+                to everyone.
+              </p>
+              <Field id="nl-subject-es" label="Asunto (subject)" error={err("subjectEs")}>
+                <Input
+                  id="nl-subject-es"
+                  value={d.subjectEs}
+                  maxLength={200}
+                  onChange={(e) => setD((s) => ({ ...s, subjectEs: e.target.value }))}
+                  aria-invalid={Boolean(err("subjectEs"))}
+                  disabled={readOnly}
+                />
+              </Field>
+              <Field id="nl-preheader-es" label="Texto de vista previa (preview text)">
+                <Input
+                  id="nl-preheader-es"
+                  value={d.preheaderEs}
+                  maxLength={200}
+                  onChange={(e) => setD((s) => ({ ...s, preheaderEs: e.target.value }))}
+                  disabled={readOnly}
+                />
+              </Field>
+              <Field id="nl-body-es" label="Mensaje (message)" error={err("bodyEs")}>
+                <Textarea
+                  id="nl-body-es"
+                  rows={10}
+                  value={d.bodyEs}
+                  onChange={(e) => setD((s) => ({ ...s, bodyEs: e.target.value }))}
+                  aria-invalid={Boolean(err("bodyEs"))}
+                  disabled={readOnly}
+                  className="font-mono text-sm"
+                />
+              </Field>
+            </fieldset>
+          ) : (
+            !readOnly && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEs(true)}
+                data-testid="newsletter-add-es"
+              >
+                <Languages aria-hidden /> Add Spanish version
+              </Button>
+            )
+          )}
           <fieldset className="space-y-3 rounded-md border p-3">
             <legend className="px-1 text-sm font-bold">Audience</legend>
             <p className="text-xs text-muted-foreground">
@@ -308,6 +384,13 @@ export function NewsletterEditor({
               : ""}
             .{dirty && <span className="text-muted-foreground"> Save to update.</span>}
           </p>
+          {check.spanishSendable > 0 && (
+            <p className="text-sm" data-testid="ac-spanish">
+              {newsletter.bodyEs
+                ? `${formatNumber(check.spanishSendable)} of them prefer Spanish and get the Spanish version.`
+                : `${formatNumber(check.spanishSendable)} of them prefer Spanish. Add a Spanish version, or they get the English one.`}
+            </p>
+          )}
           {Object.keys(check.byCode).length > 0 && (
             <ul className="space-y-1 text-sm" data-testid="ac-blocked">
               {(Object.entries(check.byCode) as [BlockCode, number][]).map(([code, n]) => (
@@ -462,6 +545,31 @@ export function NewsletterEditor({
         <h2 id="pv-h" className="flex items-center gap-2 font-sans text-base font-bold">
           <Eye className="size-4" aria-hidden /> Preview
         </h2>
+        {hasEs && (
+          <div
+            role="radiogroup"
+            aria-label="Preview language"
+            className="flex w-fit rounded-md border p-0.5 text-xs font-semibold"
+          >
+            {(["en", "es"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="radio"
+                aria-checked={shownLang === l}
+                onClick={() => setPreviewLang(l)}
+                className={
+                  shownLang === l
+                    ? "rounded bg-foreground px-2.5 py-1 text-background"
+                    : "rounded px-2.5 py-1 hover:bg-muted"
+                }
+                data-testid={`preview-lang-${l}`}
+              >
+                {l === "en" ? "English" : "Español"}
+              </button>
+            ))}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">
           Subject: <span className="font-medium text-foreground">{preview.subject || "—"}</span>
         </p>

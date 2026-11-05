@@ -287,3 +287,13 @@ ADR-044 · migration `20261113010000_h4a_spanish_booking` (additive: a new 8-arg
 - [x] New contacts from a Spanish booking are marked Spanish; existing contacts keep their language
 - [x] RLS suite `supabase/tests/h4a_spanish_booking_rls.sql` (10) · e2e (Spanish browser, switch, Spanish error, contact language, 390 px)
 - [x] Live DB: applied 2026-11-05 with `docs/db-updates/2026-11-spanish-booking.sql`; verify on live 10 passed / 0 failed / 0 leftovers
+
+## Spanish newsletters (branch `h4a/spanish-newsletters`)
+
+ADR-045 · migration `20261114010000_h4a_spanish_newsletters` (additive columns).
+
+- [x] Spanish version of an issue (editor section, preview switch, audience count of Spanish speakers)
+- [x] Per-recipient version at send time (`newsletterVersion`, unit-tested); Spanish CAN-SPAM footer; `newsletter_sends.language`
+- [x] Unsubscribe page in Spanish (`?lang=es` from the email, else the browser's language)
+- [x] RLS suite `supabase/tests/h4a_spanish_newsletters_rls.sql` (12) · e2e (Spanish version, count, preview, Spanish unsubscribe, 390 px)
+- [ ] Live DB: combined SQL + verify in `docs/db-updates/2026-11-spanish-newsletters*.sql`

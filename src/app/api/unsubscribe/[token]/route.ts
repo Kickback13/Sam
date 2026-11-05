@@ -19,7 +19,8 @@ export async function POST(request: Request, { params }: RouteContext<"/api/unsu
     return new NextResponse("Something went wrong. Please try again.", { status: 500 });
   }
   if (form?.get("from") === "page") {
-    return NextResponse.redirect(new URL(`/unsubscribe/${token}?done=1`, request.url), 303);
+    const lang = form.get("lang") === "es" ? "&lang=es" : "";
+    return NextResponse.redirect(new URL(`/unsubscribe/${token}?done=1${lang}`, request.url), 303);
   }
   return new NextResponse(ok ? "Unsubscribed" : "Unknown link", { status: ok ? 200 : 404 });
 }

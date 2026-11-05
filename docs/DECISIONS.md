@@ -450,3 +450,20 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - **New contacts remember it:** the page calls a new 8-argument `booking_public_book(…, p_language)`. It books through the unchanged 7-argument function (same checks, limits and lock). When the language is `es`, it marks the contact Spanish **only if this booking just created it**, so a contact the team already knows keeps the language they set. An unknown language is refused.
 
 **Consequences:** additive migration `20261113010000_h4a_spanish_booking` (a new overload, nothing dropped). Spanish leads who book get Spanish follow-ups without anyone re-tagging them. A Spanish version of the owner's own text would need new settings columns, and can come later if Sam wants it.
+
+## ADR-045 — Spanish newsletters: one issue, two versions, chosen per recipient
+
+**Context:** newsletters (ADR-028) were English only. Sequences, booking and texting now handle Spanish (ADR-043/044), and `contacts.language` says who prefers it.
+
+**Decision:**
+
+- **Two versions:** a newsletter can carry a Spanish version (`subject_es`, `preheader_es`, `body_es`). A Spanish subject and message go together, and a Spanish preview line needs a message (checked by the form and the database).
+- **Who gets which:** at send time each recipient gets the version for their `contacts.language`: Spanish when they prefer Spanish and the issue has one, otherwise English. One pure function, `newsletterVersion` (`src/features/outreach/render.ts`), decides, and it is unit-tested. The audience is the same and every gate is checked the same; only the words change.
+- **CAN-SPAM in both languages:**
+  - the footer's fixed words and the default "why you're receiving this" line are translated;
+  - the mailing address and the one-click unsubscribe stay in every email;
+  - Spanish emails link to `/unsubscribe/<token>?lang=es`, so the unsubscribe page and its confirmation show in Spanish. Without the link parameter, the page follows the browser's language.
+- **Logged:** `newsletter_sends.language` records which version each recipient was sent. It is set at insert and can't be edited.
+- **Editor:** the editor shows how many sendable contacts prefer Spanish, and the preview has an English / Español switch.
+
+**Consequences:** additive migration `20261114010000_h4a_spanish_newsletters`. Nothing sends until Resend is connected, as before. If an issue has no Spanish version, Spanish speakers get English and the audience check says so.

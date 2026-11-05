@@ -192,3 +192,79 @@ test("Phase 4A: one-click unsubscribe works without signing in", async ({ page, 
   );
   expect(Number(n)).toBe(1);
 });
+
+test("Spanish newsletter: Spanish version, audience count, Spanish preview and unsubscribe", async ({
+  page,
+}) => {
+  // A Spanish-speaking contact (the tag keeps it inside this file's cleanup).
+  const [lupe] = await sql<{ id: string }>(
+    `insert into public.contacts (workspace_id, first_name, last_name, tags, emails, language)
+     values (${WS}, 'Lupe', 'Lectora', '{e2e-nl,e2e-nl-es}',
+       '[{"value":"lupe@example.test","is_primary":true}]', 'es') returning id`,
+    [E2E_REALTY],
+  );
+  await signIn(page);
+  await goto(page, `${BASE}/outreach`);
+  await page.getByTestId("new-newsletter").click();
+  await page.waitForURL(/\/outreach\/newsletters\/[0-9a-f-]+$/);
+  await page.getByLabel(/Subject line/).fill("E2E bilingual update");
+  await page.getByLabel("Message", { exact: true }).fill("# Market update\n\nRents are up.");
+  await page.getByLabel("Tags").fill("e2e-nl-es");
+
+  // A Spanish message without a Spanish subject is refused.
+  await page.getByTestId("newsletter-add-es").click();
+  const es = page.getByTestId("newsletter-es");
+  await es.getByLabel("Mensaje (message)").fill("# Actualización del mercado\n\nLas rentas suben.");
+  await page.getByTestId("save-newsletter").click();
+  await expect(es).toContainText("Add a Spanish subject line");
+  await es.getByLabel("Asunto (subject)").fill("Actualización bilingüe");
+  await page.getByTestId("save-newsletter").click();
+  await expectToast(page, "Newsletter saved");
+
+  // The audience check says who gets the Spanish version.
+  await expect(page.getByTestId("ac-sendable")).toHaveText("1");
+  await expect(page.getByTestId("ac-spanish")).toContainText(
+    "1 of them prefer Spanish and get the Spanish version.",
+  );
+
+  // Preview in Spanish: the CAN-SPAM footer is in Spanish too.
+  await page.getByTestId("preview-lang-es").click();
+  await expect(previewText(page)).toContainText("Actualización del mercado");
+  await expect(previewText(page)).toContainText("Cancelar suscripción");
+  await expect(previewText(page)).toContainText("100 Test St, San Diego, CA 92104");
+  await page.getByTestId("preview-lang-en").click();
+  await expect(previewText(page)).toContainText("Market update");
+
+  // Still nothing can be sent (email isn't connected).
+  await expect(page.getByTestId("send-newsletter")).toBeDisabled();
+  const [saved] = await sql<{ subject_es: string; body_es: string }>(
+    `select subject_es, body_es from public.newsletters where workspace_id = ${WS} and subject = 'E2E bilingual update'`,
+    [E2E_REALTY],
+  );
+  expect(saved.subject_es).toBe("Actualización bilingüe");
+
+  // A Spanish recipient's unsubscribe page is in Spanish, and stays Spanish after the click.
+  const [send] = await sql<{ token: string }>(
+    `insert into public.newsletter_sends (workspace_id, newsletter_id, contact_id, email, status, language)
+     select n.workspace_id, n.id, $2::uuid, 'lupe@example.test', 'queued', 'es'
+     from public.newsletters n where n.workspace_id = ${WS} and n.subject = 'E2E bilingual update'
+     returning unsubscribe_token as token`,
+    [E2E_REALTY, lupe.id],
+  );
+  await goto(page, `/unsubscribe/${send.token}?lang=es`);
+  await expect(page.getByRole("heading", { name: /¿Cancelar la suscripción a/ })).toBeVisible();
+  await page.getByTestId("confirm-unsubscribe").click();
+  await expect(page.getByTestId("unsubscribed")).toHaveText("Su suscripción fue cancelada");
+  await expect(page).toHaveURL(/lang=es/);
+
+  // Phone width with the Spanish section open.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await goto(page, `${BASE}/outreach`);
+  await page.getByRole("link", { name: "E2E bilingual update" }).click();
+  await page.waitForURL(/\/outreach\/newsletters\/[0-9a-f-]+$/);
+  await expect(page.getByTestId("newsletter-es")).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});

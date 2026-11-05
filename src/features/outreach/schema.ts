@@ -65,12 +65,25 @@ export function parseAudience(raw: unknown): Audience {
   return r.success ? r.data : { tags: [], roles: [], network: false };
 }
 
-export const newsletterSchema = z.object({
-  subject: requiredText(200, "Add a subject line"),
-  preheader: optionalText(200),
-  body: z.string().max(50000, "Keep it under 50,000 characters").default(""),
-  audience: audienceSchema,
-});
+export const newsletterSchema = z
+  .object({
+    subject: requiredText(200, "Add a subject line"),
+    preheader: optionalText(200),
+    body: z.string().max(50000, "Keep it under 50,000 characters").default(""),
+    // Optional Spanish version (ADR-045): a subject and a body, or neither.
+    subjectEs: optionalText(200),
+    preheaderEs: optionalText(200),
+    bodyEs: optionalText(50000),
+    audience: audienceSchema,
+  })
+  .superRefine((v, ctx) => {
+    if (v.bodyEs && !v.subjectEs)
+      ctx.addIssue({ code: "custom", path: ["subjectEs"], message: "Add a Spanish subject line" });
+    if (v.subjectEs && !v.bodyEs)
+      ctx.addIssue({ code: "custom", path: ["bodyEs"], message: "Write the Spanish version" });
+    if (v.preheaderEs && !v.bodyEs)
+      ctx.addIssue({ code: "custom", path: ["bodyEs"], message: "Write the Spanish version" });
+  });
 export type NewsletterInput = z.input<typeof newsletterSchema>;
 
 export const suppressionSchema = z.object({
