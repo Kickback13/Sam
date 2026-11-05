@@ -9,6 +9,8 @@ import { ComplianceBadges } from "@/components/common/compliance-badges";
 import { PageHeader } from "@/components/common/page-header";
 import { DeleteContactButton } from "@/components/people/delete-contact-button";
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
+import { ContactHub } from "@/features/azh/components/contact-hub";
+import { getContactHub } from "@/features/azh/server/hub";
 import { ContactReachability } from "@/features/outreach/components/contact-reachability";
 import { TaskList } from "@/components/tasks/task-list";
 import { Badge } from "@/components/ui/badge";
@@ -49,11 +51,20 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
   const c = await getContact(workspace.id, id);
   if (!c || c.deleted_at) notFound();
 
+  const isAzh = workspace.businessType === "construction";
   const [links, activity, tasks] = await Promise.all([
     getContactLinks(workspace.id, id),
-    getSubjectActivity(workspace.id, [{ type: "contact", id }]),
+    isAzh ? Promise.resolve([]) : getSubjectActivity(workspace.id, [{ type: "contact", id }]),
     getTasks(workspace.id, { related: [{ type: "contact", id }], status: "open" }),
   ]);
+  // AZH: one communication hub per contact (calls, notes, requests, visits, estimates, projects).
+  const hub = isAzh
+    ? await getContactHub(
+        workspace.id,
+        id,
+        links.deals.map((d) => d.id),
+      )
+    : null;
 
   const name = contactDisplayName(c);
   const emails = (Array.isArray(c.emails) ? c.emails : []) as Entry[];
@@ -307,17 +318,21 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
               />
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Timeline</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-1">
-              <ActivityTimeline
-                items={activity}
-                emptyText="No activity yet. Log a call or add a note above."
-              />
-            </CardContent>
-          </Card>
+          {hub ? (
+            <ContactHub entries={hub} />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Timeline</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-1">
+                <ActivityTimeline
+                  items={activity}
+                  emptyText="No activity yet. Log a call or add a note above."
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </>
