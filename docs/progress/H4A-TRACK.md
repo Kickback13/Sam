@@ -306,4 +306,4 @@ Seed migration `20261115010000_h4a_seed_bilingual_demo`: **Demo workspace only**
 - [x] One Spanish-speaking and one English-speaking demo contact enrolled in each, first step due now (nothing sends)
 - [x] Spanish version of the demo newsletter
 - [x] e2e `h4a-bilingual-demo.spec.ts` (Spanish step for the Spanish contact; Spanish newsletter preview)
-- [ ] Live DB: `docs/db-updates/2026-11-bilingual-demo.sql` + read-only verify (expect `2|5|5|4|2|1|0`)
+- [x] Live DB: applied 2026-11-05 with `docs/db-updates/2026-11-bilingual-demo.sql`; read-only verify on live `2|5|5|4|2|1|0` (0 outside Demo)
