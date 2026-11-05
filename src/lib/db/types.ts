@@ -4223,6 +4223,135 @@ export type Database = {
           },
         ];
       };
+      sms_messages: {
+        Row: {
+          blocks: NonNullable<Json>;
+          body: string;
+          contact_id: string | null;
+          created_at: string;
+          direction: string;
+          error: string | null;
+          from_number: string | null;
+          id: string;
+          keyword: string | null;
+          provider_sid: string | null;
+          sent_by: string | null;
+          status: string;
+          to_number: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          blocks?: NonNullable<Json>;
+          body: string;
+          contact_id?: string | null;
+          created_at?: string;
+          direction: string;
+          error?: string | null;
+          from_number?: string | null;
+          id?: string;
+          keyword?: string | null;
+          provider_sid?: string | null;
+          sent_by?: string | null;
+          status: string;
+          to_number: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          blocks?: NonNullable<Json>;
+          body?: string;
+          contact_id?: string | null;
+          created_at?: string;
+          direction?: string;
+          error?: string | null;
+          from_number?: string | null;
+          id?: string;
+          keyword?: string | null;
+          provider_sid?: string | null;
+          sent_by?: string | null;
+          status?: string;
+          to_number?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sms_messages_sent_by_fkey";
+            columns: ["sent_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sms_messages_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "sms_messages_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sms_settings: {
+        Row: {
+          created_at: string;
+          enabled: boolean;
+          from_number: string | null;
+          help_reply: string | null;
+          messaging_service_sid: string | null;
+          updated_at: string;
+          updated_by: string | null;
+          webhook_token_hash: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          enabled?: boolean;
+          from_number?: string | null;
+          help_reply?: string | null;
+          messaging_service_sid?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          webhook_token_hash?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          enabled?: boolean;
+          from_number?: string | null;
+          help_reply?: string | null;
+          messaging_service_sid?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          webhook_token_hash?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sms_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sms_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tasks: {
         Row: {
           assigned_to: string | null;
@@ -4754,6 +4883,19 @@ export type Database = {
       receptionist_record_call: { Args: { p_call: Json; p_token: string }; Returns: string };
       reorder_stages: {
         Args: { p_pipeline_id: string; p_stage_ids: string[] };
+        Returns: undefined;
+      };
+      sms_create_token: { Args: { p_workspace_id: string }; Returns: string };
+      sms_receive: {
+        Args: { p_body: string; p_from: string; p_sid: string; p_to: string; p_token: string };
+        Returns: {
+          contact_id: string;
+          help_reply: string;
+          keyword: string;
+        }[];
+      };
+      sms_status: {
+        Args: { p_error: string; p_sid: string; p_status: string };
         Returns: undefined;
       };
       workspace_counts: { Args: { p_workspace_id: string }; Returns: Json };

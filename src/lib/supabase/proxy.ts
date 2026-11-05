@@ -21,6 +21,8 @@ const PUBLIC_PATHS = [
   // Booking page (Phase 4C): leads book without an account; Sam's private calendar feed.
   "/b",
   "/api/calendar",
+  // Texting (Phase 4D): Twilio inbound + delivery-status webhooks (token/signature, no login).
+  "/api/sms",
 ];
 
 // Network (Phase 6): the invite page and the install files (manifest, icons) open without a login;

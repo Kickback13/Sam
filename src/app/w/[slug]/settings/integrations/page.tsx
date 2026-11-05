@@ -87,6 +87,15 @@ export default async function IntegrationsPage({
                       : "Connect and import →"}
                   </Link>
                 )}
+                {i.provider === "twilio" && isAdmin && (
+                  <Link
+                    href={`/w/${slug}/settings/integrations/sms`}
+                    className="mr-4 inline-block text-sm font-semibold underline"
+                    data-testid="sms-setup-link"
+                  >
+                    Texting setup →
+                  </Link>
+                )}
                 {i.provider === "data_api" &&
                   isAdmin &&
                   workspace.businessType === "real_estate" && (
