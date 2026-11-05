@@ -99,6 +99,15 @@ test("Phase 3B: connect RentCast (Vault), fetch record + value with sources, mon
   await expect(card.getByTestId("fetch-rent")).toBeDisabled();
   await expect(card).toContainText("This month's limit is used up");
 
+  // The estimate's comparable is suggested as a comp from the saved answer (no new request),
+  // labeled as a list price, not a sale.
+  const suggested = page
+    .getByTestId("suggested-comp")
+    .filter({ hasText: "200 Sample St, San Diego, CA 92104" });
+  await expect(suggested).toContainText("$5,900,000 · list price");
+  await expect(suggested).toContainText("RentCast value estimate comparable");
+  await expect(suggested).toContainText("0.4 mi away");
+
   // Exactly two requests reached "RentCast", both with the stored key.
   expect(mock.requests.map((r) => r.path)).toEqual(["/v1/properties", "/v1/avm/value"]);
   expect(mock.requests.every((r) => r.key === RENTCAST_KEY)).toBe(true);

@@ -391,3 +391,21 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - **Off until keys exist:** with no keys, the button is hidden and the team page says "not connected". The key pair is free (`npx web-push generate-vapid-keys`) and goes into Vercel.
 
 **Consequences:** on iPhone it works once the app is installed to the home screen (Apple's rule). A failed notification never undoes a post.
+
+## ADR-042 — Automatic comps: suggested from data already in the workspace, added by a person
+
+**Context:** comps were entered by hand (ADR-026). The Phase 3A plan left automatic comps for later. Buying a comps feed costs money, and scraping is ruled out. The workspace already holds three kinds of comparable data, each with its source.
+
+**Decision:**
+
+- The analysis page suggests comps, computed on request under the user's session (RLS). Nothing is stored, no migration is needed, and **no outside request is made**. Suggestions come from three places:
+  - **Sales on file:** another property's last sale price and date. It is suggested only if the price has a source in `field_sources`. The comp's label is "Last sale on file · {that source}" and its as-of is that source's fetched date.
+  - **Comps on other properties:** used as saved, with the same source, link and as-of. Their distance was measured from a different property, so it is dropped.
+  - **RentCast comparables** inside the value and rent estimates already fetched for this property. They are listings, so a sale comparable is labeled "list price, not a recorded sale" and has no sale date.
+- **Ranking** is one pure module, `src/features/h4a/comps/suggest.ts` (unit-tested):
+  - **Filters:** within 3 mi when both sides have coordinates, otherwise the same ZIP, then the same city. 2–4-unit properties are compared with 2–4 units, and 5+ units with 5+ (between 1/4x and 4x). Building types must be compatible. Sales must be from the last 3 years and rents from the last 2.
+  - **Score:** a match score out of 100 (location 40, size 30, recency 30), shown on each suggestion.
+  - **Skipped:** the property itself, addresses already saved as its comps, and duplicates. Only one suggestion is kept per address and kind, in order of preference: a sale on file, then a saved comp, then RentCast.
+- **A person adds them.** Each suggestion has **Add**, and there is an **Add all** button. The browser sends only suggestion keys. The server recomputes the suggestions and saves exactly those rows, so a saved comp always has its source's own numbers. Viewers see suggestions but can't add them. Each add is audited as `comp.create` with `suggested: true`.
+
+**Consequences:** free and always current, and the suggestions get better as Sam's data grows: imported properties with sale dates, verified records, RentCast pulls. Each page view reads at most 2,000 recorded sales and 2,000 saved comps from the workspace. A paid comps feed could be added later as a fourth origin behind the same panel.

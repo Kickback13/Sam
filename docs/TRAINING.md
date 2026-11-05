@@ -95,7 +95,7 @@ Property records with owner, units, size and year built, each with its source. O
 
 - price per unit, rents, NOI, cap rate, DSCR and cash flow, updating as you type;
 - red flags (for example, negative cash flow, thin debt coverage, a price above the comps);
-- comps and saved scenarios;
+- comps and saved scenarios. **Suggested comps** lists nearby, similar-size sales and rents the workspace already has: sales on file for other properties, comps saved on other properties, and comparables from RentCast estimates already fetched. Each shows how far away it is, a match score and its source. Click **Add** (or **Add all**) to keep one. Nothing is added until you do;
 - **PDF** export.
 
 **Analyze** lists every analyzed property with its key numbers.

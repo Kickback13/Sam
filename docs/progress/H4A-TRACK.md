@@ -255,3 +255,14 @@ Plan: `docs/phases/PHASE-3B-PLAN.md` · ADR-034.
 - [x] Live DB: applied with the verify (see PR) · key not added yet (Sam's account, his plan choice)
 
 Shared files: `src/lib/integrations.ts` (label), `src/app/w/[slug]/settings/integrations/page.tsx` (link), `playwright.config.ts` (mock URL), `src/lib/db/types.ts` (regenerated).
+
+## Automatic comps (branch `h4a/comps`)
+
+ADR-042. **No migration**, and no outside requests.
+
+- [x] Suggestion + ranking module, pure and unit-tested (`src/features/h4a/comps/suggest.ts`, 13 tests)
+- [x] Server loader (`comp-suggestions.ts`) + `addSuggestedComps` action (recomputes by key, audited)
+- [x] "Suggested comps" on the analysis page (Add / Add all, source + as-of, match score, distance)
+- [x] E2E: workspace suggestions with sources, unsourced/old sales skipped, nothing saved until added; RentCast comparable from the saved answer; 390 px
+
+Shared files: `docs/DECISIONS.md` (ADR-042), `docs/TRAINING.md`.
