@@ -14,7 +14,7 @@ test.beforeAll(async () => {
     E2E_REALTY,
   ]);
   await sql(
-    `delete from public.contacts where workspace_id = ${WS} and (email_keys && array['booker@example.test', 'racer@example.test'])`,
+    `delete from public.contacts where workspace_id = ${WS} and (email_keys && array['booker@example.test', 'racer@example.test', 'reserva@example.test'])`,
     [E2E_REALTY],
   );
 });
@@ -140,4 +140,60 @@ test("Phase 4C: booking page — set up, a lead books signed out, staff see it, 
     expect(overflow).toBeLessThanOrEqual(0);
   }
   await lead.close();
+});
+
+test("Spanish booking page: picked from the browser, switchable, the new contact is Spanish", async ({
+  browser,
+}) => {
+  const es = await browser.newContext({ locale: "es-MX" });
+  const pub = await es.newPage();
+  await goto(pub, `/b/${E2E_REALTY}`);
+  await expect(pub.getByTestId("booking-shell")).toHaveAttribute("data-lang", "es");
+  await expect(pub.getByRole("heading", { name: "Elija un día" })).toBeVisible();
+  await expect(pub.getByText(/minutos/)).toBeVisible();
+
+  // The switch goes to English and back.
+  await pub.getByTestId("booking-switch-lang").click();
+  await pub.waitForURL(/\?lang=en$/);
+  await expect(pub.getByRole("heading", { name: "Pick a day" })).toBeVisible();
+  await pub.getByTestId("booking-switch-lang").click();
+  await pub.waitForURL(/\?lang=es$/);
+  await hydrated(pub);
+
+  // A form error comes back in Spanish.
+  await pub.getByTestId("slot-time").first().click();
+  await pub.getByLabel("Su nombre").fill("Lupe Reserva");
+  await pub.getByLabel("Teléfono").fill("123");
+  await pub.getByTestId("confirm-booking").click();
+  await expect(
+    pub.getByText("Escriba un número de teléfono de EE. UU. válido").first(),
+  ).toBeVisible();
+
+  // Book in Spanish.
+  await pub.getByLabel("Teléfono").fill("");
+  await pub.getByLabel("Correo electrónico").fill("reserva@example.test");
+  await pub.getByTestId("confirm-booking").click();
+  await pub.waitForURL(/\/b\/e2e-realty\/booked\?.*lang=es/);
+  await expect(pub.getByTestId("booked")).toContainText("Su cita está reservada");
+  await expect(pub.getByTestId("booked-time")).toContainText(/de (noviembre|diciembre|enero)/);
+  const ics = await es.request.get(
+    (await pub.getByTestId("add-to-calendar").getAttribute("href"))!,
+  );
+  expect(await ics.text()).toContain("BEGIN:VCALENDAR");
+
+  // The contact this booking created is marked Spanish (so follow-ups use Spanish versions).
+  const [c] = await sql<{ language: string }>(
+    `select language from public.contacts where workspace_id = ${WS} and email_keys @> array['reserva@example.test']`,
+    [E2E_REALTY],
+  );
+  expect(c.language).toBe("es");
+
+  // Phone width in Spanish (longer words).
+  await pub.setViewportSize({ width: 390, height: 844 });
+  await goto(pub, `/b/${E2E_REALTY}?lang=es`);
+  const overflow = await pub.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+  await es.close();
 });

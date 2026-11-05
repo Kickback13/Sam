@@ -19,6 +19,7 @@ import {
   parseHours,
   publicBookingSchema,
 } from "../booking/booking";
+import { BOOKING_TEXT, bookingError, type BookingLang } from "../booking/i18n";
 
 const ADMIN_ONLY = "Only an owner or admin can change the booking page.";
 
@@ -202,13 +203,21 @@ export type PublicBookingResult = { bookingId: string; startsAt: string; endsAt:
 export async function bookPublicSlot(
   input: z.input<typeof publicBookingSchema>,
 ): Promise<ActionResult<PublicBookingResult>> {
+  const lang: BookingLang = input?.language === "es" ? "es" : "en";
   const parsed = publicBookingSchema.safeParse(input);
-  if (!parsed.success)
+  if (!parsed.success) {
+    const fieldErrors = Object.fromEntries(
+      Object.entries(zodFieldErrors(parsed.error)).map(([k, msgs]) => [
+        k,
+        (msgs ?? []).map((m) => bookingError(m, lang)),
+      ]),
+    );
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Check the form",
-      fieldErrors: zodFieldErrors(parsed.error),
+      error: bookingError(parsed.error.issues[0]?.message ?? "Check the form", lang),
+      fieldErrors,
     };
+  }
   const v = parsed.data;
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("booking_public_book", {
@@ -219,16 +228,17 @@ export async function bookPublicSlot(
     p_phone: v.phone,
     p_note: v.note,
     p_client_key: (await clientKey(v.slug)) as string,
+    p_language: v.language,
   });
   if (error) {
     // Our own messages (validation, taken slot, limits) are safe to show.
     if (["22023", "PT404", "PT409", "PT429"].includes(error.code ?? ""))
-      return { ok: false, error: error.message };
+      return { ok: false, error: bookingError(error.message, lang) };
     console.error("booking_public_book failed", { code: error.code });
-    return { ok: false, error: "Something went wrong. Please try again or call us." };
+    return { ok: false, error: BOOKING_TEXT[lang].genericError };
   }
   const row = data?.[0];
-  if (!row) return { ok: false, error: "Something went wrong. Please try again or call us." };
+  if (!row) return { ok: false, error: BOOKING_TEXT[lang].genericError };
   return {
     ok: true,
     data: { bookingId: row.booking_id, startsAt: row.starts_at, endsAt: row.ends_at },

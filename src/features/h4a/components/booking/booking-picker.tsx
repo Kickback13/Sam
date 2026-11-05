@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import { formatSlotLong, type SlotDay } from "../../booking/booking";
+import { BOOKING_LOCALE, BOOKING_TEXT, isSlotTaken, type BookingLang } from "../../booking/i18n";
 import { bookPublicSlot } from "../../server/booking";
 
 /** Pick a day, a time, then leave a name and a way to reach you. */
@@ -19,11 +20,14 @@ export function BookingPicker({
   slug,
   days,
   timeZone,
+  lang,
 }: {
   slug: string;
   days: SlotDay[];
   timeZone: string;
+  lang: BookingLang;
 }) {
+  const t = BOOKING_TEXT[lang];
   const router = useRouter();
   const [dayKey, setDayKey] = useState(days[0]?.key ?? "");
   const [startsAt, setStartsAt] = useState<string | null>(null);
@@ -35,7 +39,7 @@ export function BookingPicker({
   if (!days.length)
     return (
       <p className="rounded-md bg-muted px-3 py-3 text-sm" data-testid="no-slots">
-        No open times right now. Please check back soon or call us.
+        {t.noSlots}
       </p>
     );
 
@@ -57,17 +61,22 @@ export function BookingPicker({
               phone: String(f.get("phone") ?? ""),
               note: String(f.get("note") ?? ""),
               website: String(f.get("website") ?? ""),
+              language: lang,
             });
             if (!r.ok) {
               setError(r.error);
               setFieldErrors(r.fieldErrors ?? {});
-              if (/just taken/.test(r.error)) {
+              if (isSlotTaken(r.error)) {
                 setStartsAt(null);
                 router.refresh();
               }
               return;
             }
-            const q = new URLSearchParams({ start: r.data.startsAt, end: r.data.endsAt });
+            const q = new URLSearchParams({
+              start: r.data.startsAt,
+              end: r.data.endsAt,
+              lang,
+            });
             router.push(`/b/${slug}/booked?${q}`);
           });
         }}
@@ -77,33 +86,31 @@ export function BookingPicker({
           onClick={() => setStartsAt(null)}
           className="inline-flex items-center gap-1 text-sm font-semibold text-brand-accent-text hover:underline"
         >
-          <ArrowLeft className="size-4" aria-hidden /> Pick another time
+          <ArrowLeft className="size-4" aria-hidden /> {t.pickAnother}
         </button>
         <p className="rounded-md bg-muted px-3 py-2 font-semibold" data-testid="chosen-slot">
-          {formatSlotLong(startsAt, timeZone)}
+          {formatSlotLong(startsAt, timeZone, BOOKING_LOCALE[lang])}
         </p>
         <div className="space-y-1.5">
-          <Label htmlFor="b-name">Your name</Label>
+          <Label htmlFor="b-name">{t.yourName}</Label>
           <Input id="b-name" name="name" autoComplete="name" required maxLength={120} />
           {fieldErrors.name && <FieldError msg={fieldErrors.name[0]} />}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="b-email">Email</Label>
+            <Label htmlFor="b-email">{t.email}</Label>
             <Input id="b-email" name="email" type="email" autoComplete="email" maxLength={200} />
             {fieldErrors.email && <FieldError msg={fieldErrors.email[0]} />}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="b-phone">Phone</Label>
+            <Label htmlFor="b-phone">{t.phone}</Label>
             <Input id="b-phone" name="phone" type="tel" autoComplete="tel" maxLength={40} />
             {fieldErrors.phone && <FieldError msg={fieldErrors.phone[0]} />}
           </div>
         </div>
-        <p className="-mt-2 text-xs text-muted-foreground">
-          Email or phone — at least one, so we can reach you.
-        </p>
+        <p className="-mt-2 text-xs text-muted-foreground">{t.reachHint}</p>
         <div className="space-y-1.5">
-          <Label htmlFor="b-note">What would you like to talk about? (optional)</Label>
+          <Label htmlFor="b-note">{t.note}</Label>
           <Textarea id="b-note" name="note" rows={3} maxLength={2000} />
         </div>
         {/* Honeypot: hidden from people, bots fill it. */}
@@ -117,7 +124,7 @@ export function BookingPicker({
           </p>
         )}
         <Button type="submit" disabled={pending} data-testid="confirm-booking" className="w-full">
-          {pending && <Loader2 className="animate-spin" aria-hidden />} Book this time
+          {pending && <Loader2 className="animate-spin" aria-hidden />} {t.book}
         </Button>
       </form>
     );
@@ -130,8 +137,8 @@ export function BookingPicker({
         </p>
       )}
       <div>
-        <h2 className="mb-2 text-sm font-bold">Pick a day</h2>
-        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Day">
+        <h2 className="mb-2 text-sm font-bold">{t.pickDay}</h2>
+        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label={t.day}>
           {days.map((d) => (
             <button
               key={d.key}
@@ -152,7 +159,7 @@ export function BookingPicker({
         </div>
       </div>
       <div>
-        <h2 className="mb-2 text-sm font-bold">Pick a time</h2>
+        <h2 className="mb-2 text-sm font-bold">{t.pickTime}</h2>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" data-testid="slot-times">
           {day.slots.map((s) => (
             <Button

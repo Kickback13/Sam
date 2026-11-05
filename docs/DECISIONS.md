@@ -432,3 +432,21 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - **Spanish HELP reply:** owners and admins can set `sms_settings.help_reply_es`. AYUDA gets it, falling back to the English reply when none is set, including on Twilio retries. This answers the person who texted, as HELP already does.
 
 **Consequences:** migration `20261112010000_h4a_spanish_templates` is additive (new columns and a replaced function, no drops). Twilio's own opt-out confirmation covers English words only until Sam adds the Spanish words in Twilio's Advanced Opt-Out (`docs/ACCOUNTS.md`). Newsletters and the booking page are still English only, and can reuse the same pattern later.
+
+## ADR-044 — Spanish booking page: language from the browser or the visitor's pick; new contacts remember it
+
+**Context:** Sam's booking page (ADR-035) was English only. Many of his leads prefer Spanish, and follow-ups now have Spanish versions chosen by `contacts.language` (ADR-043).
+
+**Decision:**
+
+- **Language:** `/b/[slug]` and its confirmation page pick Spanish or English:
+  - `?lang=es|en` first, when the visitor used the **English / Español** switch;
+  - otherwise the browser's Accept-Language header (by q value);
+  - otherwise English.
+
+  One pure module (`src/features/h4a/booking/i18n.ts`, unit-tested) holds both languages' text and the Spanish for every message the booking checks can return. Dates use `es-US` (12-hour clock).
+
+- **What's translated:** the app's own text (labels, day and time names, errors, the confirmation and the calendar file's description). The owner's title, intro and location show as typed.
+- **New contacts remember it:** the page calls a new 8-argument `booking_public_book(…, p_language)`. It books through the unchanged 7-argument function (same checks, limits and lock). When the language is `es`, it marks the contact Spanish **only if this booking just created it**, so a contact the team already knows keeps the language they set. An unknown language is refused.
+
+**Consequences:** additive migration `20261113010000_h4a_spanish_booking` (a new overload, nothing dropped). Spanish leads who book get Spanish follow-ups without anyone re-tagging them. A Spanish version of the owner's own text would need new settings columns, and can come later if Sam wants it.

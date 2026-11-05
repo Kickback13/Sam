@@ -4919,22 +4919,40 @@ export type Database = {
           workspace_name: string;
         }[];
       };
-      booking_public_book: {
-        Args: {
-          p_client_key: string;
-          p_email: string;
-          p_name: string;
-          p_note: string;
-          p_phone: string;
-          p_slug: string;
-          p_starts_at: string;
-        };
-        Returns: {
-          booking_id: string;
-          ends_at: string;
-          starts_at: string;
-        }[];
-      };
+      booking_public_book:
+        | {
+            Args: {
+              p_client_key: string;
+              p_email: string;
+              p_name: string;
+              p_note: string;
+              p_phone: string;
+              p_slug: string;
+              p_starts_at: string;
+            };
+            Returns: {
+              booking_id: string;
+              ends_at: string;
+              starts_at: string;
+            }[];
+          }
+        | {
+            Args: {
+              p_client_key: string;
+              p_email: string;
+              p_language: string;
+              p_name: string;
+              p_note: string;
+              p_phone: string;
+              p_slug: string;
+              p_starts_at: string;
+            };
+            Returns: {
+              booking_id: string;
+              ends_at: string;
+              starts_at: string;
+            }[];
+          };
       booking_public_page: {
         Args: { p_slug: string };
         Returns: {
