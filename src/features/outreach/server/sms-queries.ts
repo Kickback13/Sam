@@ -22,7 +22,9 @@ export async function getSmsState(workspaceId: string): Promise<SmsState> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sms_settings")
-    .select("enabled, from_number, messaging_service_sid, help_reply, help_reply_es, webhook_token_hash")
+    .select(
+      "enabled, from_number, messaging_service_sid, help_reply, help_reply_es, webhook_token_hash",
+    )
     .eq("workspace_id", workspaceId)
     .maybeSingle();
   if (error) throw error;
