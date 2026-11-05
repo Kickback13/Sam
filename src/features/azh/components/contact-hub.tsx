@@ -53,7 +53,14 @@ function EventRow({ e }: { e: HubEvent }) {
 }
 
 /** AZH contact page: one timeline for everything that happened with this person (AZH-017). */
-export function ContactHub({ entries }: { entries: HubEntry<ActivityItem>[] }) {
+export function ContactHub({
+  entries,
+  textingOff,
+}: {
+  entries: HubEntry<ActivityItem>[];
+  /** Why texting can't be used yet (null when it's on). */
+  textingOff: string | null;
+}) {
   const [filter, setFilter] = useState<HubFilter>("all");
   const shown = entries.filter((e) => matchesFilter(e, filter));
   const count = (f: HubFilter) => entries.filter((e) => matchesFilter(e, f)).length;
@@ -118,9 +125,16 @@ export function ContactHub({ entries }: { entries: HubEntry<ActivityItem>[] }) {
         >
           <MessageSquareOff className="mt-0.5 size-3.5 shrink-0" aria-hidden />
           <span>
-            <span className="font-semibold">Texts and emails: not connected.</span> Two-way messages
-            will show here once a texting account is connected and switched on. Until then, log
-            calls and notes above.
+            {textingOff ? (
+              <>
+                <span className="font-semibold">Texts: {textingOff}</span> They will show here once
+                texting is set up and switched on.
+              </>
+            ) : (
+              <>Texts sent and received show here (filter: Texts).</>
+            )}{" "}
+            <span className="font-semibold">Emails: not connected.</span> Until then, log calls and
+            notes above.
           </span>
         </p>
       </CardContent>

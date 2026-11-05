@@ -43,6 +43,8 @@ const ANON_DEFINER_ALLOWED = [
   "receptionist_config", // Twilio/ElevenLabs webhooks (workspace token)
   "receptionist_create_token", // owner/admin check inside
   "receptionist_record_call",
+  "sms_receive", // Twilio inbound text webhook (workspace token + Twilio signature)
+  "sms_status", // Twilio delivery status (message id + Twilio signature; only moves forward)
 ];
 
 async function rows<T>(sql: string): Promise<T[]> {

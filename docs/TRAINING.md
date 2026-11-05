@@ -113,6 +113,15 @@ Newsletters:
 
 Every email gets an unsubscribe link and the mailing address from Settings → Outreach. Sending is **Not connected** until Resend is set up.
 
+### Texts
+
+Every contact page (Housing4All and AZH) has a **Texts** card: the conversation, and a box to send one text.
+
+- **Off until set up.** The card says what's missing: Twilio account, sending number, or the switch. An owner or admin sets it up in **Settings → Integrations → Texting** (sending number, HELP reply, the link to paste into Twilio, then **Texting on**).
+- **The gates:** a text only goes out if the contact isn't do-not-contact, has SMS consent on file, hasn't texted STOP, has a mobile number, and it's within texting hours (Settings → Outreach). If any check fails, the card says why and nothing is sent.
+- **Replies** show in the card and on the timeline, with a task to answer. **STOP** blocks texting that number at once, and **START** undoes it. **HELP** gets your HELP reply.
+- One person, one text: there are no automatic or bulk texts.
+
 ### Calendar (booking page)
 
 Leads book a call with you at `/b/housing4all`. The page is **off** until an owner or admin switches it on.

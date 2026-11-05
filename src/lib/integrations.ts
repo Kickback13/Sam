@@ -48,7 +48,8 @@ export const INTEGRATIONS: IntegrationInfo[] = [
   {
     provider: "twilio",
     name: "Twilio",
-    purpose: "Phone numbers and call routing for the AI receptionist.",
+    purpose:
+      "Phone numbers, call routing for the AI receptionist, and one-to-one texts behind the TCPA gates (off until switched on).",
     phase: 7,
   },
   {

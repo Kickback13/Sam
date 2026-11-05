@@ -8,6 +8,7 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 const GHL_MOCK_PORT = Number(process.env.E2E_GHL_MOCK_PORT ?? 3199);
 const RENTCAST_MOCK_PORT = Number(process.env.E2E_RENTCAST_MOCK_PORT ?? 3198);
+const TWILIO_MOCK_PORT = Number(process.env.E2E_TWILIO_MOCK_PORT ?? 3197);
 const LOCAL_SUPABASE_URL = process.env.E2E_SUPABASE_URL ?? "http://127.0.0.1:54321";
 const LOCAL_PUBLISHABLE_KEY =
   process.env.E2E_SUPABASE_PUBLISHABLE_KEY ?? "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
@@ -58,6 +59,9 @@ export default defineConfig({
       RENTCAST_API_BASE: `http://127.0.0.1:${RENTCAST_MOCK_PORT}/v1`,
       // AI receptionist e2e: the test signs fake Twilio/ElevenLabs webhooks with these (test-only values).
       TWILIO_AUTH_TOKEN: "e2e-twilio-auth-token",
+      // Texting e2e sends to a local mock (e2e/twilio-sms-mock.ts), never to Twilio.
+      TWILIO_ACCOUNT_SID: `AC${"e2e0".repeat(8)}`,
+      TWILIO_API_BASE: `http://127.0.0.1:${TWILIO_MOCK_PORT}`,
       ELEVENLABS_WEBHOOK_SECRET: "e2e-elevenlabs-secret",
     },
   },

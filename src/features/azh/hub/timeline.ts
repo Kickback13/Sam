@@ -225,11 +225,12 @@ export function projectEvents(p: HubProject): HubEvent[] {
   return out;
 }
 
-export type HubFilter = "all" | "calls" | "notes" | HubKind;
+export type HubFilter = "all" | "calls" | "texts" | "notes" | HubKind;
 
 export const HUB_FILTERS: { value: HubFilter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "calls", label: "Calls" },
+  { value: "texts", label: "Texts" },
   { value: "notes", label: "Notes" },
   { value: "request", label: "Requests" },
   { value: "visit", label: "Visits" },
@@ -268,6 +269,7 @@ export function matchesFilter<A extends { type: string }>(
   if (filter === "all") return true;
   if (entry.source === "activity") {
     if (filter === "calls") return entry.activity.type === "call";
+    if (filter === "texts") return entry.activity.type === "sms";
     if (filter === "notes") return entry.activity.type === "note";
     return false;
   }
