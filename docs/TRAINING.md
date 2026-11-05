@@ -122,6 +122,14 @@ Every contact page (Housing4All and AZH) has a **Texts** card: the conversation,
 - **Replies** show in the card and on the timeline, with a task to answer. **STOP** blocks texting that number at once, and **START** undoes it. **HELP** gets your HELP reply.
 - One person, one text: there are no automatic or bulk texts.
 
+### Messages
+
+**Messages** (in the menu for both businesses) lists every text conversation, newest first.
+
+- **Needs reply** shows only the people waiting on an answer: they texted after your last text.
+- Click a conversation to read it and reply. It's the same Texts card as on the contact page, with the same checks.
+- Until texting is set up, the page says so and stays empty.
+
 ### Calendar (booking page)
 
 Leads book a call with you at `/b/housing4all`. The page is **off** until an owner or admin switches it on.

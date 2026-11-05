@@ -327,3 +327,11 @@ Prices aren't written here because they change; get a current quote before choos
 - Turning texting on is a settings change plus env vars; no code change is needed.
 - A2P 10DLC registration and the number purchase are Sam's decisions (they cost money).
 - Marketing texts (which need written consent) are not built. They would reuse the same gates with purpose `marketing`.
+
+## ADR-037 — Messages inbox reads the text log; "needs reply" is computed, not stored
+
+**Context:** the Phase 4 reply inbox and AZH module 16 both need one place for every text conversation. Texts already live in `sms_messages` (ADR-036).
+
+**Decision:** `/w/[slug]/messages` (both businesses) groups the latest 2,000 texts per contact, newest first (`src/features/outreach/inbox.ts`, unit-tested). A conversation **needs a reply** when inbound texts arrived after our last text that actually went out. Blocked or failed attempts don't count, and STOP/START/HELP never need a reply. Opening a conversation shows the same Texts card as the contact page, so every send passes the same gates. No migration, no read/unread state.
+
+**Consequences:** nothing to keep in sync. Answering a text clears "needs reply". If Sam wants "mark as done without replying", that needs a small table later. While texting is off the page says so, and it fills up once texting is on.
