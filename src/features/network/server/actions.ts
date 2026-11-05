@@ -1,12 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { zodFieldErrors, type ActionResult } from "@/lib/validation/common";
 import { actionContext, NOT_SIGNED_IN, revalidateWorkspace } from "@/server/action-context";
 import { writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
+
+import { parseSubscription, pushPayload } from "../push";
+import { notifyCommunity } from "./push";
 
 import {
   commentSchema,
@@ -136,6 +140,10 @@ export async function createPost(input: {
     .single();
   if (error || !data) return { ok: false, error: dbError(error, "You can't post here.") };
   refresh();
+  // Team posts notify opted-in members (after the response; members' posts never notify).
+  const supabase = ctx.supabase;
+  const postId = data.id;
+  after(() => notifyAfterTeamPost(supabase, workspaceId.data, "post", parsed.data.title, postId));
   return { ok: true, data: { id: data.id } };
 }
 
@@ -277,6 +285,8 @@ export async function createEvent(input: {
     diff: { title: parsed.data.title, starts_at: parsed.data.starts_at },
   });
   refresh();
+  const supabase = ctx.supabase;
+  after(() => notifyAfterTeamPost(supabase, workspaceId.data, "event", parsed.data.title, null));
   return { ok: true, data: { id: data.id } };
 }
 
@@ -389,5 +399,69 @@ export async function updateMemberAdmin(input: {
     diff: parsed.data,
   });
   refresh();
+  return { ok: true, data: undefined };
+}
+
+// ---------------------------------------------------------------------------
+// Push notifications (ADR-041)
+// ---------------------------------------------------------------------------
+async function notifyAfterTeamPost(
+  supabase: NonNullable<Awaited<ReturnType<typeof actionContext>>>["supabase"],
+  workspaceId: string,
+  kind: "post" | "event",
+  title: string,
+  postId: string | null,
+) {
+  try {
+    const { data: ws } = await supabase
+      .from("workspaces")
+      .select("slug, name")
+      .eq("id", workspaceId)
+      .maybeSingle();
+    if (!ws) return;
+    const url = kind === "event" ? `/n/${ws.slug}/events` : `/n/${ws.slug}/posts/${postId}`;
+    await notifyCommunity(supabase, workspaceId, pushPayload(kind, ws.name, title, url));
+  } catch (err) {
+    console.error("network push failed", err instanceof Error ? err.message : err);
+  }
+}
+
+/** This device opted in to notifications for this community. */
+export async function savePushSubscription(input: {
+  workspaceId: string;
+  subscription: unknown;
+}): Promise<ActionResult> {
+  const ws = wsId.safeParse(input.workspaceId);
+  const sub = parseSubscription(input.subscription);
+  if (!ws.success || !sub)
+    return { ok: false, error: "Your browser sent an invalid subscription." };
+  const ctx = await actionContext();
+  if (!ctx) return NOT_SIGNED_IN;
+  const { error } = await ctx.supabase
+    .from("network_push_subscriptions")
+    .upsert(
+      { workspace_id: ws.data, user_id: ctx.user.id, ...sub },
+      { onConflict: "workspace_id,endpoint", ignoreDuplicates: true },
+    );
+  if (error) return { ok: false, error: dbError(error, "Only members can turn on notifications.") };
+  return { ok: true, data: undefined };
+}
+
+/** This device opted out. */
+export async function removePushSubscription(input: {
+  workspaceId: string;
+  endpoint: string;
+}): Promise<ActionResult> {
+  const ws = wsId.safeParse(input.workspaceId);
+  if (!ws.success || typeof input.endpoint !== "string")
+    return { ok: false, error: "Invalid request" };
+  const ctx = await actionContext();
+  if (!ctx) return NOT_SIGNED_IN;
+  const { error } = await ctx.supabase
+    .from("network_push_subscriptions")
+    .delete()
+    .eq("workspace_id", ws.data)
+    .eq("endpoint", input.endpoint);
+  if (error) return { ok: false, error: friendlyDbError(error) };
   return { ok: true, data: undefined };
 }
