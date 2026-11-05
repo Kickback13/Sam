@@ -5,6 +5,7 @@ import {
   ArrowUp,
   Ban,
   Check,
+  Languages,
   Loader2,
   Mail,
   MessageSquare,
@@ -33,7 +34,9 @@ import {
   MERGE_FIELDS,
   missingFields,
   renderTemplate,
+  stepForLanguage,
   type MergeVars,
+  type MessageLanguage,
   type SequenceStep,
 } from "../sequences";
 import type { DueStep } from "../server/sequence-queries";
@@ -48,7 +51,16 @@ import {
 // ---------------------------------------------------------------------------
 // Editor
 // ---------------------------------------------------------------------------
-type DraftStep = { channel: "email" | "sms"; waitDays: number; subject: string; body: string };
+type DraftStep = {
+  channel: "email" | "sms";
+  waitDays: number;
+  subject: string;
+  body: string;
+  subjectEs: string;
+  bodyEs: string;
+  /** Spanish fields shown (opened, or already filled in). */
+  showEs: boolean;
+};
 
 export function SequenceEditor({
   initial,
@@ -74,6 +86,9 @@ export function SequenceEditor({
       waitDays: s.waitDays,
       subject: s.subject ?? "",
       body: s.body,
+      subjectEs: s.subjectEs ?? "",
+      bodyEs: s.bodyEs ?? "",
+      showEs: Boolean(s.bodyEs),
     })),
   );
   const readOnly = !ws.canWrite;
@@ -99,7 +114,14 @@ export function SequenceEditor({
             name,
             description,
             active,
-            steps: steps.map((s) => ({ ...s, subject: s.channel === "email" ? s.subject : null })),
+            steps: steps.map((s) => ({
+              channel: s.channel,
+              waitDays: s.waitDays,
+              body: s.body,
+              subject: s.channel === "email" ? s.subject : null,
+              bodyEs: s.bodyEs.trim() ? s.bodyEs : null,
+              subjectEs: s.channel === "email" && s.bodyEs.trim() ? s.subjectEs : null,
+            })),
           });
           if (!r.ok) {
             toast.error(r.error);
@@ -146,7 +168,8 @@ export function SequenceEditor({
 
       <p className="text-xs text-muted-foreground">
         Fields you can use: {MERGE_FIELDS.map((f) => f.token).join(" ")}. Nothing is sent
-        automatically: each step shows up under <strong>Due now</strong> for someone to send.
+        automatically: each step shows up under <strong>Due now</strong> for someone to send. Add a
+        Spanish version to a step and contacts whose language is Spanish get it.
       </p>
 
       <ol className="space-y-3" data-testid="seq-steps">
@@ -232,6 +255,55 @@ export function SequenceEditor({
                 onChange={(e) => set(i, { body: e.target.value })}
               />
             </Field>
+            {s.showEs ? (
+              <div
+                className="space-y-3 rounded-lg border border-dashed p-3"
+                lang="es"
+                data-testid="seq-step-es"
+              >
+                <p className="text-xs font-semibold">Español (Spanish version, optional)</p>
+                {s.channel === "email" && (
+                  <Field id={`subj-es-${i}`} label="Asunto (subject)">
+                    <Input
+                      id={`subj-es-${i}`}
+                      value={s.subjectEs}
+                      maxLength={200}
+                      disabled={readOnly}
+                      placeholder="Leave blank to use the English subject"
+                      onChange={(e) => set(i, { subjectEs: e.target.value })}
+                    />
+                  </Field>
+                )}
+                <Field id={`body-es-${i}`} label="Mensaje (message)">
+                  <Textarea
+                    id={`body-es-${i}`}
+                    rows={s.channel === "sms" ? 3 : 6}
+                    maxLength={s.channel === "sms" ? 1600 : 5000}
+                    value={s.bodyEs}
+                    disabled={readOnly}
+                    onChange={(e) => set(i, { bodyEs: e.target.value })}
+                  />
+                </Field>
+                {s.channel === "sms" && (
+                  <p className="text-xs text-muted-foreground">
+                    Tip: end texts with &quot;Responda ALTO para no recibir más mensajes.&quot;
+                    ALTO, PARA, PARAR, CANCELAR and BAJA all opt the person out.
+                  </p>
+                )}
+              </div>
+            ) : (
+              !readOnly && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => set(i, { showEs: true })}
+                  data-testid="seq-add-es"
+                >
+                  <Languages aria-hidden /> Add Spanish version
+                </Button>
+              )
+            )}
           </li>
         ))}
       </ol>
@@ -251,6 +323,9 @@ export function SequenceEditor({
                   waitDays: x.length ? 3 : 0,
                   subject: "",
                   body: "",
+                  subjectEs: "",
+                  bodyEs: "",
+                  showEs: false,
                 },
               ])
             }
@@ -342,10 +417,20 @@ function DueItem({
   const router = useRouter();
   const [pending, start] = useTransition();
   const vars: MergeVars = { ...d.contact, my_name: myName };
-  const [subject, setSubject] = useState(renderTemplate(d.step.subject ?? "", vars));
-  const [body, setBody] = useState(renderTemplate(d.step.body, vars));
+  const [language, setLanguage] = useState<MessageLanguage>(
+    stepForLanguage(d.step, d.contact.language).language,
+  );
+  const version = stepForLanguage(d.step, d.contact.language, language);
+  const [subject, setSubject] = useState(renderTemplate(version.subject ?? "", vars));
+  const [body, setBody] = useState(renderTemplate(version.body, vars));
   const [error, setError] = useState<string | null>(null);
-  const missing = missingFields(`${d.step.subject ?? ""} ${d.step.body}`, vars);
+  const missing = missingFields(`${version.subject ?? ""} ${version.body}`, vars);
+  const switchTo = (l: MessageLanguage) => {
+    const v = stepForLanguage(d.step, d.contact.language, l);
+    setLanguage(v.language);
+    setSubject(renderTemplate(v.subject ?? "", vars));
+    setBody(renderTemplate(v.body, vars));
+  };
   const isSms = d.step.channel === "sms";
   const emailBlocked =
     !isSms &&
@@ -366,6 +451,7 @@ function DueItem({
         action,
         body,
         subject,
+        language,
       });
       if (!r.ok) {
         setError(r.error);
@@ -402,6 +488,31 @@ function DueItem({
           due {formatRelative(d.dueAt)}
         </span>
       </div>
+      <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="due-language">
+        <span className="font-medium" lang={language}>
+          {language === "es" ? "Español" : "English"}
+        </span>
+        {version.missingSpanish && (
+          <span className="text-brand-danger" data-testid="due-no-spanish">
+            Prefers Spanish, but this step has no Spanish version.
+          </span>
+        )}
+        {version.hasSpanish && (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs"
+            onClick={() => switchTo(language === "es" ? "en" : "es")}
+            data-testid="due-switch-language"
+          >
+            <Languages aria-hidden />{" "}
+            <span lang={language === "es" ? "en" : "es"}>
+              {language === "es" ? "Use English" : "Usar español"}
+            </span>
+          </Button>
+        )}
+      </div>
       {missing.length > 0 && (
         <p className="text-xs font-medium text-brand-danger">
           No {missing.map((m) => m.replace("_", " ")).join(", ")} on file: check the message before
@@ -411,6 +522,7 @@ function DueItem({
       {!isSms && (
         <Input
           aria-label="Subject"
+          lang={language}
           value={subject}
           maxLength={200}
           onChange={(e) => setSubject(e.target.value)}
@@ -418,6 +530,7 @@ function DueItem({
       )}
       <Textarea
         aria-label="Message"
+        lang={language}
         rows={isSms ? 3 : 6}
         value={body}
         maxLength={isSms ? 1600 : 5000}

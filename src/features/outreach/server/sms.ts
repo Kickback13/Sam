@@ -48,13 +48,19 @@ const settingsSchema = z
       .trim()
       .max(320)
       .transform((v) => v || null),
+    helpReplyEs: z
+      .string()
+      .trim()
+      .max(320)
+      .optional()
+      .transform((v) => v || null),
   })
   .refine((v) => !v.enabled || v.fromNumber || v.messagingServiceSid, {
     message: "Add the sending number before switching texting on",
     path: ["fromNumber"],
   });
 
-/** Owner/admin: texting on/off, sending number or Messaging Service, HELP reply. */
+/** Owner/admin: texting on/off, sending number or Messaging Service, HELP / AYUDA replies. */
 export async function saveSmsSettings(
   input: z.input<typeof settingsSchema>,
 ): Promise<ActionResult> {
@@ -86,6 +92,7 @@ export async function saveSmsSettings(
       from_number: v.fromNumber,
       messaging_service_sid: v.messagingServiceSid,
       help_reply: v.helpReply,
+      help_reply_es: v.helpReplyEs,
       updated_by: ctx.user.id,
     })
     .eq("workspace_id", v.workspaceId)

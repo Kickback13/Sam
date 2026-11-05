@@ -120,6 +120,9 @@ test("Phase 4D: texting is off until set up; every send passes the gates; replie
   await form
     .getByLabel(/Reply to HELP/)
     .fill("Housing4All: reply STOP to opt out. Call (619) 843-1663.");
+  await form
+    .getByTestId("sms-help-es")
+    .fill("Housing4All: responda ALTO para no recibir más mensajes. Llame al (619) 843-1663.");
   await form.getByTestId("sms-save").click();
   await expectToast(page, "Texting settings saved");
   await expect(page.getByTestId("sms-status")).toHaveText("On");
@@ -191,6 +194,29 @@ test("Phase 4D: texting is off until set up; every send passes the gates; replie
     Body: "HELP",
   });
   expect(await help.text()).toContain("<Message>Housing4All: reply STOP to opt out.");
+  // AYUDA gets the Spanish reply (ADR-043).
+  const ayuda = await twilio(page.request, baseURL!, inboundPath, {
+    MessageSid: `SM${"e5".repeat(16)}`,
+    From: "+16195550461",
+    To: "+16195550199",
+    Body: "Ayuda",
+  });
+  expect(await ayuda.text()).toContain(
+    "<Message>Housing4All: responda ALTO para no recibir más mensajes.",
+  );
+  // ALTO opts a Spanish speaker out like STOP.
+  await twilio(page.request, baseURL!, inboundPath, {
+    MessageSid: `SM${"f6".repeat(16)}`,
+    From: "+16195550462",
+    To: "+16195550199",
+    Body: "ALTO",
+  });
+  const [{ n: alto }] = await sql<{ n: string }>(
+    `select count(*) n from public.outreach_suppressions
+      where workspace_id = ${WS} and channel = 'sms' and value = '+16195550462' and reason = 'stop'`,
+    [E2E_REALTY],
+  );
+  expect(Number(alto)).toBe(1);
   await twilio(page.request, baseURL!, inboundPath, {
     MessageSid: `SM${"c3".repeat(16)}`,
     From: "+16195550461",

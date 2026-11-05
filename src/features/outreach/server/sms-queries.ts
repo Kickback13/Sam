@@ -12,6 +12,7 @@ export type SmsState = {
   fromNumber: string | null;
   messagingServiceSid: string | null;
   helpReply: string | null;
+  helpReplyEs: string | null;
   hasWebhook: boolean;
   /** Everything needed to send is in place. */
   ready: boolean;
@@ -21,7 +22,7 @@ export async function getSmsState(workspaceId: string): Promise<SmsState> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sms_settings")
-    .select("enabled, from_number, messaging_service_sid, help_reply, webhook_token_hash")
+    .select("enabled, from_number, messaging_service_sid, help_reply, help_reply_es, webhook_token_hash")
     .eq("workspace_id", workspaceId)
     .maybeSingle();
   if (error) throw error;
@@ -34,6 +35,7 @@ export async function getSmsState(workspaceId: string): Promise<SmsState> {
     fromNumber: data?.from_number ?? null,
     messagingServiceSid: data?.messaging_service_sid ?? null,
     helpReply: data?.help_reply ?? null,
+    helpReplyEs: data?.help_reply_es ?? null,
     hasWebhook: Boolean(data?.webhook_token_hash),
     ready: providerConnected && enabled && hasSender,
   };

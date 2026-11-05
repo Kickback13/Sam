@@ -9,7 +9,42 @@ export type SequenceStep = {
   waitDays: number;
   subject: string | null;
   body: string;
+  /** Optional Spanish version (ADR-043), used for contacts whose language is "es". */
+  subjectEs?: string | null;
+  bodyEs?: string | null;
 };
+
+export type MessageLanguage = "en" | "es";
+
+/**
+ * The version of a step to show for a contact. Spanish contacts get the Spanish text
+ * when the step has one; otherwise English, flagged so the person can see it.
+ */
+export function stepForLanguage(
+  step: SequenceStep,
+  contactLanguage: string | null | undefined,
+  override?: MessageLanguage,
+): {
+  language: MessageLanguage;
+  subject: string | null;
+  body: string;
+  /** The contact prefers Spanish but this step has no Spanish version. */
+  missingSpanish: boolean;
+  hasSpanish: boolean;
+} {
+  const hasSpanish = Boolean(step.bodyEs?.trim());
+  const wantsSpanish = contactLanguage === "es";
+  const language: MessageLanguage =
+    override === "en" ? "en" : (override === "es" || wantsSpanish) && hasSpanish ? "es" : "en";
+  const es = language === "es";
+  return {
+    language,
+    subject: es ? step.subjectEs?.trim() || step.subject : step.subject,
+    body: es ? step.bodyEs!.trim() : step.body,
+    missingSpanish: wantsSpanish && !hasSpanish,
+    hasSpanish,
+  };
+}
 
 export const MERGE_FIELDS = [
   { token: "{first_name}", label: "First name" },
@@ -83,6 +118,9 @@ export function normalizeSteps(steps: SequenceStep[]): SequenceStep[] {
     waitDays: Math.max(0, Math.min(90, Math.round(s.waitDays))),
     subject: s.channel === "email" ? (s.subject ?? "").trim() || null : null,
     body: s.body.trim(),
+    subjectEs:
+      s.channel === "email" && (s.bodyEs ?? "").trim() ? (s.subjectEs ?? "").trim() || null : null,
+    bodyEs: (s.bodyEs ?? "").trim() || null,
   }));
 }
 

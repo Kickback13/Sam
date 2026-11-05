@@ -7,8 +7,50 @@ import {
   missingFields,
   normalizeSteps,
   renderTemplate,
+  stepForLanguage,
   type SequenceStep,
 } from "./sequences";
+
+describe("stepForLanguage", () => {
+  const step: SequenceStep = {
+    position: 1,
+    channel: "email",
+    waitDays: 0,
+    subject: "Quick question",
+    body: "Hi {first_name}",
+    subjectEs: "Una pregunta",
+    bodyEs: "Hola {first_name}",
+  };
+  it("gives Spanish contacts the Spanish version", () => {
+    expect(stepForLanguage(step, "es")).toMatchObject({
+      language: "es",
+      subject: "Una pregunta",
+      body: "Hola {first_name}",
+      missingSpanish: false,
+    });
+  });
+  it("gives everyone else English", () => {
+    expect(stepForLanguage(step, "en")).toMatchObject({ language: "en", body: "Hi {first_name}" });
+    expect(stepForLanguage(step, null).language).toBe("en");
+  });
+  it("falls back to English, flagged, when a step has no Spanish version", () => {
+    const r = stepForLanguage({ ...step, subjectEs: null, bodyEs: null }, "es");
+    expect(r).toMatchObject({
+      language: "en",
+      body: "Hi {first_name}",
+      missingSpanish: true,
+      hasSpanish: false,
+    });
+  });
+  it("uses the English subject when only the Spanish body exists", () => {
+    expect(stepForLanguage({ ...step, subjectEs: null }, "es").subject).toBe("Quick question");
+  });
+  it("lets the person switch language", () => {
+    expect(stepForLanguage(step, "es", "en").body).toBe("Hi {first_name}");
+    expect(stepForLanguage(step, "en", "es").body).toBe("Hola {first_name}");
+    expect(stepForLanguage({ ...step, bodyEs: null }, "en", "es").language).toBe("en");
+  });
+});
 
 const steps: SequenceStep[] = [
   { position: 2, channel: "email", waitDays: 3, subject: "Following up", body: "Hi {first_name}" },
@@ -50,8 +92,62 @@ describe("sequences", () => {
         { position: 4, channel: "email", waitDays: 2.4, subject: "  ", body: "x" },
       ]),
     ).toEqual([
-      { position: 1, channel: "sms", waitDays: 90, subject: null, body: "hi" },
-      { position: 2, channel: "email", waitDays: 2, subject: null, body: "x" },
+      {
+        position: 1,
+        channel: "sms",
+        waitDays: 90,
+        subject: null,
+        body: "hi",
+        subjectEs: null,
+        bodyEs: null,
+      },
+      {
+        position: 2,
+        channel: "email",
+        waitDays: 2,
+        subject: null,
+        body: "x",
+        subjectEs: null,
+        bodyEs: null,
+      },
+    ]);
+  });
+
+  it("keeps a Spanish version only when it has a message", () => {
+    expect(
+      normalizeSteps([
+        {
+          position: 1,
+          channel: "email",
+          waitDays: 0,
+          subject: "Hi",
+          body: "Hello",
+          subjectEs: " Hola ",
+          bodyEs: " Hola {first_name} ",
+        },
+        {
+          position: 2,
+          channel: "email",
+          waitDays: 0,
+          subject: "Hi",
+          body: "Hello",
+          subjectEs: "Hola",
+          bodyEs: "  ",
+        },
+        {
+          position: 3,
+          channel: "sms",
+          waitDays: 0,
+          subject: null,
+          body: "Hi",
+          subjectEs: "dropped",
+          bodyEs: "Hola",
+        },
+      ]).map((s) => [s.subjectEs, s.bodyEs]),
+    ).toEqual([
+      ["Hola", "Hola {first_name}"],
+      [null, null],
+      [null, "Hola"],
     ]);
   });
 

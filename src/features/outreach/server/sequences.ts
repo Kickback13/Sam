@@ -8,7 +8,14 @@ import { actionContext, NOT_SIGNED_IN, revalidateWorkspace } from "@/server/acti
 import { writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
 
-import { advance, firstDue, normalizeSteps, type SequenceStep } from "../sequences";
+import {
+  advance,
+  firstDue,
+  normalizeSteps,
+  stepForLanguage,
+  type SequenceStep,
+} from "../sequences";
+import { stepFromRow } from "../step-row";
 import { sendSms } from "./sms";
 
 const stepSchema = z
@@ -17,10 +24,16 @@ const stepSchema = z
     waitDays: z.coerce.number().int().min(0).max(90),
     subject: z.string().max(200).nullable(),
     body: z.string().trim().min(1, "Every step needs a message").max(5000),
+    subjectEs: z.string().max(200).nullish(),
+    bodyEs: z.string().trim().max(5000).nullish(),
   })
   .refine((s) => s.channel !== "sms" || s.body.length <= 1600, {
     message: "Text steps are 1,600 characters at most",
     path: ["body"],
+  })
+  .refine((s) => s.channel !== "sms" || (s.bodyEs ?? "").length <= 1600, {
+    message: "Text steps are 1,600 characters at most (Spanish too)",
+    path: ["bodyEs"],
   })
   .refine((s) => s.channel !== "email" || (s.subject ?? "").trim().length > 0, {
     message: "Email steps need a subject",
@@ -96,6 +109,8 @@ export async function saveSequence(
         wait_days: s.waitDays,
         subject: s.subject,
         body: s.body,
+        subject_es: s.subjectEs ?? null,
+        body_es: s.bodyEs ?? null,
       })),
     );
     if (error) return { ok: false, error: friendlyDbError(error) };
@@ -106,7 +121,11 @@ export async function saveSequence(
     action: v.sequenceId ? "sequence.updated" : "sequence.created",
     entityType: "sequence",
     entityId: id,
-    diff: { steps: steps.length, active: v.active },
+    diff: {
+      steps: steps.length,
+      spanish_steps: steps.filter((s) => s.bodyEs).length,
+      active: v.active,
+    },
   });
   revalidateWorkspace();
   return { ok: true, data: { id: id! } };
@@ -146,17 +165,11 @@ async function loadSteps(
 ): Promise<SequenceStep[]> {
   const { data } = await ctx.supabase
     .from("outreach_sequence_steps")
-    .select("position, channel, wait_days, subject, body")
+    .select("position, channel, wait_days, subject, body, subject_es, body_es")
     .eq("workspace_id", workspaceId)
     .eq("sequence_id", sequenceId)
     .order("position");
-  return (data ?? []).map((s) => ({
-    position: s.position,
-    channel: s.channel as "email" | "sms",
-    waitDays: s.wait_days,
-    subject: s.subject,
-    body: s.body,
-  }));
+  return (data ?? []).map(stepFromRow);
 }
 
 /** Put a contact into an active sequence. Do-not-contact people can't be enrolled. */
@@ -247,6 +260,8 @@ const stepSchemaIn = z.object({
   /** The message as the person finally wrote it (texts and emails). */
   body: z.string().trim().max(5000).optional(),
   subject: z.string().trim().max(200).optional(),
+  /** Which version the person sent (for the timeline). */
+  language: z.enum(["en", "es"]).optional(),
 });
 
 /**
@@ -266,7 +281,7 @@ export async function completeStep(
   const { data: enr } = await ctx.supabase
     .from("outreach_enrollments")
     .select(
-      "id, sequence_id, contact_id, status, next_position, contact:contacts!outreach_enrollments_workspace_id_contact_id_fkey(id, dnc, email_opt_out)",
+      "id, sequence_id, contact_id, status, next_position, contact:contacts!outreach_enrollments_workspace_id_contact_id_fkey(id, dnc, email_opt_out, language)",
     )
     .eq("workspace_id", workspaceId)
     .eq("id", enrollmentId)
@@ -275,6 +290,8 @@ export async function completeStep(
   const steps = await loadSteps(ctx, workspaceId, enr.sequence_id);
   const step = steps.find((s) => s.position === enr.next_position);
   if (!step) return { ok: false, error: "This step no longer exists." };
+  // What gets sent if the person didn't edit it: the version for this contact's language.
+  const version = stepForLanguage(step, enr.contact?.language, p.data.language);
 
   const record = (outcome: "sent" | "skipped" | "blocked", reason?: string) =>
     ctx.supabase.from("outreach_sequence_events").insert({
@@ -292,7 +309,7 @@ export async function completeStep(
     const r = await sendSms({
       workspaceId,
       contactId: enr.contact_id,
-      body: p.data.body || step.body,
+      body: p.data.body || version.body,
     });
     if (!r.ok) {
       await record("blocked", r.error);
@@ -313,7 +330,7 @@ export async function completeStep(
       type: "email",
       subject_type: "contact",
       subject_id: enr.contact_id,
-      body: `Email sent: ${p.data.subject || step.subject || "(no subject)"}\n\n${p.data.body || step.body}`.slice(
+      body: `Email sent: ${p.data.subject || version.subject || "(no subject)"}\n\n${p.data.body || version.body}`.slice(
         0,
         20000,
       ),
@@ -321,6 +338,7 @@ export async function completeStep(
         event: "sequence_step",
         enrollment_id: enrollmentId,
         position: step.position,
+        language: version.language,
       }),
       created_by: ctx.user.id,
     });

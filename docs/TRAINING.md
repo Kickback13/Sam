@@ -121,6 +121,7 @@ Every contact page (Housing4All and AZH) has a **Texts** card: the conversation,
 - **Off until set up.** The card says what's missing: Twilio account, sending number, or the switch. An owner or admin sets it up in **Settings → Integrations → Texting** (sending number, HELP reply, the link to paste into Twilio, then **Texting on**).
 - **The gates:** a text only goes out if the contact isn't do-not-contact, has SMS consent on file, hasn't texted STOP, has a mobile number, and it's within texting hours (Settings → Outreach). If any check fails, the card says why and nothing is sent.
 - **Replies** show in the card and on the timeline, with a task to answer. **STOP** blocks texting that number at once, and **START** undoes it. **HELP** gets your HELP reply.
+- **Spanish:** **ALTO**, **PARA**, **PARAR**, **DETENER**, **CANCELAR** and **BAJA** work like STOP, and **INICIAR** or **REANUDAR** like START. **AYUDA** gets the Spanish HELP reply if one is set in Settings → Integrations → Texting, otherwise the English one.
 - One person, one text: there are no automatic or bulk texts.
 
 ### Sequences (Outreach → Sequences)
@@ -135,6 +136,8 @@ A sequence is a series of emails and texts, each due a set number of days after 
    - or **Skip**, or **Stop** for this person.
 
 Nothing is ever sent by itself. Marking someone do-not-contact, or them texting STOP, ends their sequences straight away.
+
+**Spanish versions.** Under any step, click **Add Spanish version** and write the Spanish subject and message, using the same fields like `{first_name}`. When that step comes due for a contact whose language is **Spanish** (set on the contact), the Spanish version is filled in. A **Use English / Usar español** button switches between them before sending. If a Spanish speaker's step has no Spanish version, the step says so and shows the English one.
 
 ### Messages
 

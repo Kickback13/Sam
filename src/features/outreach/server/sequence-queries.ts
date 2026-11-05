@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 
 import type { SequenceStep } from "../sequences";
+import { STEP_COLUMNS, stepFromRow } from "../step-row";
 
 export type SequenceListItem = {
   id: string;
@@ -72,7 +73,7 @@ export async function getSequence(workspaceId: string, id: string): Promise<Sequ
   const [{ data: steps }, { data: enr }] = await Promise.all([
     supabase
       .from("outreach_sequence_steps")
-      .select("position, channel, wait_days, subject, body")
+      .select(STEP_COLUMNS)
       .eq("workspace_id", workspaceId)
       .eq("sequence_id", id)
       .order("position"),
@@ -88,13 +89,7 @@ export async function getSequence(workspaceId: string, id: string): Promise<Sequ
   ]);
   return {
     ...s,
-    steps: (steps ?? []).map((x) => ({
-      position: x.position,
-      channel: x.channel as "email" | "sms",
-      waitDays: x.wait_days,
-      subject: x.subject,
-      body: x.body,
-    })),
+    steps: (steps ?? []).map(stepFromRow),
     enrollments: (enr ?? []).map((e) => ({
       id: e.id,
       contactId: e.contact_id,
@@ -120,6 +115,7 @@ export type DueStep = {
     email: string | null;
     dnc: boolean;
     email_opt_out: boolean;
+    language: string;
   };
   step: SequenceStep;
   totalSteps: number;
@@ -132,7 +128,7 @@ export async function getDueSteps(workspaceId: string, contactId?: string): Prom
   let q = supabase
     .from("outreach_enrollments")
     .select(
-      "id, sequence_id, contact_id, next_position, next_due_at, sequence:outreach_sequences!outreach_enrollments_workspace_id_sequence_id_fkey(name), contact:contacts!outreach_enrollments_workspace_id_contact_id_fkey(first_name, last_name, full_name, emails, dnc, email_opt_out, deleted_at, company:companies!contacts_workspace_id_company_id_fkey(name))",
+      "id, sequence_id, contact_id, next_position, next_due_at, sequence:outreach_sequences!outreach_enrollments_workspace_id_sequence_id_fkey(name), contact:contacts!outreach_enrollments_workspace_id_contact_id_fkey(first_name, last_name, full_name, emails, dnc, email_opt_out, language, deleted_at, company:companies!contacts_workspace_id_company_id_fkey(name))",
     )
     .eq("workspace_id", workspaceId)
     .eq("status", "active")
@@ -147,7 +143,7 @@ export async function getDueSteps(workspaceId: string, contactId?: string): Prom
   const { data: steps } = seqIds.length
     ? await supabase
         .from("outreach_sequence_steps")
-        .select("sequence_id, position, channel, wait_days, subject, body")
+        .select(`sequence_id, ${STEP_COLUMNS}`)
         .eq("workspace_id", workspaceId)
         .in("sequence_id", seqIds)
     : { data: [] };
@@ -173,14 +169,9 @@ export async function getDueSteps(workspaceId: string, contactId?: string): Prom
         email: (emails.find((e) => e.is_primary) ?? emails[0])?.value ?? null,
         dnc: r.contact!.dnc,
         email_opt_out: r.contact!.email_opt_out,
+        language: r.contact!.language,
       },
-      step: {
-        position: s.position,
-        channel: s.channel as "email" | "sms",
-        waitDays: s.wait_days,
-        subject: s.subject,
-        body: s.body,
-      },
+      step: stepFromRow(s),
       totalSteps: mine.length,
       dueAt: r.next_due_at,
     });

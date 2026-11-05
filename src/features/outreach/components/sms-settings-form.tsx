@@ -28,7 +28,13 @@ export function SmsSettingsForm({
   initial,
   providerConnected,
 }: {
-  initial: { enabled: boolean; fromNumber: string; messagingServiceSid: string; helpReply: string };
+  initial: {
+    enabled: boolean;
+    fromNumber: string;
+    messagingServiceSid: string;
+    helpReply: string;
+    helpReplyEs: string;
+  };
   providerConnected: boolean;
 }) {
   const ws = useWorkspace();
@@ -116,6 +122,23 @@ export function SmsSettingsForm({
           disabled={readOnly}
           placeholder="Housing4All Premier Solutions: reply STOP to opt out. Questions? Call (619) 843-1663."
           onChange={(e) => setV((s) => ({ ...s, helpReply: e.target.value }))}
+        />
+      </Field>
+      <Field
+        id="sms-help-es"
+        label="Reply to AYUDA, in Spanish (optional)"
+        help="Sent when someone texts AYUDA. Leave blank to send the English reply. ALTO, PARA, PARAR, DETENER, CANCELAR and BAJA opt people out like STOP."
+      >
+        <Textarea
+          id="sms-help-es"
+          lang="es"
+          rows={2}
+          maxLength={320}
+          value={v.helpReplyEs}
+          disabled={readOnly}
+          placeholder="Housing4All Premier Solutions: responda ALTO para no recibir más mensajes. ¿Preguntas? Llame al (619) 843-1663."
+          onChange={(e) => setV((s) => ({ ...s, helpReplyEs: e.target.value }))}
+          data-testid="sms-help-es"
         />
       </Field>
       {!readOnly && (
