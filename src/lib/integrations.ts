@@ -34,9 +34,9 @@ export const INTEGRATIONS: IntegrationInfo[] = [
   },
   {
     provider: "data_api",
-    name: "Property data API",
+    name: "Property data (RentCast)",
     purpose:
-      "Licensed ownership, mortgage, foreclosure and tax data (ATTOM, RentCast or PropertyRadar — decided in Phase 3).",
+      "Owner, tax, sale history and value / rent estimates per property, with a monthly request limit (key kept in Supabase Vault).",
     phase: 3,
   },
   {

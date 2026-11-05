@@ -3722,6 +3722,68 @@ export type Database = {
           },
         ];
       };
+      property_data_pulls: {
+        Row: {
+          fetched_at: string;
+          fetched_by: string | null;
+          id: string;
+          kind: string;
+          message: string | null;
+          payload: Json | null;
+          property_id: string;
+          provider: string;
+          status: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          fetched_at?: string;
+          fetched_by?: string | null;
+          id?: string;
+          kind: string;
+          message?: string | null;
+          payload?: Json | null;
+          property_id: string;
+          provider?: string;
+          status: string;
+          workspace_id: string;
+        };
+        Update: {
+          fetched_at?: string;
+          fetched_by?: string | null;
+          id?: string;
+          kind?: string;
+          message?: string | null;
+          payload?: Json | null;
+          property_id?: string;
+          provider?: string;
+          status?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "property_data_pulls_fetched_by_fkey";
+            columns: ["fetched_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "property_data_pulls_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "property_data_pulls_workspace_id_property_id_fkey";
+            columns: ["workspace_id", "property_id"];
+            isOneToOne: false;
+            referencedRelation: "properties";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
       receptionist_calls: {
         Row: {
           activity_id: string | null;
@@ -4250,6 +4312,31 @@ export type Database = {
           p_workspace_id: string;
         };
         Returns: number;
+      };
+      data_api_claim: {
+        Args: { p_workspace_id: string };
+        Returns: {
+          api_key: string;
+          monthly_limit: number;
+          used: number;
+        }[];
+      };
+      data_api_disconnect: { Args: { p_workspace_id: string }; Returns: undefined };
+      data_api_record_error: {
+        Args: { p_message: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      data_api_save_key: {
+        Args: { p_key: string; p_monthly_limit: number; p_workspace_id: string };
+        Returns: undefined;
+      };
+      data_api_usage: {
+        Args: { p_workspace_id: string };
+        Returns: {
+          connected: boolean;
+          monthly_limit: number;
+          used: number;
+        }[];
       };
       find_contact_duplicates: {
         Args: { p_email_keys: string[]; p_phone_keys: string[]; p_workspace_id: string };

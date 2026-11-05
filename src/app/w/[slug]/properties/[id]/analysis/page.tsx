@@ -1,14 +1,13 @@
-import { Database, PlugZap } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/common/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AiSummaryCard } from "@/features/h4a/components/analysis/ai-summary-card";
 import { AnalysisWorkbench } from "@/features/h4a/components/analysis/analysis-workbench";
 import { CompsPanel } from "@/features/h4a/components/analysis/comps-panel";
 import { aiSummaryAdapter } from "@/features/h4a/ai/summary";
-import { propertyDataAdapter } from "@/features/h4a/property-data/adapter";
+import { PropertyDataPanel } from "@/features/h4a/components/analysis/property-data-panel";
+import { getDataApiState, getPropertyPulls } from "@/features/h4a/server/property-data-queries";
 import { getAnalysisData } from "@/features/h4a/server/analysis";
 import { getRealEstateContext } from "@/features/h4a/server/context";
 
@@ -32,7 +31,10 @@ export default async function AnalysisPage({
         ? data.scenarios[0].id
         : null;
   const p = data.property;
-  const dataService = propertyDataAdapter();
+  const [dataState, pulls] = await Promise.all([
+    getDataApiState(workspace.id),
+    getPropertyPulls(workspace.id, p.id),
+  ]);
   const ai = aiSummaryAdapter();
 
   return (
@@ -64,27 +66,7 @@ export default async function AnalysisPage({
               propertyId={p.id}
               scenarioId={initialScenarioId}
             />
-            <Card data-testid="property-data-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="size-4" aria-hidden /> Ownership, mortgage &amp; tax
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 pt-1 text-sm">
-                {dataService.connected ? null : (
-                  <>
-                    <p className="inline-flex items-center gap-1.5 rounded border border-dashed px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-                      <PlugZap className="size-3.5" aria-hidden /> Not connected
-                    </p>
-                    <p className="text-muted-foreground">
-                      Owner, loan, foreclosure and tax data come from a licensed data service. Sam
-                      picks the provider (ATTOM, RentCast or PropertyRadar); until then nothing here
-                      is filled in, and the analysis uses only the facts above.
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <PropertyDataPanel propertyId={p.id} state={dataState} pulls={pulls} />
           </div>
         </div>
       </div>

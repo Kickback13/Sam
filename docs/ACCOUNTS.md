@@ -106,3 +106,9 @@ Invite links themselves are copied and sent by the team (text or email) until th
 3. In the app: **Receptionist → Setup** — turn it on, set hours, ring time, routes (who's rung first, keywords, who gets follow-ups), then call the number to test.
 
 Costs are usage-based on both (per-minute voice + AI minutes); check current pricing on each site before choosing a plan.
+
+## Property data (Phase 3B): RentCast
+
+1. Sam's RentCast account → **app.rentcast.io → API** → create an API key. Pick the plan Sam chose (or the free developer tier to try it).
+2. In the app, as owner/admin: **Settings → Integrations → Property data (RentCast) → Connect RentCast**, paste the key, and set the **monthly request limit** to what the plan includes (the app refuses requests past it, so it can't run up overage). Saving makes no request.
+3. Use it from any property's **Analyze** page: _Fetch property record_, _value estimate_, _rent estimate_ — one request each.
