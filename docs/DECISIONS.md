@@ -335,3 +335,18 @@ Prices aren't written here because they change; get a current quote before choos
 **Decision:** `/w/[slug]/messages` (both businesses) groups the latest 2,000 texts per contact, newest first (`src/features/outreach/inbox.ts`, unit-tested). A conversation **needs a reply** when inbound texts arrived after our last text that actually went out. Blocked or failed attempts don't count, and STOP/START/HELP never need a reply. Opening a conversation shows the same Texts card as the contact page, so every send passes the same gates. No migration, no read/unread state.
 
 **Consequences:** nothing to keep in sync. Answering a text clears "needs reply". If Sam wants "mark as done without replying", that needs a small table later. While texting is off the page says so, and it fills up once texting is on.
+
+## ADR-038 — Reports are counted live by one invoker function
+
+**Context (Phase 9 reporting):** Sam needs a quick view of how both businesses are doing. Every number has to come from real records, and nothing new should be stored that could drift.
+
+**Decision:** `public.report_summary(workspace, days)` returns one JSON summary for 30, 90 or 365 days:
+
+- weekly counts (contacts, deals, calls, texts, meetings, listings, requests, bookings);
+- open deals and value per stage;
+- won/lost and the top lost reasons;
+- tasks, listings, alerts, bookings, AZH requests by office and estimates.
+
+It is **SECURITY INVOKER**, so row-level security decides what is counted. It also refuses non-members outright. `/w/[slug]/reports` shows it with stat tiles and single-series weekly charts (tooltips plus a table view), and AZH sees its own measures. There are no new tables.
+
+**Consequences:** numbers are always current. The query cost grows with data, but it is bounded to one workspace and at most 365 days. If it ever gets slow, a nightly rollup table can sit behind the same function.

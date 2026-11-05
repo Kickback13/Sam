@@ -4885,6 +4885,7 @@ export type Database = {
         Args: { p_pipeline_id: string; p_stage_ids: string[] };
         Returns: undefined;
       };
+      report_summary: { Args: { p_days?: number; p_workspace_id: string }; Returns: Json };
       sms_create_token: { Args: { p_workspace_id: string }; Returns: string };
       sms_receive: {
         Args: { p_body: string; p_from: string; p_sid: string; p_to: string; p_token: string };
