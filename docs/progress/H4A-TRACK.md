@@ -296,4 +296,4 @@ ADR-045 · migration `20261114010000_h4a_spanish_newsletters` (additive columns)
 - [x] Per-recipient version at send time (`newsletterVersion`, unit-tested); Spanish CAN-SPAM footer; `newsletter_sends.language`
 - [x] Unsubscribe page in Spanish (`?lang=es` from the email, else the browser's language)
 - [x] RLS suite `supabase/tests/h4a_spanish_newsletters_rls.sql` (12) · e2e (Spanish version, count, preview, Spanish unsubscribe, 390 px)
-- [ ] Live DB: combined SQL + verify in `docs/db-updates/2026-11-spanish-newsletters*.sql`
+- [x] Live DB: applied 2026-11-05 with `docs/db-updates/2026-11-spanish-newsletters.sql`; verify on live 12 passed / 0 failed / 0 leftovers
