@@ -23,6 +23,7 @@ describe("nav per business type", () => {
       "calendar",
       "network",
       "receptionist",
+      "reports",
       "settings",
     ]) {
       expect(keys).toContain(k);

@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Bell,
   Building,
   Building2,
@@ -43,4 +44,5 @@ export const NAV_ICONS: Record<IconName, LucideIcon> = {
   requests: ClipboardList,
   community: UsersRound,
   messages: MessagesSquare,
+  reports: BarChart3,
 };
