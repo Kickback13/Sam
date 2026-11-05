@@ -161,6 +161,7 @@ Your private investor community. Members sign in at their own address (`/n/housi
 
 - **Invite people:** Network → Members & invites → create a link.
 - **Run it:** pin or hide posts, add events, sort members into segments.
+- **Photos:** add up to 4 photos to a post (JPG, PNG or WebP, up to 5 MB each). Only your team and the members can see them.
 
 Members can install the community on their phone like an app.
 
