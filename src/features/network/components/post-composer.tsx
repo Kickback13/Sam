@@ -1,19 +1,46 @@
 "use client";
 
-import { Loader2, Send } from "lucide-react";
+import { ImagePlus, Loader2, Send, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Field } from "@/components/common/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { createClient } from "@/lib/supabase/client";
 import { useHydrated } from "@/lib/use-hydrated";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import { createPost } from "../server/actions";
 import { communityTerms, type CommunityKind } from "../terms";
+
+const MAX_PHOTOS = 4;
+const MAX_BYTES = 5 * 1024 * 1024;
+const PHOTO_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+/** Upload photos to the private network-photos bucket, in the poster's own folder. */
+async function uploadPhotos(workspaceId: string, files: File[]): Promise<string[]> {
+  if (!files.length) return [];
+  const supabase = createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) throw new Error("Your session expired. Sign in again.");
+  const paths: string[] = [];
+  for (const f of files) {
+    const path = `${workspaceId}/${data.user.id}/${crypto.randomUUID()}.${PHOTO_TYPES[f.type]}`;
+    const { error } = await supabase.storage
+      .from("network-photos")
+      .upload(path, f, { contentType: f.type, upsert: false });
+    if (error) throw new Error(`${f.name}: upload failed (${error.message}).`);
+    paths.push(path);
+  }
+  return paths;
+}
 
 const EMPTY = {
   title: "",
@@ -47,6 +74,20 @@ export function PostComposer({
   const [v, setV] = useState(EMPTY);
   const [pinned, setPinned] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [photos, setPhotos] = useState<File[]>([]);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const addPhotos = (list: FileList | null) => {
+    const picked = [...(list ?? [])];
+    const bad = picked.find((f) => !PHOTO_TYPES[f.type] || f.size > MAX_BYTES);
+    if (bad) toast.error(`${bad.name}: use a JPG, PNG or WebP photo under 5 MB.`);
+    setPhotos((cur) =>
+      [...cur, ...picked.filter((f) => PHOTO_TYPES[f.type] && f.size <= MAX_BYTES)].slice(
+        0,
+        MAX_PHOTOS,
+      ),
+    );
+    if (fileRef.current) fileRef.current.value = "";
+  };
   const set =
     (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setV((s) => ({ ...s, [k]: e.target.value }));
@@ -61,7 +102,14 @@ export function PostComposer({
         e.preventDefault();
         setErrors({});
         start(async () => {
-          const r = await createPost({ workspaceId, values: { kind, ...v }, pinned });
+          let photo_paths: string[] = [];
+          try {
+            photo_paths = await uploadPhotos(workspaceId, photos);
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Photo upload failed.");
+            return;
+          }
+          const r = await createPost({ workspaceId, values: { kind, ...v, photo_paths }, pinned });
           if (!r.ok) {
             setErrors(r.fieldErrors ?? {});
             if (!r.fieldErrors) toast.error(r.error);
@@ -69,6 +117,7 @@ export function PostComposer({
           }
           setV(EMPTY);
           setPinned(false);
+          setPhotos([]);
           toast.success("Posted");
           router.refresh();
         });
@@ -145,6 +194,49 @@ export function PostComposer({
       <Field id="pc-body" label={kind === "deal" ? "Details" : "Message"} error={err("body")}>
         <Textarea id="pc-body" rows={4} value={v.body} onChange={set("body")} />
       </Field>
+      <div className="space-y-2">
+        <input
+          ref={fileRef}
+          id="pc-photos"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="sr-only"
+          onChange={(e) => addPhotos(e.target.files)}
+          data-testid="post-photo-input"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={photos.length >= MAX_PHOTOS}
+          onClick={() => fileRef.current?.click()}
+        >
+          <ImagePlus aria-hidden /> Add photos ({photos.length}/{MAX_PHOTOS})
+        </Button>
+        {photos.length > 0 && (
+          <ul className="flex flex-wrap gap-2 text-xs" data-testid="post-photo-list">
+            {photos.map((f, i) => (
+              <li
+                key={`${f.name}-${i}`}
+                className="inline-flex items-center gap-1 rounded border bg-muted px-2 py-1"
+              >
+                <span className="max-w-40 truncate">{f.name}</span>
+                <button
+                  type="button"
+                  aria-label={`Remove ${f.name}`}
+                  onClick={() => setPhotos((cur) => cur.filter((_, j) => j !== i))}
+                >
+                  <X className="size-3" aria-hidden />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {err("photo_paths") && (
+          <p className="text-xs font-medium text-brand-danger">{err("photo_paths")}</p>
+        )}
+      </div>
       <Field id="pc-link" label="Link (optional)" error={err("link")}>
         <Input
           id="pc-link"

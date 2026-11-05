@@ -93,6 +93,31 @@ export function PostCard({
         </p>
       )}
       {post.body && <p className="text-sm break-words whitespace-pre-wrap">{post.body}</p>}
+      {post.photos.length > 0 && (
+        <div
+          className={`grid gap-1.5 ${post.photos.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
+          data-testid="post-photos"
+        >
+          {post.photos.map((ph, i) => (
+            <a
+              key={ph.path}
+              href={ph.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block overflow-hidden rounded-lg border bg-muted"
+            >
+              {/* Signed, short-lived URLs from a private bucket: a plain img keeps them out of image optimization. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ph.url}
+                alt={`Photo ${i + 1} of ${post.photos.length} for “${post.title}”`}
+                loading="lazy"
+                className={`w-full object-cover ${post.photos.length === 1 ? "max-h-96" : "aspect-square"}`}
+              />
+            </a>
+          ))}
+        </div>
+      )}
       {post.link && (
         <a
           href={post.link}

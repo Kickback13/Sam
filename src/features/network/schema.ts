@@ -50,6 +50,17 @@ export const postSchema = z
     city: optionalText(100),
     zip: optionalText(20),
     link: optionalUrl,
+    photo_paths: z
+      .array(
+        z
+          .string()
+          .regex(
+            /^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|jpeg|png|webp)$/,
+            "A photo upload is invalid",
+          ),
+      )
+      .max(4, "Up to 4 photos")
+      .default([]),
   })
   .transform((p) =>
     p.kind === "update"

@@ -365,3 +365,16 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - Database triggers end active enrollments the moment a contact is marked do-not-contact or texts STOP. Only writers build or enroll, viewers read, and the caller authors every record (`supabase/tests/h4a_sequences_rls.sql`).
 
 **Consequences:** works today at no cost and can't send anything unattended. Automatic sending can be added later behind the same gates, once Resend and Twilio are live and Sam opts in. It would be a background job completing due steps.
+
+## ADR-040 — Community photos: private bucket, own-folder uploads, paths checked by the database
+
+**Context:** Network (Housing4All) and Community (AZH) posts needed photos (deals, job sites). The Phase 6A plan left them out.
+
+**Decision:**
+
+- Up to **4 photos per post** in a **private** `network-photos` bucket: JPG, PNG or WebP, 5 MB each.
+- **Upload:** files go straight from the browser to storage at `<workspace>/<uploader>/<uuid>.<ext>`. Storage policies let the team and active community members upload **only into their own folder** in a community they belong to.
+- **Post check:** `network_posts.photo_paths` is checked by a trigger. Every new path must be in the poster's own folder in this workspace, exist in storage, and be a photo file, with at most 4. Existing photos may stay when a post is edited.
+- **Viewing:** the team and the community's members can view photos; other workspaces and anon cannot. Pages show short-lived (1 hour) signed links.
+
+**Consequences:** no public image URLs. A deleted post or a failed post can leave an unused file in storage, which is harmless and can be swept later like AZH intake photos (AZH-014). Push notifications for new posts remain a separate item.
