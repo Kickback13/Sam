@@ -44,14 +44,14 @@ export function localDayKey(iso: string | Date, timeZone: string): string {
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
-export function formatSlotTime(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", minute: "2-digit" }).format(
+export function formatSlotTime(iso: string, timeZone: string, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, { timeZone, hour: "numeric", minute: "2-digit" }).format(
     new Date(iso),
   );
 }
 
-export function formatSlotDay(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatSlotDay(iso: string, timeZone: string, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone,
     weekday: "short",
     month: "short",
@@ -59,8 +59,8 @@ export function formatSlotDay(iso: string, timeZone: string): string {
   }).format(new Date(iso));
 }
 
-export function formatSlotLong(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatSlotLong(iso: string, timeZone: string, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, {
     timeZone,
     weekday: "long",
     month: "long",
@@ -72,16 +72,16 @@ export function formatSlotLong(iso: string, timeZone: string): string {
 }
 
 /** Open slots grouped by local day, in order. */
-export function groupSlotsByDay(slots: Slot[], timeZone: string): SlotDay[] {
+export function groupSlotsByDay(slots: Slot[], timeZone: string, locale = "en-US"): SlotDay[] {
   const days = new Map<string, SlotDay>();
   for (const s of [...slots].sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))) {
     const key = localDayKey(s.startsAt, timeZone);
     let day = days.get(key);
     if (!day) {
-      day = { key, label: formatSlotDay(s.startsAt, timeZone), slots: [] };
+      day = { key, label: formatSlotDay(s.startsAt, timeZone, locale), slots: [] };
       days.set(key, day);
     }
-    day.slots.push({ ...s, label: formatSlotTime(s.startsAt, timeZone) });
+    day.slots.push({ ...s, label: formatSlotTime(s.startsAt, timeZone, locale) });
   }
   return [...days.values()];
 }
@@ -182,6 +182,7 @@ export const publicBookingSchema = z
       .refine((v) => v === "" || US_PHONE.test(v), "Enter a valid US phone number"),
     note: z.string().trim().max(2000, "Keep the note under 2,000 characters"),
     website: z.string().max(0).optional(), // honeypot: people never fill it
+    language: z.enum(["en", "es"]).default("en"),
   })
   .refine((v) => v.email !== "" || v.phone !== "", {
     message: "Enter an email or a phone number so we can reach you",

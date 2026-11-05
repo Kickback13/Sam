@@ -154,6 +154,7 @@ Leads book a call with you at `/b/housing4all`. The page is **off** until an own
 - **Set up** (Calendar → Booking page settings): who leads book with, meeting length, gap between calls, minimum notice, how far ahead, and your bookable hours. Then tick **Booking page on** and save.
 - **Share the link** from the Calendar page in emails, on your website or in GHL.
 - **When someone books:** they become a contact (or their existing contact is updated), the meeting is logged on their timeline, and the host gets a task at that time. The lead can add the call to their own calendar from the confirmation page. **No email or text is sent.**
+- **Spanish:** the page shows in Spanish when the visitor's browser prefers it, and an **English / Español** button switches it. To send someone straight to the Spanish page, share `/b/housing4all?lang=es`. Your title and intro show as you typed them, so write them in both languages if you like. A new contact who books in Spanish is saved with language **Spanish**, so their follow-up steps use the Spanish versions.
 - **Coming up** lists every booking. Mark it **Done** or **No-show**, or **Cancel** it, which frees the time.
 - **Block time** for anything that isn't in the app (a tour, an appointment) so nobody can book over it.
 - **See bookings in Google Calendar:** an owner or admin clicks **Create calendar link** and pastes it into Google Calendar → Other calendars → From URL. It's read-only and private. Making a new link turns the old one off.
