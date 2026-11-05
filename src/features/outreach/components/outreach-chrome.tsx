@@ -17,10 +17,11 @@ export function OutreachTabs({
   active,
 }: {
   slug: string;
-  active: "newsletters" | "do-not-send";
+  active: "newsletters" | "sequences" | "do-not-send";
 }) {
   const tabs = [
     { key: "newsletters", href: `/w/${slug}/outreach`, label: "Newsletters" },
+    { key: "sequences", href: `/w/${slug}/outreach/sequences`, label: "Sequences" },
     { key: "do-not-send", href: `/w/${slug}/outreach/do-not-send`, label: "Do-not-send list" },
   ] as const;
   return (

@@ -11,6 +11,7 @@ import { DeleteContactButton } from "@/components/people/delete-contact-button";
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 import { ContactHub } from "@/features/azh/components/contact-hub";
 import { getContactHub } from "@/features/azh/server/hub";
+import { ContactSequences } from "@/features/outreach/components/contact-sequences";
 import { ContactTexts } from "@/features/outreach/components/contact-texts";
 import { getSmsState, smsOffReason } from "@/features/outreach/server/sms-queries";
 import { ContactReachability } from "@/features/outreach/components/contact-reachability";
@@ -49,7 +50,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 export default async function ContactPage({ params }: PageProps<"/w/[slug]/people/[id]">) {
   const { slug, id } = await params;
-  const { workspace, canWrite, isAdmin } = await getWorkspaceContext(slug);
+  const { workspace, canWrite, isAdmin, user } = await getWorkspaceContext(slug);
   const c = await getContact(workspace.id, id);
   if (!c || c.deleted_at) notFound();
 
@@ -310,6 +311,13 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
         <div className="space-y-5 lg:col-span-2">
           <LogActivity subjectType="contact" subjectId={c.id} />
           <ContactTexts workspaceId={workspace.id} slug={slug} isAdmin={isAdmin} contact={c} />
+          <ContactSequences
+            workspaceId={workspace.id}
+            slug={slug}
+            contactId={c.id}
+            dnc={c.dnc}
+            myName={user.name}
+          />
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Open tasks</CardTitle>
