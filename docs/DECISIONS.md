@@ -266,3 +266,17 @@ Prices aren't written here because they change; get a current quote before choos
 **Decision:** compute both lists on request under the user's session (RLS), with no new tables. Brokers are grouped by normalized email, else phone, else name + company, and ranked by listings, buy-box matches (score ≥ 70, the alert threshold), volume, pipeline and closed deals. Long-hold owners are properties with a last sale date at least N years ago (default 15), showing the date's source and the owner's compliance flags. A broker can be added to People as a contact with role Broker through the normal duplicate-checked contact action. Nothing is sent from these pages.
 
 **Consequences:** always current, no sync to maintain, no live database change. Reads up to 10,000 recent listings and 2,000 properties per page view, which is plenty for one brokerage; a materialized view can replace it if volumes grow.
+
+## ADR-034 — RentCast property data: fetched on request, blanks only, behind a monthly request cap
+
+**Context (3B):** Sam picked RentCast (Oct 28) for ownership, tax and sale data plus value / rent estimates. Every request is billable, and the app must never present a number without its source.
+
+**Decision:**
+
+- **Read-only client** (`src/features/h4a/property-data/rentcast.ts`): `GET /properties`, `/avm/value`, `/avm/rent/long-term` with the `X-Api-Key` header. RentCast's docs host isn't reachable from the build environment, so the shapes come from RentCast's public reference as quoted by open-source clients; **every field is optional** and a missing one stays blank.
+- **Key in Supabase Vault** per workspace (`data_api_key:<ws>`), stored by owners/admins (`data_api_save_key`), never in a column. Saving makes no request.
+- **Cost guard:** `data_api_claim` hands out the key for ONE request only while this calendar month's requests (Pacific time; answers and "no record" count, errors don't) are below the owner-set limit (default 40). Requests happen only when someone clicks Fetch on the analysis page; nothing runs in the background.
+- **Provenance:** every answer is kept raw in `property_data_pulls` (who, when, what); the panel shows "Source: RentCast · fetched …". A property record **fills only blank property fields**, each stamped `RentCast property record` in `field_sources`, so manual and verified values are never overwritten (and long-hold owners light up from the sale date).
+- Estimates are shown, never written into the underwriting inputs automatically.
+
+**Consequences:** no surprise bills; the app works unchanged without a key ("Not connected"). Swapping providers later means a new client behind the same panel and tables.

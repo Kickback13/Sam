@@ -101,6 +101,8 @@ Property records with owner, units, size and year built, each with its source. O
 
 The property-data and AI-summary cards say **Not connected** until RentCast and an Anthropic key are added.
 
+- **Ownership, tax & estimates** (on the analysis page, once RentCast is connected): _Fetch property record_ fills in owner, mailing address, last sale, assessed value and tax, each marked "Source: RentCast" with the date, and only fills fields that were blank. _Value estimate_ and _rent estimate_ show RentCast's number with its range and comparables. Each button is one request; the page shows how many are left this month.
+
 ### Outreach
 
 Newsletters:

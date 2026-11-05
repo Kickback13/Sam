@@ -244,3 +244,14 @@ Plan: `docs/phases/PHASE-4B-PLAN.md` · ADR-033. **No migration.**
 | `docs/DECISIONS.md`, `docs/TRAINING.md`                                       | ADR-033; user guide section  | Decision / training |
 
 No AZH files changed.
+
+## Phase 3B — property data, RentCast (branch `h4a/property-data`)
+
+Plan: `docs/phases/PHASE-3B-PLAN.md` · ADR-034.
+
+- [x] Migration `20261105010000_h4a_property_data` (pulls table, Vault key, monthly cap) — additive
+- [x] RentCast client + mapping (unit-tested), fetch on the analysis page, settings page
+- [x] RLS suite `supabase/tests/h4a_property_data_rls.sql` (21) · e2e against a local mock
+- [x] Live DB: applied with the verify (see PR) · key not added yet (Sam's account, his plan choice)
+
+Shared files: `src/lib/integrations.ts` (label), `src/app/w/[slug]/settings/integrations/page.tsx` (link), `playwright.config.ts` (mock URL), `src/lib/db/types.ts` (regenerated).
