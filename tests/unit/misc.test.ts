@@ -19,6 +19,7 @@ describe("nav per business type", () => {
       "properties",
       "analyze",
       "outreach",
+      "messages",
       "calendar",
       "network",
       "receptionist",
@@ -62,6 +63,9 @@ describe("nav per business type", () => {
     expect(comingSoonModule("community", "construction")).toBeNull();
     // Requests shipped in the AZH track: a real page, no longer a placeholder.
     expect(comingSoonModule("requests", "construction")).toBeNull();
+    // The Messages inbox shipped after texting (Phase 4D), for both businesses.
+    expect(comingSoonModule("messages", "construction")).toBeNull();
+    expect(comingSoonModule("messages", "real_estate")).toBeNull();
     expect(comingSoonModule("people", "real_estate")).toBeNull();
   });
 

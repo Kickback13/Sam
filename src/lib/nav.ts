@@ -117,6 +117,13 @@ const REAL_ESTATE_NAV: NavItem[] = [
     group: "Engage",
   },
   {
+    key: "messages",
+    label: "Messages",
+    path: "messages",
+    icon: "messages",
+    group: "Engage",
+  },
+  {
     key: "calendar",
     label: "Calendar",
     path: "calendar",
@@ -196,7 +203,6 @@ const CONSTRUCTION_NAV: NavItem[] = [
     path: "messages",
     icon: "messages",
     group: "Engage",
-    comingIn: 8,
   },
   { key: "settings", label: "Settings", path: "settings", icon: "settings", group: "Admin" },
 ];
@@ -242,17 +248,6 @@ const COMING_SOON: Record<string, ComingSoonModule> = {
       "Creates the contact and a Lead in Projects",
       "Office routing by ZIP code",
       "Estimate booking",
-    ],
-  },
-  messages: {
-    key: "messages",
-    title: "Messages",
-    phase: 8,
-    summary: "One inbox for SMS and email with homeowners, GCs and subs, synced with GoHighLevel.",
-    bullets: [
-      "Conversations from GHL (Phase 5 sync)",
-      "Templates per job stage",
-      "Compliance-gated sending",
     ],
   },
 };

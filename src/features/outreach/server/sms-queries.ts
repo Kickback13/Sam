@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 
+import { buildConversations, type InboxMessage } from "../inbox";
 import { smsProviderConfig } from "../sms-provider";
 
 export type SmsState = {
@@ -83,4 +84,51 @@ export async function getSmsThread(workspaceId: string, contactId: string): Prom
         : null,
     }))
     .reverse();
+}
+
+export type InboxRow = {
+  contactId: string;
+  name: string;
+  phone: string | null;
+  last: InboxMessage;
+  unanswered: number;
+  needsReply: boolean;
+  messageCount: number;
+};
+
+/** Conversations for the Messages inbox (latest 2,000 texts, grouped per contact). */
+export async function getInbox(workspaceId: string): Promise<InboxRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sms_messages")
+    .select(
+      "id, contact_id, direction, status, body, keyword, created_at, contact:contacts!sms_messages_workspace_id_contact_id_fkey(full_name, phones, deleted_at)",
+    )
+    .eq("workspace_id", workspaceId)
+    .order("created_at", { ascending: false })
+    .limit(2000);
+  if (error) throw error;
+  const contacts = new Map<string, { name: string; phone: string | null }>();
+  const rows = (data ?? []).filter((r) => r.contact && !r.contact.deleted_at);
+  for (const r of rows) {
+    if (!r.contact_id || contacts.has(r.contact_id)) continue;
+    const phones = Array.isArray(r.contact!.phones)
+      ? (r.contact!.phones as { value?: string }[])
+      : [];
+    contacts.set(r.contact_id, {
+      name: r.contact!.full_name?.trim() || phones[0]?.value || "Unknown",
+      phone: phones[0]?.value ?? null,
+    });
+  }
+  return buildConversations(
+    rows.map((r) => ({
+      id: r.id,
+      contactId: r.contact_id,
+      direction: r.direction as "in" | "out",
+      status: r.status,
+      body: r.body,
+      keyword: r.keyword,
+      createdAt: r.created_at,
+    })),
+  ).map((c) => ({ ...c, ...contacts.get(c.contactId)! }));
 }
