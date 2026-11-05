@@ -266,3 +266,14 @@ ADR-042. **No migration**, and no outside requests.
 - [x] E2E: workspace suggestions with sources, unsourced/old sales skipped, nothing saved until added; RentCast comparable from the saved answer; 390 px
 
 Shared files: `docs/DECISIONS.md` (ADR-042), `docs/TRAINING.md`.
+
+## Spanish message templates (branch `h4a/spanish-templates`)
+
+ADR-043 · migration `20261112010000_h4a_spanish_templates` (additive).
+
+- [x] Spanish version per sequence step; chosen by `contacts.language` (`stepForLanguage`, unit-tested), switchable, flagged when missing
+- [x] Spanish opt-out / start / help words (DB `sms_receive` + `classifyInboundSms`), Spanish HELP reply setting
+- [x] RLS suite `supabase/tests/h4a_spanish_rls.sql` (21) · e2e (sequences, texting webhook, 390 px)
+- [x] Live DB: applied 2026-11-05 with `docs/db-updates/2026-11-spanish-templates.sql`; verify on live 21 passed / 0 failed / 0 leftovers
+
+Shared files: `src/lib/db/types.ts` (regenerated), `docs/DECISIONS.md`, `docs/TRAINING.md`, `docs/ACCOUNTS.md`.

@@ -93,6 +93,7 @@ export default async function SmsSettingsPage({
             fromNumber: state.fromNumber ?? "",
             messagingServiceSid: state.messagingServiceSid ?? "",
             helpReply: state.helpReply ?? "",
+            helpReplyEs: state.helpReplyEs ?? "",
           }}
         />
         <SmsWebhookLinks base={base} hasWebhook={state.hasWebhook} />

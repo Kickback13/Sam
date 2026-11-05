@@ -112,3 +112,101 @@ test("Phase 4E: build a sequence, enroll a contact, steps come due for a person 
   );
   expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test("Spanish versions: Spanish contacts get them, a missing one is flagged, the person can switch", async ({
+  page,
+}) => {
+  const [{ id: lupe }] = await sql<{ id: string }>(
+    `insert into public.contacts (workspace_id, first_name, last_name, emails, language)
+     values (${WS}, 'Lupe', 'SeqTest', '[{"value": "lupe@example.test", "is_primary": true}]', 'es') returning id`,
+    [E2E_REALTY],
+  );
+  const [{ id: eddie }] = await sql<{ id: string }>(
+    `insert into public.contacts (workspace_id, first_name, last_name, emails)
+     values (${WS}, 'Eddie', 'SeqTest', '[{"value": "eddie@example.test", "is_primary": true}]') returning id`,
+    [E2E_REALTY],
+  );
+  await signIn(page);
+  await goto(page, `/w/${E2E_REALTY}/outreach/sequences/new`);
+  await hydrated(page);
+  const editor = page.getByTestId("sequence-editor");
+  await editor.getByLabel("Name").fill("E2E seq: bilingual");
+  await editor.getByTestId("seq-add-step").click();
+  await editor.getByTestId("seq-add-step").click();
+  const first = editor.getByTestId("seq-step").nth(0);
+  await first.getByLabel("Subject", { exact: true }).fill("Your building");
+  await first.getByLabel("Message", { exact: true }).fill("Hi {first_name}, would you sell?");
+  await first.getByTestId("seq-add-es").click();
+  const es = first.getByTestId("seq-step-es");
+  await es.getByLabel("Asunto (subject)").fill("Su edificio");
+  await es.getByLabel("Mensaje (message)").fill("Hola {first_name}, ¿consideraría vender?");
+  await editor
+    .getByTestId("seq-step")
+    .nth(1)
+    .getByLabel("Message", { exact: true })
+    .fill("Hi {first_name}, following up.");
+  await editor.getByTestId("seq-active").check();
+  await editor.getByTestId("seq-save").click();
+  await expectToast(page, "Sequence saved");
+  await page.waitForURL(/\/sequences\/[0-9a-f-]{36}$/);
+  // Saved: the Spanish version is there after a reload; the second step has none.
+  await page.reload();
+  await expect(page.getByTestId("seq-step-es")).toHaveCount(1);
+  await expect(page.getByLabel("Mensaje (message)")).toHaveValue(
+    "Hola {first_name}, ¿consideraría vender?",
+  );
+
+  // A Spanish contact gets the Spanish version, filled in.
+  await goto(page, `/w/${E2E_REALTY}/people/${lupe}`);
+  const card = page.getByTestId("contact-sequences");
+  await card.getByLabel("Sequence").selectOption({ label: "E2E seq: bilingual" });
+  await card.getByTestId("enroll-submit").click();
+  await expectToast(page, "Added to sequence");
+  const due = card.getByTestId("due-item");
+  await expect(due.getByTestId("due-language")).toContainText("Español");
+  await expect(due.getByLabel("Subject")).toHaveValue("Su edificio");
+  await expect(due.getByLabel("Message")).toHaveValue("Hola Lupe, ¿consideraría vender?");
+  await expect(due.getByTestId("due-open-email")).toHaveAttribute("href", /subject=Su%20edificio/);
+  // The person can switch to English and back.
+  await due.getByTestId("due-switch-language").click();
+  await expect(due.getByLabel("Message")).toHaveValue("Hi Lupe, would you sell?");
+  await due.getByTestId("due-switch-language").click();
+  await expect(due.getByLabel("Message")).toHaveValue("Hola Lupe, ¿consideraría vender?");
+  await due.getByTestId("due-mark-emailed").click();
+  await expectToast(page, "Marked as emailed");
+  const [act] = await sql<{ body: string; language: string }>(
+    `select body, metadata ->> 'language' as language from public.activities
+      where subject_id = $1 and type = 'email' order by created_at desc limit 1`,
+    [lupe],
+  );
+  expect(act.language).toBe("es");
+  expect(act.body).toContain("Hola Lupe");
+
+  // The next step has no Spanish version: English, flagged.
+  await sql(
+    `update public.outreach_enrollments set next_due_at = now() - interval '1 minute' where contact_id = $1`,
+    [lupe],
+  );
+  await page.reload();
+  await expect(due.getByTestId("due-no-spanish")).toBeVisible();
+  await expect(due.getByLabel("Message")).toHaveValue("Hi Lupe, following up.");
+
+  // An English contact gets English.
+  await goto(page, `/w/${E2E_REALTY}/people/${eddie}`);
+  await card.getByLabel("Sequence").selectOption({ label: "E2E seq: bilingual" });
+  await card.getByTestId("enroll-submit").click();
+  await expectToast(page, "Added to sequence");
+  await expect(due.getByTestId("due-language")).toContainText("English");
+  await expect(due.getByLabel("Message")).toHaveValue("Hi Eddie, would you sell?");
+  await expect(due.getByTestId("due-no-spanish")).toHaveCount(0);
+
+  // The editor with a Spanish version open, at phone width.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await goto(page, `/w/${E2E_REALTY}/outreach/sequences`);
+  await page.getByRole("link", { name: "E2E seq: bilingual" }).first().click();
+  await expect(page.getByTestId("seq-step-es")).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});

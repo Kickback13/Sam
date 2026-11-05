@@ -255,9 +255,16 @@ const STOP_WORDS = [
   "REVOKE",
   "OPTOUT",
   "OPT OUT",
+  // Spanish (ADR-043)
+  "ALTO",
+  "PARA",
+  "PARAR",
+  "DETENER",
+  "CANCELAR",
+  "BAJA",
 ];
-const START_WORDS = ["START", "UNSTOP"];
-const HELP_WORDS = ["HELP", "INFO"];
+const START_WORDS = ["START", "UNSTOP", "INICIAR", "REANUDAR"];
+const HELP_WORDS = ["HELP", "INFO", "AYUDA"];
 
 export type InboundKeyword = "stop" | "start" | "help" | null;
 

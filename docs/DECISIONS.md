@@ -409,3 +409,26 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - **A person adds them.** Each suggestion has **Add**, and there is an **Add all** button. The browser sends only suggestion keys. The server recomputes the suggestions and saves exactly those rows, so a saved comp always has its source's own numbers. Viewers see suggestions but can't add them. Each add is audited as `comp.create` with `suggested: true`.
 
 **Consequences:** free and always current, and the suggestions get better as Sam's data grows: imported properties with sale dates, verified records, RentCast pulls. Each page view reads at most 2,000 recorded sales and 2,000 saved comps from the workspace. A paid comps feed could be added later as a fourth origin behind the same panel.
+
+## ADR-043 — Spanish message templates: a Spanish version per step, chosen by the contact's language; Spanish opt-out words
+
+**Context:** many of Sam's owners and tenants prefer Spanish (`contacts.language` has been `en`/`es` since Phase 1). Follow-up sequences (ADR-039) had English text only, and inbound texting (ADR-036) recognized only English keywords. Someone who texts ALTO must be opted out just like someone who texts STOP.
+
+**Decision:**
+
+- **Steps:** each sequence step can have a Spanish version (`outreach_sequence_steps.subject_es`, `body_es`), with the same 1,600-character limit for texts. A Spanish subject needs a Spanish message. With no Spanish subject, the English one is used.
+- **Choosing a version:** one pure function, `stepForLanguage` (`src/features/outreach/sequences.ts`), unit-tested:
+  - a contact with language `es` gets the Spanish version when the step has one;
+  - otherwise English is shown with a "Prefers Spanish, but this step has no Spanish version" note;
+  - the person can switch before sending.
+    The merge fields are the same in both languages. The chosen language is recorded on the email activity (`metadata.language`). Every gate stays as it was, and nothing sends by itself.
+- **Inbound keywords:** `public.sms_receive` is replaced with the same signature, and `classifyInboundSms` mirrors it. The whole message, trimmed and case-insensitive, is matched:
+  - **ALTO, PARA, PARAR, DETENER, CANCELAR, BAJA** opt out like STOP;
+  - **INICIAR, REANUDAR** work like START;
+  - **AYUDA** works like HELP.
+
+  A sentence that only starts with one of these words ("Para mañana está bien") stays an ordinary text.
+
+- **Spanish HELP reply:** owners and admins can set `sms_settings.help_reply_es`. AYUDA gets it, falling back to the English reply when none is set, including on Twilio retries. This answers the person who texted, as HELP already does.
+
+**Consequences:** migration `20261112010000_h4a_spanish_templates` is additive (new columns and a replaced function, no drops). Twilio's own opt-out confirmation covers English words only until Sam adds the Spanish words in Twilio's Advanced Opt-Out (`docs/ACCOUNTS.md`). Newsletters and the booking page are still English only, and can reuse the same pattern later.

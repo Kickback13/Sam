@@ -3687,12 +3687,14 @@ export type Database = {
       outreach_sequence_steps: {
         Row: {
           body: string;
+          body_es: string | null;
           channel: string;
           created_at: string;
           id: string;
           position: number;
           sequence_id: string;
           subject: string | null;
+          subject_es: string | null;
           updated_at: string;
           wait_days: number;
           workspace_id: string;
@@ -3700,24 +3702,28 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           body: string;
+          body_es?: string | null;
           channel: string;
           created_at?: string;
           id?: string;
           position: number;
           sequence_id: string;
           subject?: string | null;
+          subject_es?: string | null;
           updated_at?: string;
           wait_days?: number;
           workspace_id: string;
         };
         Update: {
           body?: string;
+          body_es?: string | null;
           channel?: string;
           created_at?: string;
           id?: string;
           position?: number;
           sequence_id?: string;
           subject?: string | null;
+          subject_es?: string | null;
           updated_at?: string;
           wait_days?: number;
           workspace_id?: string;
@@ -4590,6 +4596,7 @@ export type Database = {
           enabled: boolean;
           from_number: string | null;
           help_reply: string | null;
+          help_reply_es: string | null;
           messaging_service_sid: string | null;
           updated_at: string;
           updated_by: string | null;
@@ -4602,6 +4609,7 @@ export type Database = {
           enabled?: boolean;
           from_number?: string | null;
           help_reply?: string | null;
+          help_reply_es?: string | null;
           messaging_service_sid?: string | null;
           updated_at?: string;
           updated_by?: string | null;
@@ -4613,6 +4621,7 @@ export type Database = {
           enabled?: boolean;
           from_number?: string | null;
           help_reply?: string | null;
+          help_reply_es?: string | null;
           messaging_service_sid?: string | null;
           updated_at?: string;
           updated_by?: string | null;
