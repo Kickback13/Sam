@@ -1123,6 +1123,182 @@ export type Database = {
           },
         ];
       };
+      booking_settings: {
+        Row: {
+          buffer_minutes: number;
+          created_at: string;
+          enabled: boolean;
+          feed_token_hash: string | null;
+          host_user_id: string | null;
+          hours: NonNullable<Json>;
+          intro: string | null;
+          location: string;
+          max_days_ahead: number;
+          meeting_minutes: number;
+          min_notice_hours: number;
+          time_zone: string;
+          title: string;
+          updated_at: string;
+          updated_by: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          buffer_minutes?: number;
+          created_at?: string;
+          enabled?: boolean;
+          feed_token_hash?: string | null;
+          host_user_id?: string | null;
+          hours?: NonNullable<Json>;
+          intro?: string | null;
+          location?: string;
+          max_days_ahead?: number;
+          meeting_minutes?: number;
+          min_notice_hours?: number;
+          time_zone?: string;
+          title?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          buffer_minutes?: number;
+          created_at?: string;
+          enabled?: boolean;
+          feed_token_hash?: string | null;
+          host_user_id?: string | null;
+          hours?: NonNullable<Json>;
+          intro?: string | null;
+          location?: string;
+          max_days_ahead?: number;
+          meeting_minutes?: number;
+          min_notice_hours?: number;
+          time_zone?: string;
+          title?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "booking_settings_host_user_id_fkey";
+            columns: ["host_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "booking_settings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: true;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bookings: {
+        Row: {
+          canceled_at: string | null;
+          client_key: string | null;
+          contact_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          email: string | null;
+          ends_at: string;
+          host_user_id: string | null;
+          id: string;
+          kind: string;
+          name: string | null;
+          note: string | null;
+          phone: string | null;
+          source: string;
+          starts_at: string;
+          status: string;
+          title: string | null;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          canceled_at?: string | null;
+          client_key?: string | null;
+          contact_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          ends_at: string;
+          host_user_id?: string | null;
+          id?: string;
+          kind?: string;
+          name?: string | null;
+          note?: string | null;
+          phone?: string | null;
+          source?: string;
+          starts_at: string;
+          status?: string;
+          title?: string | null;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          canceled_at?: string | null;
+          client_key?: string | null;
+          contact_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          ends_at?: string;
+          host_user_id?: string | null;
+          id?: string;
+          kind?: string;
+          name?: string | null;
+          note?: string | null;
+          phone?: string | null;
+          source?: string;
+          starts_at?: string;
+          status?: string;
+          title?: string | null;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookings_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_host_user_id_fkey";
+            columns: ["host_user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "bookings_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       companies: {
         Row: {
           address: string | null;
@@ -4303,6 +4479,61 @@ export type Database = {
           name: string;
         }[];
       };
+      booking_feed: {
+        Args: { p_token: string };
+        Returns: {
+          email: string;
+          ends_at: string;
+          id: string;
+          kind: string;
+          location: string;
+          name: string;
+          note: string;
+          phone: string;
+          starts_at: string;
+          status: string;
+          title: string;
+          updated_at: string;
+          workspace_name: string;
+        }[];
+      };
+      booking_public_book: {
+        Args: {
+          p_client_key: string;
+          p_email: string;
+          p_name: string;
+          p_note: string;
+          p_phone: string;
+          p_slug: string;
+          p_starts_at: string;
+        };
+        Returns: {
+          booking_id: string;
+          ends_at: string;
+          starts_at: string;
+        }[];
+      };
+      booking_public_page: {
+        Args: { p_slug: string };
+        Returns: {
+          brand: Json;
+          host_name: string;
+          intro: string;
+          location: string;
+          meeting_minutes: number;
+          time_zone: string;
+          title: string;
+          workspace_name: string;
+        }[];
+      };
+      booking_public_slots: {
+        Args: { p_slug: string };
+        Returns: {
+          ends_at: string;
+          starts_at: string;
+        }[];
+      };
+      booking_rotate_feed: { Args: { p_workspace_id: string }; Returns: string };
       contact_facets: { Args: { p_workspace_id: string }; Returns: Json };
       contacts_bulk_tag: {
         Args: {

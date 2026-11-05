@@ -19,6 +19,10 @@ const ANON_DEFINER_ALLOWED = [
   "accept_network_invite", // refuses without a signed-in user
   "azh_issue_upload_tickets", // public AZH request form (slug + rate limits)
   "azh_public_form", // public AZH request form settings
+  "booking_feed", // private calendar feed (random token)
+  "booking_public_book", // public booking page (slug, page on, open slot, rate limits)
+  "booking_public_page", // public booking page text (only while on)
+  "booking_public_slots", // public booking page open times (only while on)
   "get_invite", // invite link page
   "get_network_invite", // network invite link page
   "ghl_connection", // owner/admin check inside

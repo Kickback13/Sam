@@ -18,6 +18,9 @@ const PUBLIC_PATHS = [
   "/api/unsubscribe",
   // AI receptionist webhooks (Phase 7): token + provider signature, no login.
   "/api/receptionist",
+  // Booking page (Phase 4C): leads book without an account; Sam's private calendar feed.
+  "/b",
+  "/api/calendar",
 ];
 
 // Network (Phase 6): the invite page and the install files (manifest, icons) open without a login;
