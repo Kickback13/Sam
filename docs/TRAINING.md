@@ -249,6 +249,17 @@ The week view of estimate visits for both offices. Booking a visit that overlaps
 
 ---
 
+## Reports (both businesses)
+
+**Reports** (under Admin in the menu) shows how the business is doing over the last 30 days, 90 days or 12 months:
+
+- open deals or projects and their value by stage;
+- won, lost and win rate, and why deals were lost;
+- new contacts and calls per week;
+- Housing4All: listings, booked calls and texts. AZH: requests by office and estimates sent and accepted.
+
+Every number is counted live from your records. Under any chart, **Show as table** lists the numbers.
+
 ## Who can do what
 
 | Role       | Can                                                                     |

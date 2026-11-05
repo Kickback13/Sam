@@ -21,6 +21,7 @@ export type IconName =
   | "requests"
   | "community"
   | "messages"
+  | "reports"
   | "tasks";
 
 export type CountKey = "contacts" | "companies" | "properties" | "open_deals" | "my_open_tasks";
@@ -144,6 +145,7 @@ const REAL_ESTATE_NAV: NavItem[] = [
     icon: "receptionist",
     group: "Engage",
   },
+  { key: "reports", label: "Reports", path: "reports", icon: "reports", group: "Admin" },
   { key: "settings", label: "Settings", path: "settings", icon: "settings", group: "Admin" },
 ];
 
@@ -204,6 +206,7 @@ const CONSTRUCTION_NAV: NavItem[] = [
     icon: "messages",
     group: "Engage",
   },
+  { key: "reports", label: "Reports", path: "reports", icon: "reports", group: "Admin" },
   { key: "settings", label: "Settings", path: "settings", icon: "settings", group: "Admin" },
 ];
 
