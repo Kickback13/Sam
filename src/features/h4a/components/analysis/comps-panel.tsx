@@ -16,7 +16,9 @@ import { cn } from "@/lib/utils";
 import type { FieldErrors } from "@/lib/validation/common";
 
 import type { AnalysisComp } from "../../server/analysis";
+import type { CompSuggestions } from "../../server/comp-suggestions";
 import { addComp, deleteComp } from "../../server/actions/analysis";
+import { SuggestedComps } from "./suggested-comps";
 
 type Kind = "sale" | "rent";
 const EMPTY = {
@@ -41,9 +43,11 @@ export function CompsPanel({
   propertyId,
   comps,
   stats,
+  suggestions,
 }: {
   propertyId: string;
   comps: AnalysisComp[];
+  suggestions: CompSuggestions | null;
   stats: {
     saleCount: number;
     saleMedianPricePerUnit: number | null;
@@ -126,7 +130,7 @@ export function CompsPanel({
         <CardTitle>Comps</CardTitle>
         <p className="text-xs text-muted-foreground">
           From Sam&apos;s exports, broker packages or public records — every comp says where it came
-          from and as of when. Automatic comps arrive when a property data service is connected.
+          from and as of when. Suggested comps are found in data already in this workspace.
         </p>
       </CardHeader>
       <CardContent className="space-y-4 pt-1" data-testid="comps-panel">
@@ -218,6 +222,8 @@ export function CompsPanel({
             </ul>
           </div>
         )}
+
+        {suggestions && <SuggestedComps propertyId={propertyId} suggestions={suggestions} />}
 
         {ws.canWrite &&
           (open ? (

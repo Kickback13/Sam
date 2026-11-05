@@ -9,6 +9,7 @@ import { aiSummaryAdapter } from "@/features/h4a/ai/summary";
 import { PropertyDataPanel } from "@/features/h4a/components/analysis/property-data-panel";
 import { getDataApiState, getPropertyPulls } from "@/features/h4a/server/property-data-queries";
 import { getAnalysisData } from "@/features/h4a/server/analysis";
+import { getCompSuggestions } from "@/features/h4a/server/comp-suggestions";
 import { getRealEstateContext } from "@/features/h4a/server/context";
 
 export const metadata: Metadata = { title: "Deal analysis" };
@@ -31,9 +32,10 @@ export default async function AnalysisPage({
         ? data.scenarios[0].id
         : null;
   const p = data.property;
-  const [dataState, pulls] = await Promise.all([
+  const [dataState, pulls, suggestions] = await Promise.all([
     getDataApiState(workspace.id),
     getPropertyPulls(workspace.id, p.id),
+    getCompSuggestions(workspace.id, p.id),
   ]);
   const ai = aiSummaryAdapter();
 
@@ -59,7 +61,12 @@ export default async function AnalysisPage({
           }}
         />
         <div className="grid gap-5 lg:grid-cols-2">
-          <CompsPanel propertyId={p.id} comps={data.comps} stats={data.compStats} />
+          <CompsPanel
+            propertyId={p.id}
+            comps={data.comps}
+            stats={data.compStats}
+            suggestions={suggestions}
+          />
           <div className="space-y-5">
             <AiSummaryCard
               connected={ai.connected}

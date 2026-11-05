@@ -10,6 +10,7 @@ import { writeAudit } from "@/server/audit";
 import { friendlyDbError } from "@/server/errors";
 
 import { buildFacts } from "../../ai/citations";
+import { SUGGEST_LIMITS, suggestionToCompInput } from "../../comps/suggest";
 import { generateSummary, type AiSummaryResult } from "../../ai/summary";
 import { redFlags } from "../../underwriting/flags";
 import { underwrite } from "../../underwriting/math";
@@ -21,6 +22,7 @@ import {
   underwritingInputsSchema,
 } from "../../underwriting/schema";
 import { getAnalysisData } from "../analysis";
+import { getCompSuggestions } from "../comp-suggestions";
 
 const permission = (code: string | undefined, fallback: string) =>
   code === "42501" ? "Viewers can't change the analysis." : fallback;
@@ -230,6 +232,74 @@ export async function deleteComp(input: z.input<typeof idEnvelope>): Promise<Act
   });
   revalidateWorkspace();
   return { ok: true, data: undefined };
+}
+
+const suggestedEnvelope = z.object({
+  workspaceId: z.uuid(),
+  propertyId: z.uuid(),
+  keys: z
+    .array(z.string().regex(/^(sale|comp|rc):[0-9a-f-]{36}(:\d{1,2})?$/))
+    .min(1)
+    .max(SUGGEST_LIMITS.perKind * 2),
+});
+
+/**
+ * Add suggested comps (ADR-042). The client sends only suggestion keys; the server
+ * recomputes the suggestions under the user's session and saves exactly those rows,
+ * so a comp saved under a source label always carries that source's numbers.
+ */
+export async function addSuggestedComps(
+  input: z.input<typeof suggestedEnvelope>,
+): Promise<ActionResult<{ added: number; skipped: number }>> {
+  const env = suggestedEnvelope.safeParse(input);
+  if (!env.success) return { ok: false, error: "Invalid request" };
+  const ctx = await actionContext();
+  if (!ctx) return NOT_SIGNED_IN;
+  const { workspaceId, propertyId } = env.data;
+
+  const suggestions = await getCompSuggestions(workspaceId, propertyId, ctx.supabase);
+  if (!suggestions) return { ok: false, error: "That property no longer exists." };
+  const byKey = new Map([...suggestions.sale, ...suggestions.rent].map((s) => [s.key, s]));
+  const keys = [...new Set(env.data.keys)];
+  const rows = [];
+  for (const key of keys) {
+    const s = byKey.get(key);
+    if (!s) continue;
+    const parsed = compInputSchema.safeParse(suggestionToCompInput(s));
+    if (parsed.success)
+      rows.push({ ...parsed.data, workspace_id: workspaceId, property_id: propertyId });
+  }
+  if (!rows.length)
+    return {
+      ok: false,
+      error: "Those suggestions changed or were already added. Reload to see the current list.",
+    };
+
+  const { data, error } = await ctx.supabase
+    .from("h4a_comps")
+    .insert(rows)
+    .select("id, kind, address, source_label");
+  if (error) return { ok: false, error: permission(error.code, friendlyDbError(error)) };
+  for (const c of data ?? [])
+    await writeAudit(ctx.supabase, {
+      workspaceId,
+      actorId: ctx.user.id,
+      action: "comp.create",
+      entityType: "comp",
+      entityId: c.id,
+      diff: {
+        property_id: propertyId,
+        kind: c.kind,
+        address: c.address,
+        source_label: c.source_label,
+        suggested: true,
+      },
+    });
+  revalidateWorkspace();
+  return {
+    ok: true,
+    data: { added: data?.length ?? 0, skipped: keys.length - (data?.length ?? 0) },
+  };
 }
 
 const summaryEnvelope = z.object({

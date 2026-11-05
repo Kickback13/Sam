@@ -12,6 +12,16 @@ test("Deal analysis works at 390px: inputs, results, flags, comps — no sideway
      returning id`,
     [E2E_REALTY],
   );
+  // A nearby sale on file, so a suggested comp shows (long addresses must wrap, not scroll).
+  await sql(
+    `insert into public.properties (workspace_id, address, city, zip, units, last_sale_price, last_sale_date, field_sources)
+     values ((select id from public.workspaces where slug = $1),
+       '391 Mobile Analysis Street With A Rather Long Name Unit Block B', 'San Diego', '92104', 6,
+       1680000, current_date - 90,
+       jsonb_build_object('last_sale_price', jsonb_build_object('source', 'county',
+         'label', 'County record (e2e mobile)', 'fetched_at', now()::text)))`,
+    [E2E_REALTY],
+  );
   await signIn(page);
   await goto(page, `/w/${E2E_REALTY}/properties/${p.id}/analysis`);
   const overflow = await page.evaluate(
@@ -30,6 +40,11 @@ test("Deal analysis works at 390px: inputs, results, flags, comps — no sideway
   expect(overflowAfter, "horizontal overflow with a unit-mix row").toBeLessThanOrEqual(1);
   await expect(page.getByTestId("uw-flags")).toBeVisible();
   await expect(page.getByTestId("comps-panel")).toBeVisible();
+  await expect(page.getByTestId("suggested-comp").first()).toBeVisible();
+  const overflowComps = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
+  expect(overflowComps, "horizontal overflow with suggested comps").toBeLessThanOrEqual(1);
 
   await goto(page, `/w/${E2E_REALTY}/analyze`);
   const listOverflow = await page.evaluate(
