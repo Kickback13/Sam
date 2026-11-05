@@ -1,4 +1,4 @@
-import { Info, Trophy, UserRoundSearch } from "lucide-react";
+import { Building2, Info, Trophy, UserRoundSearch } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -9,10 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AddBrokerButton } from "@/features/h4a/components/add-broker-button";
-import { BROKER_SORTS, DEFAULT_MIN_YEARS, type BrokerSort } from "@/features/h4a/prospects/rank";
+import {
+  BROKER_SORTS,
+  DEFAULT_MIN_YEARS,
+  PM_SORTS,
+  type BrokerSort,
+  type PmSort,
+} from "@/features/h4a/prospects/rank";
 import { getRealEstateContext } from "@/features/h4a/server/context";
-import { listBrokers, listLongHoldOwners } from "@/features/h4a/server/prospects";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import {
+  listBrokers,
+  listLongHoldOwners,
+  listPropertyManagers,
+} from "@/features/h4a/server/prospects";
+import { formatCurrency, formatDate, formatNumber, formatRelative } from "@/lib/format";
 import { formatPhone } from "@/lib/normalize";
 import { cn } from "@/lib/utils";
 
@@ -34,23 +44,25 @@ export default async function ProspectsPage({
 }: PageProps<"/w/[slug]/prospects">) {
   const { slug } = await params;
   const sp = await searchParams;
-  const tab = first(sp.tab) === "owners" ? "owners" : "brokers";
+  const tab =
+    first(sp.tab) === "owners" ? "owners" : first(sp.tab) === "managers" ? "managers" : "brokers";
   const { workspace } = await getRealEstateContext(slug);
 
   return (
     <>
       <PageHeader
         title="Prospects"
-        description="Who to call next, from data already in this workspace. Brokers are ranked by the listings you received from them; long-hold owners come from each property's last sale date. Lists only: nothing is sent from here."
+        description="Who to call next, from data already in this workspace. Brokers are ranked by the listings you received from them; long-hold owners come from each property's last sale date; property managers come from People and Companies. Lists only: nothing is sent from here."
       />
       <nav aria-label="Prospects" className="mb-4 flex gap-1 overflow-x-auto border-b">
         {[
           ["brokers", "Brokers"],
           ["owners", "Long-hold owners"],
+          ["managers", "Property managers"],
         ].map(([key, label]) => (
           <Link
             key={key}
-            href={`/w/${slug}/prospects${key === "owners" ? "?tab=owners" : ""}`}
+            href={`/w/${slug}/prospects${key === "brokers" ? "" : `?tab=${key}`}`}
             aria-current={tab === key ? "page" : undefined}
             className={cn(
               "-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground",
@@ -69,6 +81,12 @@ export default async function ProspectsPage({
             (BROKER_SORTS.find((s) => s.value === first(sp.sort))?.value ??
               "listings") as BrokerSort
           }
+        />
+      ) : tab === "managers" ? (
+        <ManagersTab
+          slug={slug}
+          workspaceId={workspace.id}
+          sort={(PM_SORTS.find((s) => s.value === first(sp.sort))?.value ?? "deals") as PmSort}
         />
       ) : (
         <OwnersTab
@@ -349,6 +367,128 @@ async function OwnersTab({
           </ul>
         </>
       )}
+    </div>
+  );
+}
+
+async function ManagersTab({
+  slug,
+  workspaceId,
+  sort,
+}: {
+  slug: string;
+  workspaceId: string;
+  sort: PmSort;
+}) {
+  const { managers, truncated } = await listPropertyManagers(workspaceId, sort);
+  if (!managers.length)
+    return (
+      <EmptyState
+        icon={Building2}
+        title="No property managers yet"
+        description="Mark a company's type as Property management, or give a person the Property manager role (People → Edit, or a CSV import with a role column). They'll be listed here with your deals together and when you last talked."
+      />
+    );
+  return (
+    <div className="space-y-3">
+      <nav className="flex flex-wrap gap-1" aria-label="Sort">
+        {PM_SORTS.map((s) => (
+          <Link
+            key={s.value}
+            href={`/w/${slug}/prospects?tab=managers${s.value === "deals" ? "" : `&sort=${s.value}`}`}
+            aria-current={sort === s.value ? "page" : undefined}
+            data-testid={`pm-sort-${s.value}`}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-semibold",
+              sort === s.value
+                ? "border-foreground bg-foreground text-background"
+                : "text-muted-foreground hover:bg-muted",
+            )}
+          >
+            {s.label}
+          </Link>
+        ))}
+      </nav>
+      {truncated && (
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Info className="size-3.5" aria-hidden /> Showing the first 1,000.
+        </p>
+      )}
+      <ol className="divide-y rounded-xl border bg-card" data-testid="pm-list">
+        {managers.map((m) => (
+          <li
+            key={m.key}
+            className="flex flex-wrap items-start justify-between gap-3 p-3"
+            data-testid="pm-row"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">
+                {m.companyId ? (
+                  <Link href={`/w/${slug}/companies/${m.companyId}`} className="hover:underline">
+                    {m.name}
+                  </Link>
+                ) : m.people[0] ? (
+                  <Link href={`/w/${slug}/people/${m.people[0].id}`} className="hover:underline">
+                    {m.name}
+                  </Link>
+                ) : (
+                  m.name
+                )}
+                {!m.companyId && (
+                  <Badge variant="secondary" className="ml-2 align-middle">
+                    Independent
+                  </Badge>
+                )}
+              </p>
+              <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                {m.city && <span>{m.city}</span>}
+                {m.phone && <span className="tabular">{formatPhone(m.phone)}</span>}
+                {m.email && <span className="break-all">{m.email}</span>}
+              </p>
+              {m.companyId && (
+                <p className="mt-1 text-sm">
+                  {m.people.length === 0 ? (
+                    <span className="text-muted-foreground">No people added yet</span>
+                  ) : (
+                    m.people.map((p, i) => (
+                      <span key={p.id}>
+                        {i > 0 && ", "}
+                        <Link
+                          href={`/w/${slug}/people/${p.id}`}
+                          className="text-brand-accent-text hover:underline"
+                        >
+                          {p.name}
+                        </Link>
+                      </span>
+                    ))
+                  )}
+                </p>
+              )}
+            </div>
+            <dl className="grid grid-cols-3 gap-x-4 text-right text-xs">
+              <div>
+                <dt className="text-muted-foreground">Deals</dt>
+                <dd className="font-semibold tabular">
+                  {formatNumber(m.deals.total)}
+                  {m.deals.won > 0 && (
+                    <span className="font-normal text-muted-foreground"> · {m.deals.won} won</span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Last talked</dt>
+                <dd className="font-semibold" data-testid="pm-last">
+                  {m.lastContactAt ? formatRelative(m.lastContactAt) : "Never"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">90 days</dt>
+                <dd className="font-semibold tabular">{formatNumber(m.touches90)}</dd>
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

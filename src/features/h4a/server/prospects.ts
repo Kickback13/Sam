@@ -6,6 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   heldSinceCutoff,
   rankBrokers,
+  rankPropertyManagers,
+  type PmContact,
+  type PmDeals,
+  type PmSort,
+  type PropertyManager,
   yearsHeld,
   type Broker,
   type BrokerListing,
@@ -195,4 +200,129 @@ export async function listLongHoldOwners(
     };
   });
   return { owners, withoutSaleDate: missing.count ?? 0, truncated: owners.length === 2_000 };
+}
+
+// ---------------------------------------------------------------------------
+// Property managers
+// ---------------------------------------------------------------------------
+
+const MAX_PM_CONTACTS = 1000;
+type Entry = { value?: unknown; is_primary?: boolean };
+const primary = (v: unknown): string | null => {
+  const list = (Array.isArray(v) ? v : []) as Entry[];
+  const pick = list.find((e) => e?.is_primary) ?? list[0];
+  return typeof pick?.value === "string" ? pick.value : null;
+};
+
+/** Property-management companies and property managers in People, with deals and last contact. */
+export async function listPropertyManagers(
+  workspaceId: string,
+  sort: PmSort,
+): Promise<{ managers: PropertyManager[]; truncated: boolean }> {
+  const supabase = await createClient();
+  const { data: companies, error: coErr } = await supabase
+    .from("companies")
+    .select("id, name, phone, email, city")
+    .eq("workspace_id", workspaceId)
+    .eq("type", "property_management")
+    .is("deleted_at", null)
+    .order("name")
+    .limit(MAX_PM_CONTACTS);
+  if (coErr) throw coErr;
+  const companyIds = (companies ?? []).map((c) => c.id);
+
+  const contactCols = "id, full_name, company_id, phones, emails";
+  const [byRole, byCompany] = await Promise.all([
+    supabase
+      .from("contacts")
+      .select(contactCols)
+      .eq("workspace_id", workspaceId)
+      .is("deleted_at", null)
+      .contains("roles", ["property_manager"])
+      .limit(MAX_PM_CONTACTS),
+    companyIds.length
+      ? supabase
+          .from("contacts")
+          .select(contactCols)
+          .eq("workspace_id", workspaceId)
+          .is("deleted_at", null)
+          .in("company_id", companyIds.slice(0, 500))
+          .limit(MAX_PM_CONTACTS)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (byRole.error) throw byRole.error;
+  if (byCompany.error) throw byCompany.error;
+  const seen = new Set<string>();
+  const contacts: PmContact[] = [];
+  for (const c of [...(byRole.data ?? []), ...(byCompany.data ?? [])]) {
+    if (seen.has(c.id)) continue;
+    seen.add(c.id);
+    contacts.push({
+      id: c.id,
+      name: c.full_name?.trim() || primary(c.emails) || primary(c.phones) || "Unnamed",
+      companyId: c.company_id,
+      phone: primary(c.phones),
+      email: primary(c.emails),
+    });
+  }
+  const ids = contacts.map((c) => c.id);
+
+  const deals = new Map<string, PmDeals>();
+  const lastTouch = new Map<string, string>();
+  const touches90 = new Map<string, number>();
+  const since90 = new Date(Date.now() - 90 * 86400 * 1000).toISOString();
+  for (let i = 0; i < ids.length; i += 200) {
+    const chunk = ids.slice(i, i + 200);
+    const [primaryDeals, roleDeals, acts] = await Promise.all([
+      supabase
+        .from("deals")
+        .select("id, status, primary_contact_id")
+        .eq("workspace_id", workspaceId)
+        .is("deleted_at", null)
+        .in("primary_contact_id", chunk),
+      supabase
+        .from("deal_contacts")
+        .select(
+          "contact_id, deal:deals!deal_contacts_workspace_id_deal_id_fkey(id, status, deleted_at)",
+        )
+        .eq("workspace_id", workspaceId)
+        .in("contact_id", chunk),
+      supabase
+        .from("activities")
+        .select("subject_id, occurred_at")
+        .eq("workspace_id", workspaceId)
+        .eq("subject_type", "contact")
+        .in("type", ["call", "note", "sms", "email", "meeting"])
+        .in("subject_id", chunk)
+        .order("occurred_at", { ascending: false })
+        .limit(5000),
+    ]);
+    for (const r of [primaryDeals, roleDeals, acts]) if (r.error) throw r.error;
+    const counted = new Set<string>();
+    const add = (contactId: string, dealId: string, status: string) => {
+      if (counted.has(`${contactId}:${dealId}`)) return;
+      counted.add(`${contactId}:${dealId}`);
+      const d = deals.get(contactId) ?? { open: 0, won: 0, total: 0 };
+      d.total += 1;
+      if (status === "open") d.open += 1;
+      if (status === "won") d.won += 1;
+      deals.set(contactId, d);
+    };
+    for (const d of primaryDeals.data ?? [])
+      if (d.primary_contact_id) add(d.primary_contact_id, d.id, d.status);
+    for (const dc of roleDeals.data ?? [])
+      if (dc.deal && !dc.deal.deleted_at) add(dc.contact_id, dc.deal.id, dc.deal.status);
+    for (const a of acts.data ?? []) {
+      if (!lastTouch.has(a.subject_id)) lastTouch.set(a.subject_id, a.occurred_at);
+      if (a.occurred_at >= since90)
+        touches90.set(a.subject_id, (touches90.get(a.subject_id) ?? 0) + 1);
+    }
+  }
+
+  return {
+    managers: rankPropertyManagers(companies ?? [], contacts, deals, lastTouch, touches90, sort),
+    truncated:
+      (byRole.data?.length ?? 0) === MAX_PM_CONTACTS ||
+      (companies?.length ?? 0) === MAX_PM_CONTACTS,
+  };
 }
