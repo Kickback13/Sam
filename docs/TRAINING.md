@@ -67,6 +67,7 @@ Who to call next, built from data already in the workspace. Nothing is sent from
 - **Long-hold owners:** properties whose last sale was at least 15 years ago (change it with the filters, along with minimum units and ZIP).
   - Each row shows the years held, the sale date's source, and the owner, with do-not-call or unsubscribed warnings.
   - Properties with no sale date yet are counted at the top: add the date on the property to include them.
+- **Property managers:** every company whose type is _Property management_ (with its people), plus anyone with the _Property manager_ role who isn't at a company yet. Each row shows deals you've had together, when you last talked (a logged call, text, note, email or meeting), and touches in the last 90 days. Sort by **Longest since we talked** for a follow-up list.
 
 ### Pipeline
 

@@ -180,3 +180,117 @@ export function heldSinceCutoff(minYears: number, today: Date): string {
   );
   return d.toISOString().slice(0, 10);
 }
+
+// ---------------------------------------------------------------------------
+// Property managers (from People and Companies already in the workspace)
+// ---------------------------------------------------------------------------
+
+export type PmCompany = {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  city: string | null;
+};
+
+export type PmContact = {
+  id: string;
+  name: string;
+  companyId: string | null;
+  phone: string | null;
+  email: string | null;
+};
+
+export type PmDeals = { open: number; won: number; total: number };
+
+export type PropertyManager = {
+  key: string;
+  companyId: string | null;
+  name: string;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  people: { id: string; name: string }[];
+  deals: PmDeals;
+  /** Latest logged call, note, text or meeting with any of its people. */
+  lastContactAt: string | null;
+  /** Logged touches in the last 90 days. */
+  touches90: number;
+};
+
+export const PM_SORTS = [
+  { value: "deals", label: "Most deals together" },
+  { value: "stale", label: "Longest since we talked" },
+  { value: "recent", label: "Talked most recently" },
+  { value: "name", label: "Name" },
+] as const;
+export type PmSort = (typeof PM_SORTS)[number]["value"];
+
+/**
+ * One row per property-management company (its people grouped under it), plus one row
+ * per property manager who isn't at a company yet.
+ */
+export function rankPropertyManagers(
+  companies: PmCompany[],
+  contacts: PmContact[],
+  dealsByContact: Map<string, PmDeals>,
+  lastTouchByContact: Map<string, string>,
+  touches90ByContact: Map<string, number>,
+  sort: PmSort,
+): PropertyManager[] {
+  const rows = new Map<string, PropertyManager>();
+  for (const c of companies)
+    rows.set(`c:${c.id}`, {
+      key: `c:${c.id}`,
+      companyId: c.id,
+      name: c.name,
+      city: c.city,
+      phone: c.phone,
+      email: c.email,
+      people: [],
+      deals: { open: 0, won: 0, total: 0 },
+      lastContactAt: null,
+      touches90: 0,
+    });
+  for (const p of contacts) {
+    const key = p.companyId && rows.has(`c:${p.companyId}`) ? `c:${p.companyId}` : `p:${p.id}`;
+    let row = rows.get(key);
+    if (!row) {
+      row = {
+        key,
+        companyId: null,
+        name: p.name,
+        city: null,
+        phone: p.phone,
+        email: p.email,
+        people: [],
+        deals: { open: 0, won: 0, total: 0 },
+        lastContactAt: null,
+        touches90: 0,
+      };
+      rows.set(key, row);
+    }
+    row.people.push({ id: p.id, name: p.name });
+    row.phone ??= p.phone;
+    row.email ??= p.email;
+    const d = dealsByContact.get(p.id);
+    if (d) {
+      row.deals.open += d.open;
+      row.deals.won += d.won;
+      row.deals.total += d.total;
+    }
+    const last = lastTouchByContact.get(p.id);
+    if (last && (!row.lastContactAt || last > row.lastContactAt)) row.lastContactAt = last;
+    row.touches90 += touches90ByContact.get(p.id) ?? 0;
+  }
+  const list = [...rows.values()];
+  const byName = (a: PropertyManager, b: PropertyManager) => a.name.localeCompare(b.name);
+  const time = (s: string | null) => (s ? Date.parse(s) : 0);
+  const cmp: Record<PmSort, (a: PropertyManager, b: PropertyManager) => number> = {
+    deals: (a, b) => b.deals.total - a.deals.total || b.deals.won - a.deals.won || byName(a, b),
+    stale: (a, b) => time(a.lastContactAt) - time(b.lastContactAt) || byName(a, b),
+    recent: (a, b) => time(b.lastContactAt) - time(a.lastContactAt) || byName(a, b),
+    name: byName,
+  };
+  return list.sort(cmp[sort]);
+}
