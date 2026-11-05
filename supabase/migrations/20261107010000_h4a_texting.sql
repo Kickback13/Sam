@@ -110,6 +110,21 @@ create policy "senders record the result" on public.sms_messages for update to a
          and status = 'queued' and sent_by = (select auth.uid()))
   with check (status in ('queued', 'sent', 'failed'));
 
+-- Texting window (TCPA: 8am–9pm at most) in the workspace's time zone at `p_at`.
+create or replace function app_private.sms_in_window(p_workspace_id uuid, p_at timestamptz)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select extract(hour from p_at at time zone coalesce(o.time_zone, 'America/Los_Angeles'))::int
+           between coalesce(o.sms_send_from, 8) and coalesce(o.sms_send_until, 21) - 1
+  from (select 1) one
+  left join public.outreach_settings o on o.workspace_id = p_workspace_id;
+$$;
+revoke all on function app_private.sms_in_window(uuid, timestamptz) from public, anon, authenticated;
+
 -- ---------------------------------------------------------------------------
 -- The gates, enforced by the database (the app checks first and explains;
 -- this is the authority).
@@ -123,9 +138,6 @@ as $$
 declare
   s public.sms_settings;
   c public.contacts;
-  o public.outreach_settings;
-  tz text;
-  local_hour int;
   phone_type text;
 begin
   if new.direction <> 'out' or new.status <> 'queued' then
@@ -170,10 +182,7 @@ begin
     raise exception 'Blocked: this contact texted STOP' using errcode = 'PT403';
   end if;
 
-  select * into o from public.outreach_settings where workspace_id = new.workspace_id;
-  tz := coalesce(o.time_zone, 'America/Los_Angeles');
-  local_hour := extract(hour from now() at time zone tz)::int;
-  if local_hour < coalesce(o.sms_send_from, 8) or local_hour >= coalesce(o.sms_send_until, 21) then
+  if not app_private.sms_in_window(new.workspace_id, now()) then
     raise exception 'Blocked: outside texting hours' using errcode = 'PT403';
   end if;
 

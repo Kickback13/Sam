@@ -80,8 +80,9 @@ test("AZH communication hub: one timeline per contact with filters", async ({ pa
   // Messaging is labeled, not faked.
   await goto(page, `${base}/people/${contactId}`);
   await expect(hub.getByTestId("hub-messaging-status")).toContainText(
-    "Texts and emails: not connected.",
+    "will show here once texting is set up",
   );
+  await expect(hub.getByTestId("hub-messaging-status")).toContainText("Emails: not connected.");
 
   // Works at phone width.
   await page.setViewportSize({ width: 390, height: 844 });

@@ -91,6 +91,7 @@ describe("AZH communication hub", () => {
       { id: "a1", type: "call", occurredAt: "2026-11-02T00:00:00.000Z" },
       { id: "a1", type: "call", occurredAt: "2026-11-02T00:00:00.000Z" },
       { id: "a2", type: "note", occurredAt: "2026-11-04T00:00:00.000Z" },
+      { id: "a3", type: "sms", occurredAt: "2026-10-30T00:00:00.000Z" },
     ];
     const merged = mergeHub(calls, [...requestEvents(request), ...requestEvents(request)]);
     expect(merged.map((m) => (m.source === "activity" ? m.activity.id : m.event.id))).toEqual([
@@ -99,10 +100,12 @@ describe("AZH communication hub", () => {
       "a1",
       "request:r1:contacted",
       "request:r1:submitted",
+      "a3",
     ]);
     expect(merged.filter((m) => matchesFilter(m, "calls"))).toHaveLength(1);
     expect(merged.filter((m) => matchesFilter(m, "notes"))).toHaveLength(1);
     expect(merged.filter((m) => matchesFilter(m, "request"))).toHaveLength(3);
-    expect(merged.filter((m) => matchesFilter(m, "all"))).toHaveLength(5);
+    expect(merged.filter((m) => matchesFilter(m, "texts"))).toHaveLength(1);
+    expect(merged.filter((m) => matchesFilter(m, "all"))).toHaveLength(6);
   });
 });

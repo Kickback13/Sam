@@ -11,6 +11,8 @@ import { DeleteContactButton } from "@/components/people/delete-contact-button";
 import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 import { ContactHub } from "@/features/azh/components/contact-hub";
 import { getContactHub } from "@/features/azh/server/hub";
+import { ContactTexts } from "@/features/outreach/components/contact-texts";
+import { getSmsState, smsOffReason } from "@/features/outreach/server/sms-queries";
 import { ContactReachability } from "@/features/outreach/components/contact-reachability";
 import { TaskList } from "@/components/tasks/task-list";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +49,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 export default async function ContactPage({ params }: PageProps<"/w/[slug]/people/[id]">) {
   const { slug, id } = await params;
-  const { workspace, canWrite } = await getWorkspaceContext(slug);
+  const { workspace, canWrite, isAdmin } = await getWorkspaceContext(slug);
   const c = await getContact(workspace.id, id);
   if (!c || c.deleted_at) notFound();
 
@@ -58,13 +60,16 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
     getTasks(workspace.id, { related: [{ type: "contact", id }], status: "open" }),
   ]);
   // AZH: one communication hub per contact (calls, notes, requests, visits, estimates, projects).
-  const hub = isAzh
-    ? await getContactHub(
-        workspace.id,
-        id,
-        links.deals.map((d) => d.id),
-      )
-    : null;
+  const [hub, sms] = await Promise.all([
+    isAzh
+      ? getContactHub(
+          workspace.id,
+          id,
+          links.deals.map((d) => d.id),
+        )
+      : null,
+    isAzh ? getSmsState(workspace.id) : null,
+  ]);
 
   const name = contactDisplayName(c);
   const emails = (Array.isArray(c.emails) ? c.emails : []) as Entry[];
@@ -304,6 +309,7 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
 
         <div className="space-y-5 lg:col-span-2">
           <LogActivity subjectType="contact" subjectId={c.id} />
+          <ContactTexts workspaceId={workspace.id} slug={slug} isAdmin={isAdmin} contact={c} />
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle>Open tasks</CardTitle>
@@ -319,7 +325,7 @@ export default async function ContactPage({ params }: PageProps<"/w/[slug]/peopl
             </CardContent>
           </Card>
           {hub ? (
-            <ContactHub entries={hub} />
+            <ContactHub entries={hub} textingOff={sms ? smsOffReason(sms) : null} />
           ) : (
             <Card>
               <CardHeader>
