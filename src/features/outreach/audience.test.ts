@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { matchesAudience, planNewsletter, type AudienceContact } from "./audience";
-import { parseAudience } from "./schema";
+import { newsletterSchema, parseAudience } from "./schema";
 
 const settings = {
   senderName: "Example",
@@ -122,5 +122,30 @@ describe("parseAudience", () => {
     expect(parseAudience(null)).toEqual({ tags: [], roles: [], network: false });
     expect(parseAudience({ roles: ["nope"] })).toEqual({ tags: [], roles: [], network: false });
     expect(parseAudience({ tags: ["Hot", "hot", " Investor "] }).tags).toEqual(["hot", "investor"]);
+  });
+});
+
+describe("Spanish newsletters (ADR-045)", () => {
+  it("carries each recipient's language, English when unknown", () => {
+    const plan = planNewsletter(
+      [c({ language: "es" }), c({ language: "en" }), c()],
+      parseAudience({}),
+      settings,
+      none,
+    );
+    expect(plan.sendable.map((r) => r.language)).toEqual(["es", "en", "en"]);
+  });
+
+  it("needs a Spanish subject and message together", () => {
+    const base = { subject: "Hi", body: "Hello", audience: {} };
+    expect(newsletterSchema.safeParse({ ...base, subjectEs: "Hola", bodyEs: "Hola" }).success).toBe(
+      true,
+    );
+    expect(newsletterSchema.safeParse({ ...base, subjectEs: "", bodyEs: "" }).success).toBe(true);
+    const noSubject = newsletterSchema.safeParse({ ...base, bodyEs: "Hola" });
+    expect(noSubject.success).toBe(false);
+    expect(noSubject.error?.issues[0].path).toEqual(["subjectEs"]);
+    const noBody = newsletterSchema.safeParse({ ...base, subjectEs: "Hola" });
+    expect(noBody.error?.issues[0].path).toEqual(["bodyEs"]);
   });
 });

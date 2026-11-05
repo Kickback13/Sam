@@ -137,6 +137,7 @@ export default async function NewsletterPage({
           matched: plan.matched,
           sendable: plan.sendable.length,
           duplicates: plan.duplicates,
+          spanishSendable: plan.sendable.filter((r) => r.language === "es").length,
           byCode: plan.summary.byCode,
           blockedSample: blocked.slice(0, 50).map((r) => ({
             contactId: r.contactId,

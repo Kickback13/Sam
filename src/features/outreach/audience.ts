@@ -20,6 +20,8 @@ export type AudienceContact = GateContact & {
   roles: string[];
   /** An active Housing4All Network member is linked to this contact. */
   networkMember?: boolean;
+  /** contacts.language ("en" or "es"); decides which version of a newsletter they get. */
+  language?: string;
 };
 
 export type PlannedRecipient = {
@@ -30,6 +32,7 @@ export type PlannedRecipient = {
   gate: GateResult;
   /** Another contact in this send already has the same email. */
   duplicate: boolean;
+  language: string;
 };
 
 export type NewsletterPlan = {
@@ -65,7 +68,14 @@ export function planNewsletter(
     const gate = checkEmail(c, settings, suppressions);
     const duplicate = gate.to !== null && seen.has(gate.to);
     if (gate.to) seen.add(gate.to);
-    recipients.push({ contactId: c.id, name: c.name, email: gate.to, gate, duplicate });
+    recipients.push({
+      contactId: c.id,
+      name: c.name,
+      email: gate.to,
+      gate,
+      duplicate,
+      language: c.language ?? "en",
+    });
   }
   const sendable = recipients.filter((r) => r.gate.allowed && !r.duplicate);
   return {

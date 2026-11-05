@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { parseBody, renderNewsletter, UNSUBSCRIBE_PLACEHOLDER } from "./render";
+import {
+  defaultReason,
+  hasSpanishVersion,
+  newsletterVersion,
+  parseBody,
+  renderNewsletter,
+  UNSUBSCRIBE_PLACEHOLDER,
+} from "./render";
 
 const footer = {
   senderName: "Example Realty",
@@ -75,5 +82,58 @@ describe("renderNewsletter", () => {
       { ...footer, unsubscribeUrl: null },
     );
     expect(preview.html).toContain(UNSUBSCRIBE_PLACEHOLDER);
+  });
+});
+
+describe("Spanish newsletters", () => {
+  const footer = {
+    senderName: "Housing4All",
+    mailingAddress: "3683 University Ave\nSan Diego, CA 92104",
+    reason: defaultReason("Housing4All", "es"),
+    unsubscribeUrl: "https://app.example/unsubscribe/abc?lang=es",
+  };
+  const n = {
+    subject: "This week's deals",
+    preheader: "Three new buildings",
+    body: "# Hello\nNew listings.",
+    subjectEs: "Ofertas de la semana",
+    preheaderEs: "Tres edificios nuevos",
+    bodyEs: "# Hola\nNuevas propiedades.",
+  };
+
+  it("sends Spanish contacts the Spanish version, everyone else English", () => {
+    expect(newsletterVersion(n, "es")).toEqual({
+      language: "es",
+      content: {
+        subject: "Ofertas de la semana",
+        preheader: "Tres edificios nuevos",
+        body: "# Hola\nNuevas propiedades.",
+      },
+    });
+    expect(newsletterVersion(n, "en").language).toBe("en");
+    expect(newsletterVersion(n, null).content.subject).toBe("This week's deals");
+  });
+
+  it("falls back to English when there is no Spanish version", () => {
+    expect(hasSpanishVersion({ ...n, bodyEs: "  " })).toBe(false);
+    expect(newsletterVersion({ ...n, subjectEs: null, bodyEs: null }, "es").language).toBe("en");
+  });
+
+  it("keeps the CAN-SPAM footer, in Spanish", () => {
+    const v = newsletterVersion(n, "es");
+    const msg = renderNewsletter(v.content, footer, v.language);
+    expect(msg.subject).toBe("Ofertas de la semana");
+    expect(msg.html).toContain('<html lang="es">');
+    expect(msg.html).toContain("Cancelar suscripción</a> — un clic, sin iniciar sesión.");
+    expect(msg.html).toContain("3683 University Ave<br>San Diego, CA 92104");
+    expect(msg.html).toContain("Recibe este mensaje porque es un contacto de Housing4All.");
+    expect(msg.html).toContain('href="https://app.example/unsubscribe/abc?lang=es"');
+    expect(msg.text).toContain("Cancelar suscripción: https://app.example/unsubscribe/abc?lang=es");
+  });
+
+  it("is still English by default", () => {
+    const msg = renderNewsletter(n, { ...footer, reason: defaultReason("Housing4All") });
+    expect(msg.html).toContain('<html lang="en">');
+    expect(msg.html).toContain("Unsubscribe</a> — one click, no login.");
   });
 });

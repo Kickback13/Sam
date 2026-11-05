@@ -19,7 +19,7 @@ import {
   resendProvider,
   type OutgoingEmail,
 } from "../email-provider";
-import { defaultReason, renderNewsletter } from "../render";
+import { defaultReason, newsletterVersion, renderNewsletter, type EmailLanguage } from "../render";
 import { newsletterSchema, outreachSettingsSchema, suppressionSchema } from "../schema";
 import {
   gateSettings,
@@ -130,6 +130,9 @@ export async function saveNewsletter(input: {
       subject: parsed.data.subject,
       preheader: parsed.data.preheader,
       body: parsed.data.body,
+      subject_es: parsed.data.subjectEs,
+      preheader_es: parsed.data.subjectEs ? parsed.data.preheaderEs : null,
+      body_es: parsed.data.bodyEs,
       audience: toJson(parsed.data.audience),
       updated_by: ctx.user.id,
     })
@@ -145,7 +148,11 @@ export async function saveNewsletter(input: {
     action: "newsletter.updated",
     entityType: "newsletter",
     entityId: env.data.id,
-    diff: { subject: parsed.data.subject, audience: parsed.data.audience },
+    diff: {
+      subject: parsed.data.subject,
+      audience: parsed.data.audience,
+      spanish: Boolean(parsed.data.bodyEs),
+    },
   });
   revalidateWorkspace();
   return { ok: true, data: undefined };
@@ -200,6 +207,9 @@ export async function copyNewsletter(input: {
       subject: source.subject,
       preheader: source.preheader,
       body: source.body,
+      subject_es: source.subjectEs,
+      preheader_es: source.preheaderEs,
+      body_es: source.bodyEs,
       // Tags differ between workspaces; roles carry over.
       audience: toJson({ tags: [], roles: source.audience.roles, network: false }),
     })
@@ -291,13 +301,14 @@ export async function sendNewsletter(input: {
       email: r.email!,
       status: r.gate.allowed ? "queued" : "blocked",
       blocked_reasons: r.gate.blocks.map((b) => b.code),
+      language: newsletterVersion(newsletter, r.language).language,
     }));
-  const queued: { id: string; email: string; unsubscribe_token: string }[] = [];
+  const queued: { id: string; email: string; unsubscribe_token: string; language: string }[] = [];
   for (let i = 0; i < rows.length; i += 500) {
     const { data, error } = await ctx.supabase
       .from("newsletter_sends")
       .insert(rows.slice(i, i + 500))
-      .select("id, email, status, unsubscribe_token");
+      .select("id, email, status, unsubscribe_token, language");
     if (error) {
       console.error("newsletter_sends insert failed", { code: error.code, message: error.message });
       return { ok: false, error: "Couldn't log the recipients, so nothing was sent." };
@@ -306,19 +317,26 @@ export async function sendNewsletter(input: {
   }
 
   const from = formatFrom(settings.senderName, settings.fromEmail);
-  const reason = defaultReason(ws.data?.name ?? settings.senderName);
+  const reasonFor = (language: EmailLanguage) =>
+    defaultReason(ws.data?.name ?? settings.senderName!, language);
   const provider = resendProvider(cfg);
   let sent = 0;
   let failed = 0;
   for (let i = 0; i < queued.length; i += BATCH_SIZE) {
     const batch: OutgoingEmail[] = queued.slice(i, i + BATCH_SIZE).map((q) => {
-      const unsubscribeUrl = `${base}/unsubscribe/${q.unsubscribe_token}`;
-      const msg = renderNewsletter(newsletter, {
-        senderName: settings.senderName!,
-        mailingAddress: settings.mailingAddress!,
-        reason,
-        unsubscribeUrl,
-      });
+      const language: EmailLanguage = q.language === "es" ? "es" : "en";
+      const version = newsletterVersion(newsletter, language);
+      const unsubscribeUrl = `${base}/unsubscribe/${q.unsubscribe_token}${version.language === "es" ? "?lang=es" : ""}`;
+      const msg = renderNewsletter(
+        version.content,
+        {
+          senderName: settings.senderName!,
+          mailingAddress: settings.mailingAddress!,
+          reason: reasonFor(version.language),
+          unsubscribeUrl,
+        },
+        version.language,
+      );
       return { ref: q.id, from, to: q.email, replyTo: settings.replyTo, ...msg, unsubscribeUrl };
     });
     const outcomes = await provider.sendBatch(batch);

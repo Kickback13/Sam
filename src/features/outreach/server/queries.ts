@@ -105,10 +105,11 @@ type ContactRow = {
   sms_consent: SmsConsent;
   sms_consent_at: string | null;
   email_opt_out: boolean;
+  language?: string;
 };
 
 const CONTACT_COLS =
-  "id, full_name, emails, phones, tags, roles, dnc, sms_consent, sms_consent_at, email_opt_out";
+  "id, full_name, emails, phones, tags, roles, dnc, sms_consent, sms_consent_at, email_opt_out, language";
 
 function asList<T>(v: unknown): T[] {
   return Array.isArray(v) ? (v as T[]) : [];
@@ -173,6 +174,7 @@ export async function loadAudienceContacts(
         tags: r.tags,
         roles: r.roles,
         networkMember: networkContacts.has(r.id),
+        language: r.language ?? "en",
       });
     if (!data || data.length < 1000) break;
   }
@@ -184,6 +186,9 @@ export type NewsletterRow = {
   subject: string;
   preheader: string | null;
   body: string;
+  subjectEs: string | null;
+  preheaderEs: string | null;
+  bodyEs: string | null;
   audience: Audience;
   status: "draft" | "sending" | "sent";
   recipientCount: number;
@@ -196,13 +201,16 @@ export type NewsletterRow = {
 };
 
 const NEWSLETTER_COLS =
-  "id, subject, preheader, body, audience, status, recipient_count, sent_count, failed_count, blocked_count, sent_at, updated_at, created_at";
+  "id, subject, preheader, body, subject_es, preheader_es, body_es, audience, status, recipient_count, sent_count, failed_count, blocked_count, sent_at, updated_at, created_at";
 
 type RawNewsletter = {
   id: string;
   subject: string;
   preheader: string | null;
   body: string;
+  subject_es: string | null;
+  preheader_es: string | null;
+  body_es: string | null;
   audience: unknown;
   status: string;
   recipient_count: number;
@@ -220,6 +228,9 @@ function toNewsletter(r: RawNewsletter): NewsletterRow {
     subject: r.subject,
     preheader: r.preheader,
     body: r.body,
+    subjectEs: r.subject_es,
+    preheaderEs: r.preheader_es,
+    bodyEs: r.body_es,
     audience: parseAudience(r.audience),
     status: r.status as NewsletterRow["status"],
     recipientCount: r.recipient_count,
