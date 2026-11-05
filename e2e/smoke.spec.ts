@@ -16,6 +16,10 @@ test("Phase 1 smoke: contact → CSV import → property → deal → drag → a
   await goto(page, "/w/e2e-realty/today");
   const realtyAccent = await brandAccent(page);
   expect(realtyAccent).toBe("#00D9E1");
+  // The account button is named for screen readers by its own text (WCAG 2.5.3).
+  const account = page.getByTestId("user-menu");
+  await expect(account).toHaveAccessibleName(/^Account menu for .+/);
+  await expect(account).not.toHaveAttribute("aria-label");
 
   // 1) Create a contact ------------------------------------------------------------
   await goto(page, "/w/e2e-realty/people/new");

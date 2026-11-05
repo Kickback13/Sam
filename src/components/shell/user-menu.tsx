@@ -26,12 +26,11 @@ export function UserMenu({
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className="rounded-full"
-        aria-label={`Account menu for ${name}`}
-        data-testid="user-menu"
-      >
+      {/* The name comes from screen-reader text, not aria-label, so the visible initials
+          (decorative, aria-hidden) never contradict it (WCAG 2.5.3 Label in Name). */}
+      <DropdownMenuTrigger className="rounded-full" data-testid="user-menu">
         <Avatar name={name} />
+        <span className="sr-only">Account menu for {name}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="font-normal">
