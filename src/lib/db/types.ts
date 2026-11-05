@@ -3504,6 +3504,241 @@ export type Database = {
           },
         ];
       };
+      outreach_enrollments: {
+        Row: {
+          contact_id: string;
+          created_at: string;
+          enrolled_by: string | null;
+          id: string;
+          next_due_at: string;
+          next_position: number;
+          sequence_id: string;
+          status: string;
+          stop_reason: string | null;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          contact_id: string;
+          created_at?: string;
+          enrolled_by?: string | null;
+          id?: string;
+          next_due_at?: string;
+          next_position?: number;
+          sequence_id: string;
+          status?: string;
+          stop_reason?: string | null;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          contact_id?: string;
+          created_at?: string;
+          enrolled_by?: string | null;
+          id?: string;
+          next_due_at?: string;
+          next_position?: number;
+          sequence_id?: string;
+          status?: string;
+          stop_reason?: string | null;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outreach_enrollments_enrolled_by_fkey";
+            columns: ["enrolled_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_enrollments_workspace_id_contact_id_fkey";
+            columns: ["workspace_id", "contact_id"];
+            isOneToOne: false;
+            referencedRelation: "contacts";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "outreach_enrollments_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_enrollments_workspace_id_sequence_id_fkey";
+            columns: ["workspace_id", "sequence_id"];
+            isOneToOne: false;
+            referencedRelation: "outreach_sequences";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      outreach_sequence_events: {
+        Row: {
+          actor_id: string | null;
+          channel: string;
+          created_at: string;
+          enrollment_id: string;
+          id: string;
+          outcome: string;
+          position: number;
+          reason: string | null;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          actor_id?: string | null;
+          channel: string;
+          created_at?: string;
+          enrollment_id: string;
+          id?: string;
+          outcome: string;
+          position: number;
+          reason?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          channel?: string;
+          created_at?: string;
+          enrollment_id?: string;
+          id?: string;
+          outcome?: string;
+          position?: number;
+          reason?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outreach_sequence_events_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_sequence_events_workspace_id_enrollment_id_fkey";
+            columns: ["workspace_id", "enrollment_id"];
+            isOneToOne: false;
+            referencedRelation: "outreach_enrollments";
+            referencedColumns: ["workspace_id", "id"];
+          },
+          {
+            foreignKeyName: "outreach_sequence_events_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      outreach_sequence_steps: {
+        Row: {
+          body: string;
+          channel: string;
+          created_at: string;
+          id: string;
+          position: number;
+          sequence_id: string;
+          subject: string | null;
+          updated_at: string;
+          wait_days: number;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body: string;
+          channel: string;
+          created_at?: string;
+          id?: string;
+          position: number;
+          sequence_id: string;
+          subject?: string | null;
+          updated_at?: string;
+          wait_days?: number;
+          workspace_id: string;
+        };
+        Update: {
+          body?: string;
+          channel?: string;
+          created_at?: string;
+          id?: string;
+          position?: number;
+          sequence_id?: string;
+          subject?: string | null;
+          updated_at?: string;
+          wait_days?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outreach_sequence_steps_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_sequence_steps_workspace_id_sequence_id_fkey";
+            columns: ["workspace_id", "sequence_id"];
+            isOneToOne: false;
+            referencedRelation: "outreach_sequences";
+            referencedColumns: ["workspace_id", "id"];
+          },
+        ];
+      };
+      outreach_sequences: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          name: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "outreach_sequences_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "outreach_sequences_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       outreach_settings: {
         Row: {
           created_at: string;
