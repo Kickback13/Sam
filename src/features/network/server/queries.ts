@@ -66,10 +66,12 @@ export type FeedPost = {
   authorUserId: string | null;
   authorName: string;
   commentCount: number;
+  /** Signed, short-lived links to the post's photos (private bucket). */
+  photos: { path: string; url: string }[];
 };
 
 const POST_COLS =
-  "id, kind, title, body, property_type, units, price, city, zip, link, pinned, hidden_at, created_at, author_user_id, author_member_id, author:network_members!network_posts_workspace_id_author_member_id_fkey(display_name), comments:network_comments(count)";
+  "id, kind, title, body, property_type, units, price, city, zip, link, photo_paths, pinned, hidden_at, created_at, author_user_id, author_member_id, author:network_members!network_posts_workspace_id_author_member_id_fkey(display_name), comments:network_comments(count)";
 
 type RawPost = {
   id: string;
@@ -82,6 +84,7 @@ type RawPost = {
   city: string | null;
   zip: string | null;
   link: string | null;
+  photo_paths: string[] | null;
   pinned: boolean;
   hidden_at: string | null;
   created_at: string;
@@ -110,7 +113,29 @@ function toPost(r: RawPost, teamName: string): FeedPost {
     // Staff post as the business; a member whose profile is unlisted shows as "A member".
     authorName: r.author_member_id ? (r.author?.display_name ?? "A member") : teamName,
     commentCount: r.comments?.[0]?.count ?? 0,
+    photos: (r.photo_paths ?? []).map((path) => ({ path, url: "" })),
   };
+}
+
+/** Swap photo paths for signed links (one call for the whole page; 1 hour). */
+async function withPhotoUrls(posts: FeedPost[]): Promise<FeedPost[]> {
+  const paths = posts.flatMap((p) => p.photos.map((x) => x.path));
+  if (!paths.length) return posts;
+  const supabase = await createClient();
+  const { data, error } = await supabase.storage
+    .from("network-photos")
+    .createSignedUrls(paths, 3600);
+  if (error) {
+    console.error("network photo links failed", { message: error.message });
+    return posts.map((p) => ({ ...p, photos: [] }));
+  }
+  const urls = new Map((data ?? []).filter((d) => d.signedUrl).map((d) => [d.path, d.signedUrl]));
+  return posts.map((p) => ({
+    ...p,
+    photos: p.photos
+      .filter((x) => urls.has(x.path))
+      .map((x) => ({ path: x.path, url: urls.get(x.path)! })),
+  }));
 }
 
 export async function listPosts(
@@ -129,7 +154,9 @@ export async function listPosts(
   if (!opts.includeHidden) q = q.is("hidden_at", null);
   const { data, error } = await q;
   if (error) throw error;
-  return ((data ?? []) as unknown as RawPost[]).map((r) => toPost(r, `${ctx.name} team`));
+  return withPhotoUrls(
+    ((data ?? []) as unknown as RawPost[]).map((r) => toPost(r, `${ctx.name} team`)),
+  );
 }
 
 export type PostComment = {
@@ -165,7 +192,7 @@ export async function getPost(
     .limit(500);
   if (cErr) throw cErr;
   return {
-    post: toPost(data as unknown as RawPost, `${ctx.name} team`),
+    post: (await withPhotoUrls([toPost(data as unknown as RawPost, `${ctx.name} team`)]))[0],
     comments: (comments ?? []).map((c) => ({
       id: c.id,
       body: c.body,

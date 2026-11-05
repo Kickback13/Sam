@@ -3202,6 +3202,7 @@ export type Database = {
           id: string;
           kind: string;
           link: string | null;
+          photo_paths: string[];
           pinned: boolean;
           price: number | null;
           property_type: string | null;
@@ -3223,6 +3224,7 @@ export type Database = {
           id?: string;
           kind?: string;
           link?: string | null;
+          photo_paths?: string[];
           pinned?: boolean;
           price?: number | null;
           property_type?: string | null;
@@ -3243,6 +3245,7 @@ export type Database = {
           id?: string;
           kind?: string;
           link?: string | null;
+          photo_paths?: string[];
           pinned?: boolean;
           price?: number | null;
           property_type?: string | null;
