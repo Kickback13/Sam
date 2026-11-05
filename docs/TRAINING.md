@@ -184,6 +184,15 @@ Projects move through **Lead → Estimate → Bid Sent → Won → In Progress �
   - **change orders**: approved ones add to the contract value.
 - **Files:** photos and documents.
 
+### People (communication hub)
+
+Open a contact to see the **Communication hub**: every call and note, their homeowner requests, estimate visits, estimates and projects in one list, newest first.
+
+- Use the chips (**Calls, Notes, Requests, Visits, Estimates, Projects**) to narrow it.
+- Click an entry to open the request, schedule, estimate or project it came from.
+- Log a call or add a note above the hub; it appears right away.
+- Texts and emails say **Not connected** until messaging is set up.
+
 ### Community
 
 AZH's private community app: the same one Housing4All calls the Network, in AZH words.

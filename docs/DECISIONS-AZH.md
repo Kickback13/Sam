@@ -88,3 +88,11 @@ Spam/abuse: honeypot field (server action silently drops), server-side Zod valid
 **Decision:** one engine, two vocabularies. The `network_*` tables were already per workspace; migration `20261104010000_azh_community` only removes the real-estate filter from `network_context` / `network_brand`, widens the member types (homeowner, GC, subcontractor), maps those to CRM contact roles on join, and adds `network_business_type(slug)` so the member app picks its words. `src/features/network/terms.ts` holds every word that differs: Network → Community, Deals → Projects (type of work, budget; no units), member types and blurbs. The team page is the same component at `/w/[slug]/community` (construction) and `/w/[slug]/network` (real estate). Members join at `/n/[slug]` as before.
 
 **Consequences:** fixes and features land in both communities at once; Phase 6A's RLS suite still covers isolation, plus `supabase/tests/azh_community_rls.sql` for the AZH specifics. Outside members still need Resend SMTP for sign-in emails (same as the Network).
+
+## AZH-017 — Communication hub is a read-time merge, not a new table
+
+**Context:** Contract module 16 asks for one place to see everything that happened with a homeowner or GC: calls, notes, requests, estimate visits, estimates and projects. Each of those already lives in its own table with its own RLS.
+
+**Decision:** the AZH contact page replaces its plain timeline with a **Communication hub** built at read time (`src/features/azh/server/hub.ts`). It loads the contact's requests, the contact's live projects (primary contact, deal roles, or a request's project), their visits, estimates and project rows, and activities on the contact and on those projects, then merges them newest first (`src/features/azh/hub/timeline.ts`, unit-tested). Every entry links back to its source record; nothing is copied, so there is no second copy to drift and no migration. Filters (Calls, Notes, Requests, Visits, Estimates, Projects) run in the browser. Texts and emails show a labeled **"Not connected"** line until the messaging work is connected and switched on; they will join the same list from their own tables.
+
+**Consequences:** RLS on each source table decides what a viewer sees. The page makes a handful of extra reads per AZH contact (bounded at 200 rows per source). Housing4All contacts keep the existing timeline.
