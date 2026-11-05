@@ -14,6 +14,7 @@ import {
   InviteRowActions,
   MemberAdminControls,
 } from "@/features/network/components/staff-controls";
+import { pushConfig } from "@/features/network/push";
 import { memberTypeLabel } from "@/features/network/schema";
 import { communityTerms, type CommunityKind } from "@/features/network/terms";
 import {
@@ -93,6 +94,11 @@ export async function CommunityStaffPage({
       )}
       {tab === "posts" && (
         <div className="space-y-3">
+          <p className="text-xs text-muted-foreground" data-testid="push-status">
+            {pushConfig().connected
+              ? "Push notifications: on. Members who opted in on their phone get a notification for each team post and event (not for members' posts)."
+              : "Push notifications: not connected. Add the free notification keys in Vercel (see docs/ACCOUNTS.md) and members can opt in to hear about team posts and events."}
+          </p>
           {canWrite && (
             <PostComposer
               workspaceId={workspace.id}

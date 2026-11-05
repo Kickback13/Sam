@@ -4,6 +4,8 @@ import Link from "next/link";
 
 import { NetworkNav } from "@/features/network/components/network-nav";
 import { NetworkPwa } from "@/features/network/components/pwa";
+import { PushToggle } from "@/features/network/components/push-toggle";
+import { pushConfig } from "@/features/network/push";
 import { getNetworkContext } from "@/features/network/server/queries";
 import { communityTerms } from "@/features/network/terms";
 import { BrandFontPreloads } from "@/components/brand-font-preloads";
@@ -32,6 +34,7 @@ export default async function NetworkLayout({ children, params }: LayoutProps<"/
   const { slug } = await params;
   const ctx = await getNetworkContext(slug);
   const terms = communityTerms(ctx.kind);
+  const push = pushConfig();
   return (
     <>
       <style data-testid="brand-vars">{brandStyleBlock(ctx.brand)}</style>
@@ -57,6 +60,9 @@ export default async function NetworkLayout({ children, params }: LayoutProps<"/
           <NetworkNav slug={slug} showMe={Boolean(ctx.memberId)} kind={ctx.kind} />
           <main className="space-y-4 py-4">
             <NetworkPwa slug={slug} name={`${ctx.name} ${terms.suffix}`} />
+            {push.connected && push.publicKey && (ctx.memberId || ctx.isStaff) && (
+              <PushToggle workspaceId={ctx.workspaceId} slug={slug} publicKey={push.publicKey} />
+            )}
             {children}
           </main>
         </div>

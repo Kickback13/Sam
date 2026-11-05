@@ -3286,6 +3286,52 @@ export type Database = {
           },
         ];
       };
+      network_push_subscriptions: {
+        Row: {
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          p256dh: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          auth: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          p256dh: string;
+          user_id?: string;
+          workspace_id: string;
+        };
+        Update: {
+          auth?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_push_subscriptions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "network_push_subscriptions_workspace_id_fkey";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       network_rsvps: {
         Row: {
           created_at: string;
@@ -5086,6 +5132,18 @@ export type Database = {
           member_id: string;
           workspace_id: string;
           workspace_name: string;
+        }[];
+      };
+      network_push_forget: {
+        Args: { p_endpoints: string[]; p_workspace_id: string };
+        Returns: number;
+      };
+      network_push_targets: {
+        Args: { p_workspace_id: string };
+        Returns: {
+          auth: string;
+          endpoint: string;
+          p256dh: string;
         }[];
       };
       outreach_unsubscribe: {

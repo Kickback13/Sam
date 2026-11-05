@@ -378,3 +378,16 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - **Viewing:** the team and the community's members can view photos; other workspaces and anon cannot. Pages show short-lived (1 hour) signed links.
 
 **Consequences:** no public image URLs. A deleted post or a failed post can leave an unused file in storage, which is harmless and can be swept later like AZH intake photos (AZH-014). Push notifications for new posts remain a separate item.
+
+## ADR-041 — Community push notifications: opt-in per device, team posts only, off until keys exist
+
+**Context:** the Phase 6A plan left push notifications out (they need a VAPID key pair). Members asked to hear about new deals and events without checking the app.
+
+**Decision:**
+
+- **Opt-in:** members (and staff) opt in per device with **Notify me about new posts and events** in the member app. The browser's push subscription is stored in `network_push_subscriptions`, and only its owner can see it.
+- **What notifies:** only **team** posts and events, never members' posts, so nobody can notify the whole community. Notifications go out after the response (`after()`) through `web-push` with the VAPID keys from env (`NETWORK_PUSH_PUBLIC_KEY`, `NETWORK_PUSH_PRIVATE_KEY`, `NETWORK_PUSH_SUBJECT`). The device list comes from `network_push_targets`, which is team-only, skips removed members and the poster, and is capped at 5,000. Devices the push service reports gone (404/410) are dropped.
+- **Content:** a notification shows the community name and the post title or "New event: …", with no private data. Tapping it opens the post in the app.
+- **Off until keys exist:** with no keys, the button is hidden and the team page says "not connected". The key pair is free (`npx web-push generate-vapid-keys`) and goes into Vercel.
+
+**Consequences:** on iPhone it works once the app is installed to the home screen (Apple's rule). A failed notification never undoes a post.

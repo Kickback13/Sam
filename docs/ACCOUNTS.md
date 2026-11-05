@@ -112,3 +112,13 @@ Costs are usage-based on both (per-minute voice + AI minutes); check current pri
 1. Sam's RentCast account → **app.rentcast.io → API** → create an API key. Pick the plan Sam chose (or the free developer tier to try it).
 2. In the app, as owner/admin: **Settings → Integrations → Property data (RentCast) → Connect RentCast**, paste the key, and set the **monthly request limit** to what the plan includes (the app refuses requests past it, so it can't run up overage). Saving makes no request.
 3. Use it from any property's **Analyze** page: _Fetch property record_, _value estimate_, _rent estimate_ — one request each.
+
+## Community push notifications (free, optional)
+
+Generate a key pair once on any computer with Node: `npx web-push generate-vapid-keys`. Then, in Vercel → Project → Settings → Environment Variables (Production), add:
+
+- `NETWORK_PUSH_PUBLIC_KEY`: the public key
+- `NETWORK_PUSH_PRIVATE_KEY`: the private key (secret: never in git or chat)
+- `NETWORK_PUSH_SUBJECT`: `mailto:` plus Sam's business email
+
+Redeploy. The team page then shows "Push notifications: on" and members get the opt-in button.
