@@ -286,4 +286,4 @@ ADR-044 · migration `20261113010000_h4a_spanish_booking` (additive: a new 8-arg
 - [x] Spanish errors, dates (es-US) and calendar-file description; i18n module unit-tested
 - [x] New contacts from a Spanish booking are marked Spanish; existing contacts keep their language
 - [x] RLS suite `supabase/tests/h4a_spanish_booking_rls.sql` (10) · e2e (Spanish browser, switch, Spanish error, contact language, 390 px)
-- [ ] Live DB: combined SQL + verify in `docs/db-updates/2026-11-spanish-booking*.sql`
+- [x] Live DB: applied 2026-11-05 with `docs/db-updates/2026-11-spanish-booking.sql`; verify on live 10 passed / 0 failed / 0 leftovers
