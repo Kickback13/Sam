@@ -297,3 +297,13 @@ ADR-045 · migration `20261114010000_h4a_spanish_newsletters` (additive columns)
 - [x] Unsubscribe page in Spanish (`?lang=es` from the email, else the browser's language)
 - [x] RLS suite `supabase/tests/h4a_spanish_newsletters_rls.sql` (12) · e2e (Spanish version, count, preview, Spanish unsubscribe, 390 px)
 - [x] Live DB: applied 2026-11-05 with `docs/db-updates/2026-11-spanish-newsletters.sql`; verify on live 12 passed / 0 failed / 0 leftovers
+
+## Bilingual demo (branch `h4a/bilingual-demo`)
+
+Seed migration `20261115010000_h4a_seed_bilingual_demo`: **Demo workspace only** (slug `demo`, `is_demo`); idempotent, fictional, labeled "Demo".
+
+- [x] Two active bilingual sequences (new owner lead: 3 steps; broker follow-up: 2 steps), every step with a Spanish version
+- [x] One Spanish-speaking and one English-speaking demo contact enrolled in each, first step due now (nothing sends)
+- [x] Spanish version of the demo newsletter
+- [x] e2e `h4a-bilingual-demo.spec.ts` (Spanish step for the Spanish contact; Spanish newsletter preview)
+- [ ] Live DB: `docs/db-updates/2026-11-bilingual-demo.sql` + read-only verify (expect `2|5|5|4|2|1|0`)
