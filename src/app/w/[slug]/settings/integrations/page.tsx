@@ -87,6 +87,17 @@ export default async function IntegrationsPage({
                       : "Connect and import →"}
                   </Link>
                 )}
+                {i.provider === "data_api" &&
+                  isAdmin &&
+                  workspace.businessType === "real_estate" && (
+                    <Link
+                      href={`/w/${slug}/settings/integrations/property-data`}
+                      className="inline-block text-sm font-semibold underline"
+                      data-testid="data-api-setup-link"
+                    >
+                      {row?.status === "connected" ? "Manage RentCast →" : "Connect RentCast →"}
+                    </Link>
+                  )}
               </CardContent>
             </Card>
           );
