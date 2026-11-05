@@ -162,6 +162,7 @@ Your private investor community. Members sign in at their own address (`/n/housi
 - **Invite people:** Network → Members & invites → create a link.
 - **Run it:** pin or hide posts, add events, sort members into segments.
 - **Photos:** add up to 4 photos to a post (JPG, PNG or WebP, up to 5 MB each). Only your team and the members can see them.
+- **Notifications:** once the notification keys are set up, members can tap **Notify me about new posts and events** in the app. They get a notification for each team post and event, but not for other members' posts. On iPhone, they need to install the app first.
 
 Members can install the community on their phone like an app.
 
