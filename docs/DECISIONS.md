@@ -280,3 +280,16 @@ Prices aren't written here because they change; get a current quote before choos
 - Estimates are shown, never written into the underwriting inputs automatically.
 
 **Consequences:** no surprise bills; the app works unchanged without a key ("Not connected"). Swapping providers later means a new client behind the same panel and tables.
+
+## ADR-035 — Booking page: stored in the app, no calendar account, nothing sent
+
+**Context (4C):** module 6 needs leads to book a time with Sam. A Google Calendar connection (OAuth app review, a paid Workspace in some setups) and confirmation emails or texts (Resend/Twilio) are both on hold: "build everything but not the things that charge yet".
+
+**Decision:**
+
+- **Public page** `/b/[slug]` (Housing4All workspaces only), **off by default**. Owners/admins set the host, meeting length, gap, minimum notice, how far ahead, time zone and weekly hours on **Calendar**.
+- **Open slots are computed in Postgres** (`app_private.booking_open_slots`). This is the only authority: weekly hours in the page's time zone (DST-safe), minus anything booked or blocked (plus the gap), minus the notice window. `booking_public_book` re-checks the exact slot under a per-workspace advisory lock, so two people can't take the same time. It also enforces limits: 3 per visitor per hour (salted daily IP hash, never the raw IP), 50 per workspace per day, and at most 2 upcoming bookings per person. A hidden honeypot field catches bots.
+- **CRM:** each booking matches the contact by email/phone keys or creates one (tag `booked-call`), logs a `meeting` activity and gives the host a task due at the meeting time. Staff mark bookings done / no-show / canceled (logged on the contact) and **block time** for things outside the app.
+- **Nothing is sent.** The lead downloads an `.ics` file from the confirmation page. Sam can subscribe to a **private read-only iCalendar feed** (`/api/calendar/<token>.ics`; only the token's SHA-256 is stored; making a new link turns the old one off). That puts bookings on his Google/Apple Calendar with no account connected.
+
+**Consequences:** bookings don't see Sam's other calendar events. He blocks time by hand until a Google Calendar connection exists. Google refreshes subscribed feeds every few hours. Confirmation and reminder messages come with the messaging work, behind the compliance gates.

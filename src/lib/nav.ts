@@ -122,7 +122,6 @@ const REAL_ESTATE_NAV: NavItem[] = [
     path: "calendar",
     icon: "calendar",
     group: "Engage",
-    comingIn: 5,
   },
   {
     key: "network",
@@ -233,17 +232,6 @@ export function dealNoun(businessType: BusinessType, plural = false): string {
 }
 
 const COMING_SOON: Record<string, ComingSoonModule> = {
-  calendar: {
-    key: "calendar",
-    title: "Calendar",
-    phase: 5,
-    summary: "Your Google Calendar inside the platform, with booking links for owners and brokers.",
-    bullets: [
-      "Two-way Google Calendar sync",
-      "Meetings logged as activities",
-      "Booking pages per workspace",
-    ],
-  },
   requests: {
     key: "requests",
     title: "Homeowner Requests",
