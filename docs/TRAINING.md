@@ -8,7 +8,7 @@ Every screen works on a phone. Sign in at the app address with your email; a sig
 - **Every number shows where it came from.** Hover or tap the small source note: an alert email, a county record, an import, or "Entered by {name}". If a number has no source, don't rely on it.
 - **The app never texts or emails anyone by itself.** Newsletters go out only when you send them, only to people who are allowed to receive them, and only once email sending is connected.
 
-Switch between **Housing4All** and **AZH Builders** with the workspace switcher at the top of the menu. Each workspace has its own data, colors and menu. The **Demo** workspaces hold made-up data for practice.
+Switch between **Housing4All** and **AZH Builders** with the workspace switcher at the top of the menu. Each workspace has its own data, colors and menu. The **Demo** workspaces hold made-up data for practice. In the Housing4All Demo, **Outreach → Sequences** has two bilingual sample sequences with a step due now for a Spanish-speaking and an English-speaking contact, and the sample newsletter has a Spanish version. Open them to see how Spanish works before writing your own.
 
 ---
 
