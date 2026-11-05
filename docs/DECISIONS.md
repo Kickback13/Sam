@@ -350,3 +350,18 @@ Prices aren't written here because they change; get a current quote before choos
 It is **SECURITY INVOKER**, so row-level security decides what is counted. It also refuses non-members outright. `/w/[slug]/reports` shows it with stat tiles and single-series weekly charts (tooltips plus a table view), and AZH sees its own measures. There are no new tables.
 
 **Consequences:** numbers are always current. The query cost grows with data, but it is bounded to one workspace and at most 365 days. If it ever gets slow, a nightly rollup table can sit behind the same function.
+
+## ADR-039 — Follow-up sequences: steps come due for a person, nothing sends by itself
+
+**Context (4E):** Phase 4 lists "outreach sequences behind compliance gates". Email sending (Resend) and texting (Twilio) aren't connected, and automated sends are the riskiest kind for TCPA and CAN-SPAM.
+
+**Decision:**
+
+- A sequence is up to 20 steps (email or text), each **due N days after the previous one**. Messages use `{first_name}`, `{last_name}`, `{full_name}`, `{company}` and `{my_name}`, and missing values are flagged before sending.
+- Due steps appear under **Outreach → Sequences → Due now** and on the contact's page. A person completes each one:
+  - **text** steps go through the gated texting path (ADR-036). A block is recorded and the enrollment doesn't advance;
+  - **email** steps open in the person's own mail app (`mailto:`) and are then marked sent. Do-not-contact and unsubscribed contacts are refused, and the email is logged on the timeline;
+  - **skip** and **stop** are always available.
+- Database triggers end active enrollments the moment a contact is marked do-not-contact or texts STOP. Only writers build or enroll, viewers read, and the caller authors every record (`supabase/tests/h4a_sequences_rls.sql`).
+
+**Consequences:** works today at no cost and can't send anything unattended. Automatic sending can be added later behind the same gates, once Resend and Twilio are live and Sam opts in. It would be a background job completing due steps.

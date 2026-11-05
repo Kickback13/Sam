@@ -123,6 +123,19 @@ Every contact page (Housing4All and AZH) has a **Texts** card: the conversation,
 - **Replies** show in the card and on the timeline, with a task to answer. **STOP** blocks texting that number at once, and **START** undoes it. **HELP** gets your HELP reply.
 - One person, one text: there are no automatic or bulk texts.
 
+### Sequences (Outreach → Sequences)
+
+A sequence is a series of emails and texts, each due a set number of days after the last. It's good for a new owner lead or a broker you want to stay in front of.
+
+1. **New sequence:** add steps and choose email or text and the days to wait. Use fields like `{first_name}` and `{my_name}`. Tick **Active** and save.
+2. On a contact's page, under **Sequences**, pick it and click **Add**.
+3. When a step is due, it shows under **Due now**, filled in for that person:
+   - email: **Open in my email**, send it, then click **I sent it**;
+   - text: **Send text** (only once texting is on, and only if the contact passes the checks);
+   - or **Skip**, or **Stop** for this person.
+
+Nothing is ever sent by itself. Marking someone do-not-contact, or them texting STOP, ends their sequences straight away.
+
 ### Messages
 
 **Messages** (in the menu for both businesses) lists every text conversation, newest first.
