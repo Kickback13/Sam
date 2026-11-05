@@ -45,22 +45,22 @@ test.beforeAll(async () => {
     E2E_REALTY,
   ]);
   await sql(
-    `delete from public.outreach_suppressions where workspace_id = ${WS} and channel = 'sms' and value in ('+16195550161', '+16195550162')`,
+    `delete from public.outreach_suppressions where workspace_id = ${WS} and channel = 'sms' and value in ('+16195550461', '+16195550462')`,
     [E2E_REALTY],
   );
   await sql(
-    `delete from public.contacts where workspace_id = ${WS} and phone_keys && array['+16195550161', '+16195550162']`,
+    `delete from public.contacts where workspace_id = ${WS} and phone_keys && array['+16195550461', '+16195550462']`,
     [E2E_REALTY],
   );
   [{ id: okId }] = await sql<{ id: string }>(
     `insert into public.contacts (workspace_id, first_name, last_name, phones, sms_consent, sms_consent_at, sms_consent_source)
-     values (${WS}, 'Tex', 'Consented', '[{"value": "(619) 555-0161", "type": "mobile", "is_primary": true}]',
+     values (${WS}, 'Tex', 'Consented', '[{"value": "(619) 555-0461", "type": "mobile", "is_primary": true}]',
              'express', now(), 'E2E: verbal consent noted by agent') returning id`,
     [E2E_REALTY],
   );
   [{ id: dncId }] = await sql<{ id: string }>(
     `insert into public.contacts (workspace_id, first_name, phones, sms_consent, sms_consent_at, sms_consent_source, dnc)
-     values (${WS}, 'Dee', '[{"value": "(619) 555-0162", "type": "mobile"}]', 'express', now(), 'E2E', true) returning id`,
+     values (${WS}, 'Dee', '[{"value": "(619) 555-0462", "type": "mobile"}]', 'express', now(), 'E2E', true) returning id`,
     [E2E_REALTY],
   );
   // Texting hours are real (8am–9pm): use a US zone where it's daytime now, if any.
@@ -78,6 +78,16 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
+  // Leave nothing behind that other specs (CSV import dedupe) could match.
+  await sql(`delete from public.sms_messages where workspace_id = ${WS}`, [E2E_REALTY]);
+  await sql(
+    `delete from public.outreach_suppressions where workspace_id = ${WS} and channel = 'sms' and value in ('+16195550461', '+16195550462')`,
+    [E2E_REALTY],
+  );
+  await sql(
+    `delete from public.contacts where workspace_id = ${WS} and phone_keys && array['+16195550461', '+16195550462']`,
+    [E2E_REALTY],
+  );
   await sql(
     `update public.outreach_settings set time_zone = 'America/Los_Angeles' where workspace_id = ${WS}`,
     [E2E_REALTY],
@@ -131,7 +141,7 @@ test("Phase 4D: texting is off until set up; every send passes the gates; replie
     await expectToast(page, "Text sent");
     expect(mock.sent).toHaveLength(1);
     expect(mock.sent[0]).toMatchObject({
-      to: "+16195550161",
+      to: "+16195550461",
       from: "+16195550199",
       body: "Hi Tex, it's Sam's office. Is now a good time?",
     });
@@ -152,13 +162,13 @@ test("Phase 4D: texting is off until set up; every send passes the gates; replie
   }
 
   // Unsigned webhooks are refused.
-  const forged = await twilio(page.request, baseURL!, inboundPath, { From: "+16195550161" }, false);
+  const forged = await twilio(page.request, baseURL!, inboundPath, { From: "+16195550461" }, false);
   expect(forged.status()).toBe(401);
 
   // A reply lands on the contact with a task to answer.
   const reply = await twilio(page.request, baseURL!, inboundPath, {
     MessageSid: `SM${"a1".repeat(16)}`,
-    From: "+16195550161",
+    From: "+16195550461",
     To: "+16195550199",
     Body: "Yes, call me after 3",
   });
@@ -176,14 +186,14 @@ test("Phase 4D: texting is off until set up; every send passes the gates; replie
   // HELP gets the help reply; STOP blocks texting right away.
   const help = await twilio(page.request, baseURL!, inboundPath, {
     MessageSid: `SM${"b2".repeat(16)}`,
-    From: "+16195550161",
+    From: "+16195550461",
     To: "+16195550199",
     Body: "HELP",
   });
   expect(await help.text()).toContain("<Message>Housing4All: reply STOP to opt out.");
   await twilio(page.request, baseURL!, inboundPath, {
     MessageSid: `SM${"c3".repeat(16)}`,
-    From: "+16195550161",
+    From: "+16195550461",
     To: "+16195550199",
     Body: "stop",
   });

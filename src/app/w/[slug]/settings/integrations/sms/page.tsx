@@ -63,8 +63,8 @@ export default async function SmsSettingsPage({
           are no automatic or bulk texts. Before anything goes out, the app and the database both
           check: not marked do-not-contact, SMS consent on file, not texted STOP, a mobile number,
           and inside texting hours ({formatHour(outreach.smsSendFrom)}–
-          {formatHour(outreach.smsSendUntil)}, set in Settings → Outreach).
-          Blocked attempts are logged with the reason.
+          {formatHour(outreach.smsSendUntil)}, set in Settings → Outreach). Blocked attempts are
+          logged with the reason.
         </p>
       </div>
       <ul className="space-y-1 rounded-xl border bg-card p-4 text-sm" data-testid="sms-checklist">

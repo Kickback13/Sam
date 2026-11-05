@@ -293,3 +293,37 @@ Prices aren't written here because they change; get a current quote before choos
 - **Nothing is sent.** The lead downloads an `.ics` file from the confirmation page. Sam can subscribe to a **private read-only iCalendar feed** (`/api/calendar/<token>.ics`; only the token's SHA-256 is stored; making a new link turns the old one off). That puts bookings on his Google/Apple Calendar with no account connected.
 
 **Consequences:** bookings don't see Sam's other calendar events. He blocks time by hand until a Google Calendar connection exists. Google refreshes subscribed feeds every few hours. Confirmation and reminder messages come with the messaging work, behind the compliance gates.
+
+## ADR-036 — Texting: one-to-one only, gates enforced by the database, off until switched on
+
+**Context (4D):** module 6 needs texting, and CLAUDE.md rule 4 allows outbound messages only behind the compliance gates. Twilio charges per text. US business texting also requires A2P 10DLC brand and campaign registration, which has fees. Instruction: build it, but don't turn on anything that charges.
+
+**Decision:**
+
+- **One-to-one only.** A person writes and sends every text from a contact's page. There are no sequences, no bulk sends and no automation.
+- **Off by default, three locks.** Sending needs:
+  1. Twilio credentials in env (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`; never in the database);
+  2. a sending number or Messaging Service saved by an owner/admin;
+  3. **Texting on**.
+     Until then, the contact page and the AZH hub say exactly which step is missing.
+- **Gates twice.**
+  - The app runs `checkSms` (`informational` purpose) to explain any block in plain words. Blocked attempts are logged with their reasons.
+  - The database is the authority. `sms_messages_guard` refuses to queue a text unless texting is on and:
+    - the contact is not DNC and has SMS consent on file (with date);
+    - the number belongs to the contact and is not a landline;
+    - the number is not on the STOP list;
+    - it is inside texting hours (`app_private.sms_in_window`, 8am–9pm at most, Settings → Outreach);
+    - the daily caps aren't hit (10 per contact, 300 per workspace).
+  - Twilio is called only after the queued row exists.
+- **Inbound** (`/api/sms/inbound/<token>`, Twilio signature required):
+  - each text matches or creates the contact, lands on the timeline and gives the owner a task to reply;
+  - STOP-type words add the number to the suppression list at once, and START removes it (consent on file still applies);
+  - HELP gets the admin-set reply;
+  - Twilio's retries don't duplicate.
+- **Delivery status** (`/api/sms/status`, signature required) is keyed by Twilio's message ID and only moves a message forward.
+
+**Consequences:**
+
+- Turning texting on is a settings change plus env vars; no code change is needed.
+- A2P 10DLC registration and the number purchase are Sam's decisions (they cost money).
+- Marketing texts (which need written consent) are not built. They would reuse the same gates with purpose `marketing`.
