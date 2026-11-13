@@ -12,7 +12,7 @@
 import { listingFieldsSchema, type ListingFields } from "../listing/schema";
 import { domainOf, parseMailbox, stripSubjectPrefixes, unwrapForward } from "./forward";
 import { extractLinks, extractTextLinks, htmlToText, tidyText } from "./html";
-import { crexiPlaceholderParser } from "./parsers/crexi-placeholder";
+import { crexiParser } from "./parsers/crexi";
 import { genericSourceLabel, parseGeneric } from "./parsers/generic";
 import { loopnetPlaceholderParser } from "./parsers/loopnet-placeholder";
 import type {
@@ -25,7 +25,7 @@ import type {
 } from "./types";
 
 /** One parser per sender format. Order matters only if two could match. */
-export const PARSERS: EmailParser[] = [loopnetPlaceholderParser, crexiPlaceholderParser];
+export const PARSERS: EmailParser[] = [loopnetPlaceholderParser, crexiParser];
 
 export const GENERIC_PARSER = {
   key: "generic",
@@ -181,6 +181,12 @@ export function parseEmail(email: InboundEmail): ParseResult {
       parser = { key: p.key, label: p.label, sourceLabel: p.sourceLabel, status: p.formatStatus };
       if (p.formatStatus === "placeholder")
         notes.push(`${p.label}: built from a made-up sample; real samples replace it in Phase 2B.`);
+      break;
+    }
+    const why = p.explainEmpty?.(ctx);
+    if (why) {
+      notes.push(why);
+      parser = { key: p.key, label: p.label, sourceLabel: p.sourceLabel, status: p.formatStatus };
       break;
     }
     notes.push(`${p.label} matched the sender but found no listings; used the generic reader.`);

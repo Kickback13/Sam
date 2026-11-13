@@ -467,3 +467,30 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 - **Editor:** the editor shows how many sendable contacts prefer Spanish, and the preview has an English / Español switch.
 
 **Consequences:** additive migration `20261114010000_h4a_spanish_newsletters`. Nothing sends until Resend is connected, as before. If an issue has no Spanish version, Spanish speakers get English and the audience check says so.
+
+## ADR-046 — Crexi email reader: verified on real emails; no address means no listing
+
+**Context:** the Crexi reader (ADR-020) was a placeholder built from a made-up email. Michael shared four real Crexi listing emails ("You've shared …") from Sam's account. On those emails the placeholder misread numbers as addresses: "27,026" sq ft became address "27", city "026", at **high** confidence.
+
+**Decision:**
+
+- **Verified reader:** a new `crexiParser` (`src/features/h4a/email/parsers/crexi.ts`, same key `crexi-new-listing`, `formatStatus: "verified"`). It reads Crexi's real layout:
+  - the "Property Details" label/value block: asking price, units, year built, cap rate, square footage, lot size in acres × 43,560, APN, property type and price per unit;
+  - the first name under "Listing Contacts" as the broker. Other contacts go in a note, and Crexi's footer is never read as a broker.
+- **Address only from a street line:** the address comes only from the subject ("You've shared 1145 4th Ave, Chula Vista, CA 91911") or a header line that starts with a street number. It is never taken from the numeric detail fields. When the city is missing, it comes from a "|" segment that is exactly a San Diego County city ("Just Listed | 37 Units | Escondido").
+- **No address, no listing:** Crexi sometimes leaves the address out entirely (2 of the 4 samples). Then no listing is created, and the email gets a note with the title, units, price and APN, asking a person to add it by hand.
+  - A new optional `EmailParser.explainEmpty()` returns that note.
+  - Returning a note stops the generic fallback from guessing at the same email.
+- **No tracking links:** Crexi's links are all `email.notifications.crexi.com` tracking redirects tied to Sam's account, so `listing_url` stays empty and a note points to the original email.
+- **Fixtures:** the real emails are not in the repo. `fixtures/crexi-emails.ts` reproduces the four layouts with made-up values, in both renderings the HTML reader produces ("Label | Value" on one line, or the label and value on separate lines).
+
+**Results on the four real emails:**
+
+| Email                           | Before (placeholder)           | After                                                           |
+| ------------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| 1145 4th Ave, Chula Vista       | correct                        | correct, plus lot size and broker                               |
+| 345 East Park Avenue, Escondido | "345 East Park", no city       | full street and Escondido, high confidence, lot size and broker |
+| Vista Shores (81 units)         | address "27", city "026", high | no listing, plus a note to add by hand                          |
+| Clearbrook Terrace (41 units)   | address "37", city "417"       | no listing, plus a note to add by hand                          |
+
+**Consequences:** no migration. LoopNet is still a placeholder until real LoopNet samples arrive. Crexi's saved-search digest emails, which may hold several listings, haven't been seen yet; if their layout differs, they fall to the generic reader with a review flag until a sample is added.

@@ -9,6 +9,7 @@
  * and link (.example) is fictional. Never use them in Sam's workspaces.
  */
 import type { InboundEmail } from "../types";
+import { CREXI_FULL_ADDRESS } from "./crexi-emails";
 
 export type FixtureEmail = InboundEmail & { key: string; label: string };
 
@@ -42,35 +43,8 @@ Manage your saved searches: https://www.loopnet.example/my/saved-searches
 Unsubscribe: https://www.loopnet.example/unsubscribe`,
 };
 
-export const CREXI_SINGLE: FixtureEmail = {
-  key: "placeholder-crexi-single",
-  label: "Placeholder: Crexi-style new listing (1 listing, HTML)",
-  from: "Crexi (placeholder) <notifications@crexi.example>",
-  subject: "New listing matches your saved search: Sample Court Fourplex",
-  text: null,
-  html: `<html><head><style>p{color:red}</style><title>Crexi</title></head><body>
-<p>PLACEHOLDER SAMPLE - made-up email for tests. Not a real Crexi message.</p>
-<h2>New listing matches your saved search</h2>
-<h3><a href="https://www.crexi.example/properties/900001/sample-court-fourplex">Sample Court Fourplex</a></h3>
-<p>1150 Fictional Ct, San Diego, CA 92105</p>
-<table>
-<tr><td>Asking Price</td><td>$1,195,000</td></tr>
-<tr><td>Property Type</td><td>Multifamily</td></tr>
-<tr><td>Units</td><td>4</td></tr>
-<tr><td>Price/Unit</td><td>$298,750</td></tr>
-<tr><td>Year Built</td><td>1958</td></tr>
-<tr><td>Cap Rate</td><td>4.8%</td></tr>
-<tr><td>Square Footage</td><td>3,600 SF</td></tr>
-<tr><td>Lot Size</td><td>5,500 SF</td></tr>
-<tr><td>APN</td><td>999-000-00-01</td></tr>
-</table>
-<p>Broker: Casey Example · Sample Property Advisors · (619) 555-0192 · casey.example@example.com</p>
-<p><a href="https://www.crexi.example/properties/900001/sample-court-fourplex">View Property</a></p>
-<p><a href="https://www.crexi.example/settings/notifications">Manage notifications</a></p>
-<img src="https://tracking.crexi.example/open.gif" width="1" height="1">
-<script>alert("this never runs")</script>
-</body></html>`,
-};
+/** Crexi in its real layout (fictional values); see crexi-emails.ts. */
+export const CREXI_SINGLE: FixtureEmail = CREXI_FULL_ADDRESS;
 
 export const BROKER_FORWARD: FixtureEmail = {
   key: "placeholder-broker-forward",
