@@ -62,6 +62,54 @@ const HEADER_NOISE =
   /^(property flyer|offering memorandum|view (property|listing|details)|flyer|om)$/i;
 const STREET_LINE = /^\d{1,6}(?:-\d{1,6})?[A-Za-z]?\s+[A-Za-z][A-Za-z0-9 .'#-]*$/;
 
+/** Every label Crexi's Property Details block has used (longest first, for "Label Value" lines). */
+const DETAIL_LABELS = [
+  "Asking Price",
+  "Property Type",
+  "Sub Type",
+  "Investment Type",
+  "Tenancy",
+  "Square Footage",
+  "Net Rentable (SqFt)",
+  "Price per SqFt",
+  "Pro-Forma Cap Rate",
+  "Cap Rate",
+  "Occupancy",
+  "Pro-Forma NOI",
+  "NOI",
+  "Units",
+  "Year Built",
+  "Year Renovated",
+  "Buildings",
+  "Stories",
+  "Zoning",
+  "Lot Size (acres)",
+  "Lot Size (SqFt)",
+  "Lot Size",
+  "Parking (spaces)",
+  "APN",
+  "Price/Unit",
+  "Ownership",
+].sort((a, b) => b.length - a.length);
+
+/** "Asking Price $13,250,000" (Gmail's plain-text copy) → ["asking price", "$13,250,000"]. */
+function labelAndValue(line: string): [string, string] | null {
+  for (const label of DETAIL_LABELS) {
+    if (line.length > label.length + 1 && line.toLowerCase().startsWith(`${label.toLowerCase()} `))
+      return [label.toLowerCase(), line.slice(label.length).trim()];
+  }
+  return null;
+}
+
+/** Drops Gmail's "<https://…>" link markers and "[image: …]" placeholders from a line. */
+function cleanLine(line: string): string {
+  return line
+    .replace(/<(?:https?:|mailto:|tel:)[^>]*>/gi, "")
+    .replace(/<\(?\d{3}\)?[^>]*>/g, "")
+    .replace(/\[image:[^\]]*\]?/gi, "")
+    .trim();
+}
+
 type Sections = {
   header: string[];
   details: Map<string, string>;
@@ -69,16 +117,13 @@ type Sections = {
 };
 
 function sections(ctx: EmailContext): Sections | null {
-  const lines = ctx.text
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const lines = ctx.text.split("\n").map(cleanLine).filter(Boolean);
   const start = lines.findIndex((l) => DETAILS_START.test(l));
   if (start < 0) return null;
   let end = lines.findIndex((l, i) => i > start && CONTACTS_START.test(l));
   if (end < 0) end = lines.length;
 
-  // "Label | Value" on one line, or the label on one line and its value on the next.
+  // "Label | Value" or "Label Value" on one line, or the label on one line and its value on the next.
   const details = new Map<string, string>();
   const block = lines.slice(start + 1, end);
   for (let i = 0; i < block.length; i++) {
@@ -86,9 +131,12 @@ function sections(ctx: EmailContext): Sections | null {
       .split("|")
       .map((c) => c.trim())
       .filter(Boolean);
+    const inline = cells.length === 1 ? labelAndValue(cells[0]) : null;
     if (cells.length >= 2) {
       for (let c = 0; c + 1 < cells.length; c += 2)
         details.set(cells[c].toLowerCase(), cells[c + 1]);
+    } else if (inline) {
+      details.set(inline[0], inline[1]);
     } else if (i + 1 < block.length && !block[i + 1].includes("|")) {
       details.set(cells[0].toLowerCase(), block[i + 1]);
       i++;
