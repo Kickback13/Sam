@@ -8,9 +8,13 @@ test("list filters: two quick changes keep both, even on a slow connection", asy
   await goto(page, `/w/${E2E_REALTY}/deal-finder`);
 
   // Slow every page-data request so the second change happens mid-navigation.
+  // The app cancels the superseded request during the delay; Playwright then
+  // counts that route as handled, so there is nothing left to continue.
   await page.route("**/*", async (route) => {
     if (route.request().headers()["rsc"]) await new Promise((r) => setTimeout(r, 1200));
-    await route.continue();
+    await route.continue().catch((error: unknown) => {
+      if (!String(error).includes("Route is already handled")) throw error;
+    });
   });
 
   await page.getByRole("combobox", { name: "Status", exact: true }).selectOption("all");
