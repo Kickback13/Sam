@@ -9,6 +9,7 @@ import {
 import {
   CREXI_EMAILS,
   CREXI_FULL_ADDRESS,
+  CREXI_GMAIL_FORWARD,
   CREXI_NAME_ONLY,
   CREXI_NO_ADDRESS,
   CREXI_STREET_AND_CITY,
@@ -127,6 +128,41 @@ describe("Crexi listing email (real layout, verified)", () => {
     expect(r.notes.join(" ")).toMatch(/add it by hand/);
     // Never handed to the generic reader, which would guess at numbers like "27,026".
     expect(r.notes.join(" ")).not.toMatch(/generic reader/);
+  });
+
+  it("reads the plain-text copy Gmail sends with a forward", () => {
+    const r = parseEmail(CREXI_GMAIL_FORWARD);
+    expect(r.parserKey).toBe("crexi-new-listing");
+    expect(r.context.forwardedBy).toMatch(/sam\.placeholder/);
+    expect(r.listings).toHaveLength(1);
+    expect(r.listings[0].fields).toMatchObject({
+      address: "700 North Sample Avenue",
+      city: "Escondido",
+      price: 5_500_000,
+      units: 22,
+      property_type: "multifamily",
+      cap_rate: 5.75,
+      year_built: 1998,
+      building_sqft: 16_800,
+      lot_sqft: 32_670,
+      apn: "999-120-44-00",
+      broker_name: "Taylor Example",
+      listing_url: null,
+    });
+    expect(r.listings[0].confidence).toBe("high");
+    expect(r.listings[0].notes.join(" ")).toMatch(/Other listing contacts: Quinn Sample$/);
+  });
+
+  it("names a forwarded email without an address by its title, with the facts", () => {
+    const r = parseEmail({
+      ...CREXI_GMAIL_FORWARD,
+      text: CREXI_GMAIL_FORWARD.text!.replace("700 North Sample Avenue\n", "Example Gardens\n"),
+      subject: "Fwd: You've shared Multifamily | 22 Units | $250,000/unit",
+    });
+    expect(r.listings).toEqual([]);
+    expect(r.notes[0]).toMatch(
+      /^Crexi left the street address out of this email \("Example Gardens": 22 units, asking \$5,500,000, APN 999-120-44-00\)/,
+    );
   });
 
   it("never saves Crexi's tracking links or reads its footer as a broker", () => {

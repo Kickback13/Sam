@@ -493,4 +493,6 @@ It is **SECURITY INVOKER**, so row-level security decides what is counted. It al
 | Vista Shores (81 units)         | address "27", city "026", high | no listing, plus a note to add by hand                          |
 | Clearbrook Terrace (41 units)   | address "37", city "417"       | no listing, plus a note to add by hand                          |
 
+- **Gmail forwards (added after the first live test):** a forward from Gmail arrives with a plain-text copy, and the app reads that copy. Its layout differs: details are "Label Value" on one line, links are "<https://…>" lines, and images are "[image: …]". The reader removes the link and image markers and matches the known Crexi labels at the start of a line. The forwarder's signature comes after Crexi's footer, so it is never read. Fixture: `CREXI_GMAIL_FORWARD`.
+
 **Consequences:** no migration. LoopNet is still a placeholder until real LoopNet samples arrive. Crexi's saved-search digest emails, which may hold several listings, haven't been seen yet; if their layout differs, they fall to the generic reader with a review flag until a sample is added.

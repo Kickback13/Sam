@@ -137,9 +137,93 @@ export const CREXI_NAME_ONLY: FixtureEmail = {
   }),
 };
 
+/**
+ * Layout 5: the plain-text copy Gmail sends when a Crexi email is forwarded
+ * (verified on a real forward, Nov 2026). Details are "Label Value" on one line,
+ * links appear as "<https://…>" lines, images as "[image: …]", and the
+ * forwarder's signature (with its own street address) follows Crexi's footer.
+ */
+export const CREXI_GMAIL_FORWARD: FixtureEmail = {
+  key: "crexi-gmail-forward",
+  label: "Placeholder: Crexi listing forwarded from Gmail (plain text)",
+  from: "Sam Placeholder <sam.placeholder@example.com>",
+  subject: "Fwd: You've shared Just Listed | 22 Units | Escondido",
+  html: null,
+  text: `---------- Forwarded message ---------
+From: Crexi <emails@notifications.crexi.example>
+Date: Fri, Nov 13, 2026 at 9:55 AM
+Subject: You've shared Just Listed | 22 Units | Escondido
+To: Sam Placeholder <sam.placeholder@example.com>
+
+
+
+<https://email.notifications.crexi.example/c/fictional-token-1>
+
+
+<https://email.notifications.crexi.example/c/fictional-token-2>
+
+700 North Sample Avenue
+<https://email.notifications.crexi.example/c/fictional-token-3>
+Just Listed | 22 Units | Escondido
+Property Flyer
+<https://email.notifications.crexi.example/c/fictional-token-4>
+Property Details
+Asking Price $5,500,000
+Property Type Multifamily
+Sub Type Apartment Building
+Square Footage 16,800
+Price per SqFt $327.38
+Cap Rate 5.75%
+Pro-Forma Cap Rate 6.40%
+Units 22
+Year Built 1998
+Lot Size (acres) 0.75
+APN 999-120-44-00
+Price/Unit $250,000
+Ownership Fee Simple
+Listing Contacts
+
+Taylor Example
+<https://email.notifications.crexi.example/c/fictional-token-5>
+
+Contact Broker
+<https://email.notifications.crexi.example/c/fictional-token-6>
+
+Quinn Sample
+<https://email.notifications.crexi.example/c/fictional-token-7>
+
+Contact Broker
+<https://email.notifications.crexi.example/c/fictional-token-8>
+
+
+[image: Email]
+<https://email.notifications.crexi.example/c/fictional-token-9>
+  [image: Phone]
+<https://email.notifications.crexi.example/c/fictional-token-10>
+
+[image: Email]   support@crexi.com   [image: Phone]   + 888.555.0100
+<(888)%20555-0100>
+
+[image:
+facebook]
+<https://email.notifications.crexi.example/c/fictional-token-11>
+
+© 2026 Commercial Real Estate Exchange, Inc., All rights reserved.
+100 Example Blvd, Los Angeles, CA 90000
+<https://email.notifications.crexi.example/c/fictional-token-12>
+  |   Unsubscribe
+<https://email.notifications.crexi.example/c/fictional-token-13>
+
+--
+*Sam Placeholder*
+3100 Sample Ave San Diego Ca 92104
+`,
+};
+
 export const CREXI_EMAILS = [
   CREXI_FULL_ADDRESS,
   CREXI_STREET_AND_CITY,
   CREXI_NO_ADDRESS,
   CREXI_NAME_ONLY,
+  CREXI_GMAIL_FORWARD,
 ];
