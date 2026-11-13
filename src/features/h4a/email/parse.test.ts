@@ -2,18 +2,26 @@ import { describe, expect, it } from "vitest";
 
 import {
   BROKER_FORWARD,
-  CREXI_SINGLE,
   GMAIL_CONFIRMATION,
   LOOPNET_DIGEST,
   NEWSLETTER,
 } from "./fixtures/placeholder-emails";
+import {
+  CREXI_EMAILS,
+  CREXI_FULL_ADDRESS,
+  CREXI_NAME_ONLY,
+  CREXI_NO_ADDRESS,
+  CREXI_STREET_AND_CITY,
+} from "./fixtures/crexi-emails";
 import { buildContext, parseEmail, PARSERS } from "./parse";
 import { parseGeneric } from "./parsers/generic";
 
 describe("parser registry", () => {
-  it("has one parser per sender format, each marked as a placeholder until real samples arrive", () => {
-    expect(PARSERS.map((p) => p.key)).toEqual(["loopnet-saved-search", "crexi-new-listing"]);
-    expect(PARSERS.every((p) => p.formatStatus === "placeholder")).toBe(true);
+  it("has one parser per sender format; Crexi is verified on real samples, LoopNet is still a placeholder", () => {
+    expect(PARSERS.map((p) => [p.key, p.formatStatus])).toEqual([
+      ["loopnet-saved-search", "placeholder"],
+      ["crexi-new-listing", "verified"],
+    ]);
   });
 });
 
@@ -63,36 +71,71 @@ describe("LoopNet-style digest (placeholder format)", () => {
   });
 });
 
-describe("Crexi-style HTML alert (placeholder format)", () => {
-  const r = parseEmail(CREXI_SINGLE);
-  it("reads the HTML table", () => {
+describe("Crexi listing email (real layout, verified)", () => {
+  it("reads a full address and the Property Details block", () => {
+    const r = parseEmail(CREXI_FULL_ADDRESS);
     expect(r.parserKey).toBe("crexi-new-listing");
     expect(r.sourceLabel).toBe("Crexi alert");
+    expect(r.formatStatus).toBe("verified");
+    expect(r.notes.join(" ")).not.toMatch(/made-up sample/);
     expect(r.listings).toHaveLength(1);
     expect(r.listings[0].fields).toMatchObject({
       address: "1150 Fictional Ct",
       city: "San Diego",
+      state: "CA",
       zip: "92105",
-      price: 1_195_000,
-      units: 4,
+      price: 4_950_000,
+      units: 24,
       property_type: "multifamily",
-      cap_rate: 4.8,
-      year_built: 1958,
-      building_sqft: 3_600,
-      lot_sqft: 5_500,
+      cap_rate: 5.2,
+      year_built: 1964,
+      building_sqft: 18_400,
+      lot_sqft: 13_939,
       apn: "999-000-00-01",
       broker_name: "Casey Example",
-      broker_company: "Sample Property Advisors",
-      broker_phone: "(619) 555-0192",
-      broker_email: "casey.example@example.com",
-      listing_url: "https://www.crexi.example/properties/900001/sample-court-fourplex",
+      listing_url: null,
+    });
+    expect(r.listings[0].confidence).toBe("high");
+    expect(r.listings[0].notes.join(" ")).toMatch(/Other listing contacts: Jordan Sample/);
+  });
+
+  it("takes a whole street line and the city from a '|' segment", () => {
+    const r = parseEmail(CREXI_STREET_AND_CITY);
+    expect(r.listings).toHaveLength(1);
+    expect(r.listings[0].fields).toMatchObject({
+      address: "900 West Example Avenue",
+      city: "Escondido",
+      price: 4_100_000,
+      units: 18,
+      year_built: 1996,
+      building_sqft: 14_250,
+      apn: "9990000100",
+      broker_name: "Riley Example",
     });
     expect(r.listings[0].confidence).toBe("high");
   });
-  it("never reads script, style or title text", () => {
-    const ctx = buildContext(CREXI_SINGLE);
-    expect(ctx.text).not.toMatch(/alert\(|color:red|<title>/);
-    expect(ctx.links.map((l) => l.href)).not.toContain("https://tracking.crexi.example/open.gif");
+
+  it.each([
+    [CREXI_NO_ADDRESS, /Example Shores.*81 units, asking \$15,000,000/],
+    [CREXI_NAME_ONLY, /Example Terrace.*41 units, asking \$13,250,000/],
+  ])("creates no listing when Crexi leaves the address out (%#)", (email, note) => {
+    const r = parseEmail(email);
+    expect(r.parserKey).toBe("crexi-new-listing");
+    expect(r.listings).toEqual([]);
+    expect(r.kind).toBe("none");
+    expect(r.notes.join(" ")).toMatch(note);
+    expect(r.notes.join(" ")).toMatch(/add it by hand/);
+    // Never handed to the generic reader, which would guess at numbers like "27,026".
+    expect(r.notes.join(" ")).not.toMatch(/generic reader/);
+  });
+
+  it("never saves Crexi's tracking links or reads its footer as a broker", () => {
+    for (const email of CREXI_EMAILS) {
+      for (const l of parseEmail(email).listings) {
+        expect(l.fields.listing_url).toBeNull();
+        expect(l.fields.broker_name).not.toMatch(/support|crexi|888/i);
+      }
+    }
   });
 });
 

@@ -36,7 +36,7 @@ No AZH files changed. The Deal Engine migrations don't depend on any `*_azh_*` m
 
 ## Blockers
 
-None for 2A. 2B needs Sam: real alert email samples, Resend + DNS, county data source decision (see the handoff).
+None for 2A. 2B: the Crexi reader is now verified on 4 real emails (ADR-046); LoopNet still needs real samples. Also needs, Resend + DNS, county data source decision (see the handoff).
 
 ## Phase 3A — property intelligence & deal analysis (branch `h4a/property-intel`)
 

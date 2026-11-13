@@ -68,4 +68,10 @@ export interface EmailParser {
   formatStatus: "placeholder" | "verified";
   matches(ctx: EmailContext): boolean;
   parse(ctx: EmailContext): ParsedCandidate[];
+  /**
+   * When parse() finds nothing: a note explaining why, if the email is clearly
+   * this sender's format (e.g. the address was left out). Returning a note stops
+   * the generic fallback from guessing at the same email.
+   */
+  explainEmpty?(ctx: EmailContext): string | null;
 }
